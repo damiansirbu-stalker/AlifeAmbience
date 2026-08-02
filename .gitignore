@@ -12,6 +12,3 @@ tools/__pycache__/
 tools/manifest.json
 tools/merged_channels.json
 tools/merged_presets.json
-
-# audio kept out of the repo (distributed via release); decide in-repo vs release later
-gamedata/sounds/
