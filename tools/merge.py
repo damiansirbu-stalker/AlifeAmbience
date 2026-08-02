@@ -108,6 +108,10 @@ DARK_FILL = [
     ("/thunder", "storm"), ("/rain", "rain_gust"),
     ("/shooting", "out_gunfire"), ("wind_dark", "wind_heavy"),
     ("spoops/urban_drones", "urban_drones"), ("spoops/drones", "out_drone"), ("/drones", "out_drone"),
+    ("northern_spoops", "out_spooks"), ("storm_debris", "storm"), ("wind_tuman", "background_tuman_open"),
+    ("spooks_above", "out_spooks"), ("spooks_below", "out_spooks"), ("/underground/", "ugrnd_ambient"),
+    ("thunder", "storm"), ("pre_storm", "pre_storm"), ("storm_", "storm"), ("rain_storm", "storm"),
+    ("tuman", "background_tuman_open"), ("underground_", "ugrnd_ambient"),
 ]
 
 # priority order: settings for a shared channel come from the first that defines it
