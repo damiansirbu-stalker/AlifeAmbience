@@ -27,6 +27,68 @@ MANUAL_FILL = {
 }
 LOWQ_BITRATE = 32000  # drop clearly junk-bitrate files when a channel has better
 
+# Dark scope (I9): the ONLY channels AlifeAmbience keeps. Everything else in the
+# packs (generic daytime life, neutral beds, plain wind) is left to the base
+# ambience. Emission (blowout_*, emission_wind) is a separate system, never touched.
+# Grouped by family - the same grouping seeds the runtime per-family policy later.
+DARK_KEEP = {
+    # dread cues
+    "out_spooks", "out_day_spoops", "out_night_spoops", "northen_spoops", "urban_spoops_night",
+    "out_screams", "out_mutants", "out_dark_amb", "out_night_amb", "dark_signal",
+    "foliage_spook", "crows_spook", "inside_noise", "psi_sparks", "psistorm_background",
+    "background_creepy_low_wind",
+    "background_forest_whisper_day", "background_forest_whisper_evening",
+    "background_forest_whisper_morning", "background_forest_whisper_night", "background_forest_whisper_tuman",
+    # underground horror
+    "ugrnd_ambient", "ugrnd_ambient_machine", "ugrnd_ambient_new", "ugrnd_banging", "ugrnd_bkg_1",
+    "ugrnd_drip", "ugrnd_drone", "ugrnd_lab", "ugrnd_metal", "ugrnd_noise", "ugrnd_rats", "ugrnd_voices",
+    "underground_background_1", "underground_background_2", "underground_background_3", "underground_background_4",
+    "underground_background_5", "underground_background_6", "underground_background_7", "underground_background_8", "x18",
+    # tension
+    "out_gunfire", "out_drone", "drones", "day_drones", "urban_drones",
+    "wind_creep", "wind_creep_alt", "wind_creep_urban", "branch", "branch_big", "branch_med",
+    "vest_radio", "urban_debris",
+    # eerie atmosphere (owls/dogs/crows/fog - confirmed in scope)
+    "owls", "dogs", "crows", "crows_clear", "crows_forest", "crows_retune", "tree_sway_fog", "birds_night",
+    "background_tuman_field_open", "background_tuman_field_openalt", "background_tuman_open",
+    "background_tuman_open_alt", "background_tuman_open_alt2", "background_tuman_open_urban",
+    # oppressive weather
+    "storm", "storm_foliage", "storm_urban", "pre_storm", "background_storm_forest", "background_rain_forest",
+    "background_wind_storm", "wind_dark", "wind_gale", "wind_heavy", "wind_strong", "chimes",
+    "rain_gust", "rain_urban_gust",
+}
+
+# The 8 channels we actually ship, on a role x mood grid. Role = how it composes
+# in the mix (texture = intermittent fill; accent = rare foreground one-shot).
+# Mood = what it is (drives sound selection + the MCM knob). Every dark channel
+# folds into one cell; the pack's source-name taxonomy is discarded.
+GRID_GROUPS = {
+    "aa_dread_texture": [
+        "out_dark_amb", "out_night_amb", "dark_signal", "inside_noise", "background_creepy_low_wind",
+        "background_forest_whisper_day", "background_forest_whisper_evening",
+        "background_forest_whisper_morning", "background_forest_whisper_night", "background_forest_whisper_tuman"],
+    "aa_dread_accent": [
+        "out_spooks", "out_day_spoops", "out_night_spoops", "northen_spoops", "urban_spoops_night",
+        "out_screams", "out_mutants", "foliage_spook", "crows_spook", "psi_sparks", "psistorm_background"],
+    "aa_ug_texture": [
+        "ugrnd_ambient", "ugrnd_ambient_machine", "ugrnd_ambient_new", "ugrnd_bkg_1", "ugrnd_noise",
+        "ugrnd_drip", "ugrnd_drone", "ugrnd_lab",
+        "underground_background_1", "underground_background_2", "underground_background_3", "underground_background_4",
+        "underground_background_5", "underground_background_6", "underground_background_7", "underground_background_8"],
+    "aa_ug_accent": ["ugrnd_banging", "ugrnd_metal", "ugrnd_rats", "ugrnd_voices", "x18"],
+    "aa_human_accent": ["out_gunfire", "out_drone", "drones", "day_drones", "urban_drones", "vest_radio", "urban_debris"],
+    "aa_weather_texture": [
+        "wind_creep", "wind_creep_alt", "wind_creep_urban", "branch", "branch_big", "branch_med",
+        "wind_dark", "wind_gale", "wind_heavy", "wind_strong", "chimes", "rain_gust", "rain_urban_gust",
+        "background_rain_forest", "tree_sway_fog",
+        "background_tuman_field_open", "background_tuman_field_openalt", "background_tuman_open",
+        "background_tuman_open_alt", "background_tuman_open_alt2", "background_tuman_open_urban"],
+    "aa_weather_accent": [
+        "storm", "storm_foliage", "storm_urban", "pre_storm", "background_storm_forest", "background_wind_storm"],
+    "aa_animal_accent": ["owls", "dogs", "crows", "crows_clear", "crows_forest", "crows_retune", "birds_night"],
+}
+GRID = {member: grid for grid, members in GRID_GROUPS.items() for member in members}
+
 # priority order: settings for a shared channel come from the first that defines it
 MODS = [
     ("DarkSigWeather", "D:/Games/GAMMA/GAMMA/mods/304- Dark Signal Weather and Ambiance Audio - Shrike/gamedata"),
@@ -111,6 +173,8 @@ def cmd_plan(_):
     for name, gd in MODS:
         sounds_root = Path(gd) / "sounds"
         for chan, d in per_mod[name].items():
+            if chan not in DARK_KEEP:            # dark scope only (I9); skip generic life/beds/emission
+                continue
             if chan not in orig_def and (d["settings"] or d["stems"]):
                 orig_def[chan] = {"mod": name, "settings": d["settings"], "stems": d["stems"]}
             for stem in d["stems"]:

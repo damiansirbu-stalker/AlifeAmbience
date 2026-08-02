@@ -1,0 +1,3307 @@
+{
+"dread": [
+{
+"ch": "background_forest_whisper_day",
+"stem": "ambient/trx/background/whisper_day",
+"dur": 138.0
+},
+{
+"ch": "background_forest_whisper_evening",
+"stem": "ambient/trx/background/whisper_evening",
+"dur": 138.0
+},
+{
+"ch": "background_forest_whisper_morning",
+"stem": "ambient/trx/background/whisper_morning",
+"dur": 138.0
+},
+{
+"ch": "background_forest_whisper_night",
+"stem": "ambient/trx/background/whisper_night",
+"dur": 138.0
+},
+{
+"ch": "birds_night",
+"stem": "ambient/soundscape/animals/Birds_Single_Night_11",
+"dur": 4.0
+},
+{
+"ch": "chimes",
+"stem": "ambient/soundscape/foliage/chime4",
+"dur": 5.6
+},
+{
+"ch": "chimes",
+"stem": "ambient/soundscape/foliage/chime6",
+"dur": 5.6
+},
+{
+"ch": "chimes",
+"stem": "ambient/soundscape/foliage/chime7",
+"dur": 5.1
+},
+{
+"ch": "chimes",
+"stem": "ambient/soundscape/foliage/chime8",
+"dur": 4.7
+},
+{
+"ch": "chimes",
+"stem": "ambient/soundscape/foliage/chime9",
+"dur": 6.9
+},
+{
+"ch": "crows",
+"stem": "ambient/trx/nature/crow/sound_13",
+"dur": 6.0
+},
+{
+"ch": "crows",
+"stem": "ambient/trx/nature/crow/sound_14",
+"dur": 5.8
+},
+{
+"ch": "crows",
+"stem": "ambient/trx/nature/crow/sound_15",
+"dur": 5.8
+},
+{
+"ch": "crows",
+"stem": "ambient/trx/nature/crow/sound_16",
+"dur": 5.5
+},
+{
+"ch": "crows",
+"stem": "ambient/trx/nature/crow/sound_17",
+"dur": 6.6
+},
+{
+"ch": "crows",
+"stem": "ambient/trx/nature/crow/sound_20",
+"dur": 8.3
+},
+{
+"ch": "crows",
+"stem": "ambient/trx/nature/crow/sound_26",
+"dur": 4.3
+},
+{
+"ch": "crows",
+"stem": "ambient/soundscape/crows/crow3",
+"dur": 4.6
+},
+{
+"ch": "crows",
+"stem": "ambient/soundscape/crows/crow7",
+"dur": 4.8
+},
+{
+"ch": "crows",
+"stem": "ambient/soundscape/crows/crow8",
+"dur": 7.6
+},
+{
+"ch": "crows",
+"stem": "ambient/soundscape/crows/crow9",
+"dur": 10.0
+},
+{
+"ch": "crows",
+"stem": "ambient/soundscape/crows/crow10",
+"dur": 5.5
+},
+{
+"ch": "crows_retune",
+"stem": "ambient/trx/nature/crow/sound_12",
+"dur": 6.0
+},
+{
+"ch": "crows_spook",
+"stem": "ambient/soundscape/crows/Crowcreep1",
+"dur": 12.3
+},
+{
+"ch": "crows_spook",
+"stem": "ambient/soundscape/crows/Crowcreep3",
+"dur": 12.3
+},
+{
+"ch": "crows_spook",
+"stem": "ambient/soundscape/crows/Crowcreep6",
+"dur": 15.6
+},
+{
+"ch": "crows_spook",
+"stem": "ambient/soundscape/crows/Crowcreep7",
+"dur": 15.6
+},
+{
+"ch": "dark_signal",
+"stem": "ambient/Soundscape/dark_signal/darksignal7",
+"dur": 12.1
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone1",
+"dur": 10.2
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone5",
+"dur": 10.0
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone6",
+"dur": 9.2
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone8",
+"dur": 8.0
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone9",
+"dur": 8.9
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone10",
+"dur": 10.4
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone11",
+"dur": 10.0
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone12",
+"dur": 7.4
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone13",
+"dur": 6.0
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone15",
+"dur": 8.0
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone16",
+"dur": 15.2
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone19",
+"dur": 9.9
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone20",
+"dur": 6.3
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone21",
+"dur": 12.0
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone22",
+"dur": 8.2
+},
+{
+"ch": "day_drones",
+"stem": "ambient/Soundscape/Spoops/day_drones/drone25",
+"dur": 16.0
+},
+{
+"ch": "dogs",
+"stem": "ambient/trx/nature/dog/sound_03",
+"dur": 4.1
+},
+{
+"ch": "dogs",
+"stem": "ambient/trx/nature/dog/sound_07",
+"dur": 5.6
+},
+{
+"ch": "dogs",
+"stem": "ambient/trx/nature/dog/sound_15",
+"dur": 6.4
+},
+{
+"ch": "dogs",
+"stem": "ambient/trx/nature/dog/sound_16",
+"dur": 4.6
+},
+{
+"ch": "dogs",
+"stem": "ambient/trx/nature/dog/sound_17",
+"dur": 5.4
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone1",
+"dur": 8.2
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone2",
+"dur": 7.1
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone3",
+"dur": 8.1
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone4",
+"dur": 12.0
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone5",
+"dur": 12.6
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone6",
+"dur": 10.0
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone7",
+"dur": 10.2
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone10",
+"dur": 4.6
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone16",
+"dur": 4.3
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone17",
+"dur": 10.0
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone20",
+"dur": 11.7
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone21",
+"dur": 10.6
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone22",
+"dur": 10.1
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone23",
+"dur": 8.0
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone24",
+"dur": 9.2
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone27",
+"dur": 5.4
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone28",
+"dur": 10.4
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone31",
+"dur": 12.0
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone33",
+"dur": 6.6
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone34",
+"dur": 7.1
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone35",
+"dur": 5.9
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone36",
+"dur": 6.1
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone37",
+"dur": 6.6
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone38",
+"dur": 5.9
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone39",
+"dur": 14.5
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone41",
+"dur": 17.8
+},
+{
+"ch": "drones",
+"stem": "ambient/Soundscape/Spoops/drones/drone42",
+"dur": 8.9
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_07",
+"dur": 6.4
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_08",
+"dur": 11.7
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_09",
+"dur": 4.9
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_10",
+"dur": 33.1
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_11",
+"dur": 11.4
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_12",
+"dur": 13.2
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_13",
+"dur": 12.7
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_14",
+"dur": 9.4
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_15",
+"dur": 22.4
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_16",
+"dur": 22.6
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_01",
+"dur": 68.6
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_02",
+"dur": 88.9
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_03",
+"dur": 56.4
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_13",
+"dur": 4.6
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_17",
+"dur": 7.0
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_19",
+"dur": 4.8
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_20",
+"dur": 4.3
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_21",
+"dur": 13.1
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_22",
+"dur": 35.0
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_24",
+"dur": 15.2
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_25",
+"dur": 15.2
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_31",
+"dur": 11.7
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_32",
+"dur": 8.0
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_33",
+"dur": 15.2
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_37",
+"dur": 4.5
+},
+{
+"ch": "out_dark_amb",
+"stem": "ambient/trx/spooks_above/amb_dark/sound_39",
+"dur": 8.9
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound3",
+"dur": 14.5
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound10",
+"dur": 7.4
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound11",
+"dur": 6.0
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound13",
+"dur": 10.0
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound14",
+"dur": 10.0
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound17",
+"dur": 4.1
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound18",
+"dur": 14.5
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound19",
+"dur": 16.0
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound28",
+"dur": 7.1
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound29",
+"dur": 11.2
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound30",
+"dur": 8.2
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound32",
+"dur": 8.0
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound33",
+"dur": 15.2
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound37",
+"dur": 4.5
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound40",
+"dur": 4.5
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound41",
+"dur": 9.3
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound42",
+"dur": 9.2
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound49",
+"dur": 9.2
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound50",
+"dur": 5.8
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound51",
+"dur": 4.0
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound57",
+"dur": 7.3
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound59",
+"dur": 7.3
+},
+{
+"ch": "out_day_spoops",
+"stem": "ambient/Soundscape/Spoops/Day_spoops/sound60",
+"dur": 4.2
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_01",
+"dur": 5.9
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_02",
+"dur": 7.2
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_03",
+"dur": 6.2
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_04",
+"dur": 4.3
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_05",
+"dur": 4.1
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_06",
+"dur": 6.6
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_07",
+"dur": 4.6
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_08",
+"dur": 5.8
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_10",
+"dur": 5.3
+},
+{
+"ch": "out_drone",
+"stem": "ambient/trx/spooks_above/drone/sound_11",
+"dur": 5.0
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_01",
+"dur": 4.7
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_03",
+"dur": 4.9
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_04",
+"dur": 41.4
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_05",
+"dur": 47.6
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_09",
+"dur": 45.3
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_10",
+"dur": 36.0
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_11",
+"dur": 41.3
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_12",
+"dur": 40.8
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_13",
+"dur": 33.2
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_14",
+"dur": 30.7
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_15",
+"dur": 41.9
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_16",
+"dur": 35.0
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_18",
+"dur": 4.2
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_21",
+"dur": 4.7
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_24",
+"dur": 4.7
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_25",
+"dur": 4.6
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_27",
+"dur": 8.9
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_30",
+"dur": 45.3
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_35",
+"dur": 33.2
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_36",
+"dur": 41.4
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_37",
+"dur": 42.2
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_03",
+"dur": 16.0
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_13",
+"dur": 6.0
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_15",
+"dur": 7.0
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_17",
+"dur": 5.0
+},
+{
+"ch": "out_gunfire",
+"stem": "ambient/trx/spooks_above/shooting/sound_19",
+"dur": 5.0
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/bloodsucker/distant_3",
+"dur": 6.3
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/bloodsucker/distant_5",
+"dur": 4.2
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/boar/distant_1",
+"dur": 5.0
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/boar/distant_2",
+"dur": 5.0
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/boar/distant_3",
+"dur": 5.0
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/boar/distant_4",
+"dur": 5.0
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/boar/distant_5",
+"dur": 5.0
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/burer/distant_1",
+"dur": 23.4
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/burer/distant_2",
+"dur": 7.9
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/burer/distant_3",
+"dur": 6.2
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/burer/distant_4",
+"dur": 6.4
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/burer/distant_5",
+"dur": 16.0
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/burer/distant_6",
+"dur": 6.9
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/burer/distant_7",
+"dur": 6.3
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/cat/distant_3b",
+"dur": 5.8
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/chimera/distant_2",
+"dur": 4.9
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/chimera/distant_6",
+"dur": 10.0
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/controller/distant_6",
+"dur": 12.2
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/controller/distant_7",
+"dur": 10.8
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/dog/distant_1",
+"dur": 32.3
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/dog/distant_2",
+"dur": 26.4
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/dog/distant_3",
+"dur": 16.8
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/dog/distant_4",
+"dur": 54.7
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/dog/distant_5",
+"dur": 5.4
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/dog/distant_6",
+"dur": 15.8
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/dog/distant_8",
+"dur": 9.6
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/flesh/distant_2",
+"dur": 4.3
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/flesh/distant_4",
+"dur": 4.3
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/fracture/distant_3",
+"dur": 16.9
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/fracture/distant_6",
+"dur": 4.1
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/giant/distant_1",
+"dur": 5.8
+},
+{
+"ch": "out_mutants",
+"stem": "ambient/soundscape/mutants/giant/distant_3",
+"dur": 8.8
+},
+{
+"ch": "out_night_amb",
+"stem": "ambient/trx/spooks_above/amb_night/sound_04",
+"dur": 8.9
+},
+{
+"ch": "out_night_amb",
+"stem": "ambient/trx/spooks_above/amb_night/sound_06",
+"dur": 5.3
+},
+{
+"ch": "out_night_amb",
+"stem": "ambient/trx/spooks_above/amb_night/sound_07",
+"dur": 4.7
+},
+{
+"ch": "out_night_amb",
+"stem": "ambient/trx/spooks_above/amb_night/sound_10",
+"dur": 5.1
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound1",
+"dur": 68.6
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound2",
+"dur": 88.9
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound3",
+"dur": 56.4
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound13",
+"dur": 4.6
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound17",
+"dur": 7.0
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound19",
+"dur": 4.8
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound20",
+"dur": 4.3
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound21",
+"dur": 13.1
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound22",
+"dur": 35.0
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound24",
+"dur": 15.2
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound25",
+"dur": 15.2
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound31",
+"dur": 11.7
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound32",
+"dur": 8.0
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound33",
+"dur": 15.2
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound37",
+"dur": 4.5
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound39",
+"dur": 8.9
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound54",
+"dur": 6.5
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound55",
+"dur": 15.0
+},
+{
+"ch": "out_night_spoops",
+"stem": "ambient/Soundscape/Spoops/night_spoops/sound56",
+"dur": 7.0
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_01",
+"dur": 4.6
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_03",
+"dur": 7.6
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_04",
+"dur": 8.5
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_05",
+"dur": 5.9
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_07",
+"dur": 5.6
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_08",
+"dur": 6.0
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_09",
+"dur": 4.8
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_10",
+"dur": 5.9
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_11",
+"dur": 7.3
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_12",
+"dur": 9.4
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_13",
+"dur": 7.9
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_14",
+"dur": 5.6
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_15",
+"dur": 10.8
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_16",
+"dur": 5.9
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_17",
+"dur": 5.5
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_19",
+"dur": 6.2
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_20",
+"dur": 6.4
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_21",
+"dur": 6.1
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_22",
+"dur": 4.1
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_23",
+"dur": 5.6
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_24",
+"dur": 5.9
+},
+{
+"ch": "out_screams",
+"stem": "ambient/trx/spooks_above/screams/sound_25",
+"dur": 4.2
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_29",
+"dur": 7.1
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_33",
+"dur": 5.5
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_34",
+"dur": 5.1
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_35",
+"dur": 4.4
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_36",
+"dur": 4.4
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_02",
+"dur": 13.5
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_04",
+"dur": 12.7
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_05",
+"dur": 4.2
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_06",
+"dur": 20.4
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_07",
+"dur": 9.1
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_08",
+"dur": 18.4
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_09",
+"dur": 8.2
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_10",
+"dur": 7.8
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_11",
+"dur": 5.6
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_12",
+"dur": 18.8
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_13",
+"dur": 11.7
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_14",
+"dur": 10.9
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_15",
+"dur": 8.9
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_18",
+"dur": 5.0
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_19",
+"dur": 12.3
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_20",
+"dur": 10.8
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_21",
+"dur": 9.4
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_22",
+"dur": 5.3
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_23",
+"dur": 8.7
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_24",
+"dur": 5.1
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_25",
+"dur": 4.7
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_26",
+"dur": 4.5
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_28",
+"dur": 5.0
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_29",
+"dur": 7.1
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_30",
+"dur": 5.1
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_31",
+"dur": 4.4
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_32",
+"dur": 5.5
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_34",
+"dur": 5.1
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_35",
+"dur": 4.4
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_36",
+"dur": 9.0
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_37",
+"dur": 7.4
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_01",
+"dur": 9.3
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_02",
+"dur": 9.3
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_03",
+"dur": 5.9
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_04",
+"dur": 5.9
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_05",
+"dur": 7.7
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_06",
+"dur": 7.7
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_07",
+"dur": 5.3
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_08",
+"dur": 5.3
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_13",
+"dur": 4.6
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_14",
+"dur": 4.6
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_15",
+"dur": 6.6
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_18",
+"dur": 6.6
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_23",
+"dur": 4.6
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_24",
+"dur": 4.6
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_25",
+"dur": 4.3
+},
+{
+"ch": "out_spooks",
+"stem": "ambient/trx/spooks_above/spooks/sound_33",
+"dur": 4.7
+},
+{
+"ch": "owls",
+"stem": "ambient/trx/nature/owl/sound_06",
+"dur": 6.0
+},
+{
+"ch": "owls",
+"stem": "ambient/trx/nature/owl/sound_11",
+"dur": 7.0
+},
+{
+"ch": "owls",
+"stem": "ambient/trx/nature/owl/sound_12",
+"dur": 5.6
+},
+{
+"ch": "owls",
+"stem": "ambient/trx/nature/owl/sound_13",
+"dur": 8.0
+},
+{
+"ch": "owls",
+"stem": "ambient/trx/nature/owl/sound_16",
+"dur": 5.1
+},
+{
+"ch": "owls",
+"stem": "ambient/trx/nature/owl/sound_19",
+"dur": 6.8
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone5",
+"dur": 10.0
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone7",
+"dur": 13.2
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone8",
+"dur": 7.1
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone9",
+"dur": 11.7
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone10",
+"dur": 10.6
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone11",
+"dur": 10.1
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone12",
+"dur": 9.9
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone13",
+"dur": 12.4
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone14",
+"dur": 6.0
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone15",
+"dur": 5.5
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone16",
+"dur": 5.5
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone17",
+"dur": 5.5
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone18",
+"dur": 5.7
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone19",
+"dur": 5.4
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone20",
+"dur": 12.0
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone24",
+"dur": 19.2
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone25",
+"dur": 10.0
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone28",
+"dur": 10.4
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone30",
+"dur": 6.1
+},
+{
+"ch": "urban_drones",
+"stem": "ambient/Soundscape/Spoops/Urban_drones/drone35",
+"dur": 4.5
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_1",
+"dur": 10.0
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_2",
+"dur": 13.2
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_3",
+"dur": 5.9
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_6",
+"dur": 7.1
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_12",
+"dur": 16.9
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_13",
+"dur": 19.2
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_14",
+"dur": 4.2
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_15",
+"dur": 5.9
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_19",
+"dur": 4.2
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_20",
+"dur": 11.7
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_21",
+"dur": 10.6
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_22",
+"dur": 10.1
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_27",
+"dur": 4.5
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_33",
+"dur": 14.5
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_34",
+"dur": 15.0
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_36",
+"dur": 5.5
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_39",
+"dur": 10.0
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_40",
+"dur": 12.8
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_41",
+"dur": 12.4
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_42",
+"dur": 9.9
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_43",
+"dur": 6.4
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_46",
+"dur": 6.0
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_47",
+"dur": 5.5
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_49",
+"dur": 5.5
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_51",
+"dur": 5.4
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_57",
+"dur": 12.0
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_61",
+"dur": 6.5
+},
+{
+"ch": "urban_spoops_night",
+"stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_64",
+"dur": 9.1
+},
+{
+"ch": "vest_radio",
+"stem": "ambient/Soundscape/dark_signal/radiosignal11",
+"dur": 4.1
+}
+],
+"fog": [
+{
+"ch": "background_forest_whisper_tuman",
+"stem": "ambient/trx/background/whisper_tuman",
+"dur": 138.0
+},
+{
+"ch": "background_tuman_field_open",
+"stem": "ambient/soundscape/background/North/tuman_open_field",
+"dur": 284.8
+},
+{
+"ch": "background_tuman_field_openalt",
+"stem": "ambient/soundscape/background/North/tuman_open_field_alt",
+"dur": 118.3
+},
+{
+"ch": "background_tuman_open",
+"stem": "ambient/soundscape/background/North/tuman_open",
+"dur": 135.0
+},
+{
+"ch": "background_tuman_open_alt",
+"stem": "ambient/soundscape/background/North/tuman_open_alt",
+"dur": 164.2
+},
+{
+"ch": "background_tuman_open_alt2",
+"stem": "ambient/soundscape/background/North/tuman_open_alt2",
+"dur": 163.9
+},
+{
+"ch": "background_tuman_open_urban",
+"stem": "ambient/soundscape/background/North/tuman_open_urban",
+"dur": 200.1
+}
+],
+"stormrain": [
+{
+"ch": "background_rain_forest",
+"stem": "ambient/soundscape/background/Forest/forest_wind",
+"dur": 37.9
+},
+{
+"ch": "background_rain_forest",
+"stem": "ambient/soundscape/background/Forest/forest_wind",
+"dur": 98.7
+},
+{
+"ch": "background_storm_forest",
+"stem": "ambient/soundscape/background/Field/Field_wind_high",
+"dur": 24.9
+},
+{
+"ch": "background_storm_forest",
+"stem": "ambient/soundscape/background/Field/Field_wind_high",
+"dur": 24.9
+},
+{
+"ch": "background_storm_forest",
+"stem": "ambient/soundscape/background/Field/Field_wind_high",
+"dur": 55.4
+},
+{
+"ch": "background_storm_forest",
+"stem": "ambient/soundscape/background/Forest/forest_wind_storm",
+"dur": 49.8
+},
+{
+"ch": "background_wind_storm",
+"stem": "ambient/soundscape/background/Urban/houses_wind_storm",
+"dur": 109.1
+},
+{
+"ch": "background_wind_storm",
+"stem": "ambient/soundscape/background/Urban/houses_wind_storm",
+"dur": 61.4
+},
+{
+"ch": "background_wind_storm",
+"stem": "ambient/soundscape/background/Urban/houses_wind_storm",
+"dur": 25.2
+},
+{
+"ch": "background_wind_storm",
+"stem": "ambient/soundscape/background/Urban/houses_wind_storm",
+"dur": 109.1
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_02",
+"dur": 9.4
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_04",
+"dur": 13.1
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_05",
+"dur": 18.0
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_06",
+"dur": 13.1
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_07",
+"dur": 13.1
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_08",
+"dur": 18.0
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_11",
+"dur": 9.4
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_14",
+"dur": 12.3
+},
+{
+"ch": "pre_storm",
+"stem": "ambient/trx/nature/storm/sound_16",
+"dur": 18.0
+},
+{
+"ch": "psistorm_background",
+"stem": "ambient/blowout/psistorm_wind",
+"dur": 21.3
+},
+{
+"ch": "rain_gust",
+"stem": "ambient/soundscape/rain/raingust1",
+"dur": 12.6
+},
+{
+"ch": "rain_gust",
+"stem": "ambient/soundscape/rain/raingust3",
+"dur": 12.6
+},
+{
+"ch": "rain_gust",
+"stem": "ambient/soundscape/rain/raingust4",
+"dur": 12.6
+},
+{
+"ch": "rain_gust",
+"stem": "ambient/soundscape/rain/raingust5",
+"dur": 11.5
+},
+{
+"ch": "rain_gust",
+"stem": "ambient/soundscape/rain/raingust6",
+"dur": 12.6
+},
+{
+"ch": "rain_gust",
+"stem": "ambient/soundscape/rain/raingust8",
+"dur": 12.6
+},
+{
+"ch": "rain_gust",
+"stem": "ambient/soundscape/rain/raingust9",
+"dur": 12.6
+},
+{
+"ch": "rain_urban_gust",
+"stem": "ambient/soundscape/rain/Urbanrain1",
+"dur": 12.1
+},
+{
+"ch": "rain_urban_gust",
+"stem": "ambient/soundscape/rain/Urbanrain2",
+"dur": 12.1
+},
+{
+"ch": "rain_urban_gust",
+"stem": "ambient/soundscape/rain/Urbanrain4",
+"dur": 12.1
+},
+{
+"ch": "rain_urban_gust",
+"stem": "ambient/soundscape/rain/Urbanrain5",
+"dur": 12.1
+},
+{
+"ch": "rain_urban_gust",
+"stem": "ambient/soundscape/rain/Urbanrain6",
+"dur": 7.7
+},
+{
+"ch": "rain_urban_gust",
+"stem": "ambient/soundscape/rain/Urbanrain7",
+"dur": 12.1
+},
+{
+"ch": "rain_urban_gust",
+"stem": "ambient/soundscape/rain/Urbanrain8",
+"dur": 12.1
+},
+{
+"ch": "storm",
+"stem": "ambient/soundscape/wind/windtreestorm_4",
+"dur": 11.3
+},
+{
+"ch": "storm",
+"stem": "ambient/soundscape/wind/windtreestorm_5",
+"dur": 11.3
+},
+{
+"ch": "storm",
+"stem": "ambient/soundscape/wind/windtreestorm_7",
+"dur": 11.1
+},
+{
+"ch": "storm",
+"stem": "ambient/soundscape/wind/windtreestorm_8",
+"dur": 11.2
+},
+{
+"ch": "storm",
+"stem": "ambient/soundscape/wind/windtreestorm_11",
+"dur": 11.3
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_02",
+"dur": 9.4
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_04",
+"dur": 13.1
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_05",
+"dur": 18.0
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_06",
+"dur": 13.1
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_07",
+"dur": 13.1
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_08",
+"dur": 18.0
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_11",
+"dur": 9.4
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_14",
+"dur": 12.3
+},
+{
+"ch": "storm",
+"stem": "ambient/trx/nature/storm/sound_16",
+"dur": 18.0
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm1",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm2",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm3",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm4",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm5",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm7",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm8",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm9",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm10",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm11",
+"dur": 12.2
+},
+{
+"ch": "storm_urban",
+"stem": "ambient/soundscape/wind/urbanstorm15",
+"dur": 13.5
+}
+],
+"underground": [
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_01",
+"dur": 9.0
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_02",
+"dur": 9.9
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_03",
+"dur": 8.2
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_04",
+"dur": 9.0
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_06",
+"dur": 4.7
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_07",
+"dur": 8.0
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_08",
+"dur": 7.1
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_09",
+"dur": 9.8
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_10",
+"dur": 10.7
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_11",
+"dur": 10.6
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_12",
+"dur": 11.0
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_13",
+"dur": 9.9
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_14",
+"dur": 7.3
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_15",
+"dur": 7.5
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_16",
+"dur": 6.8
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_17",
+"dur": 6.8
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_18",
+"dur": 8.0
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_19",
+"dur": 7.1
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_20",
+"dur": 7.1
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_21",
+"dur": 9.8
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_22",
+"dur": 13.7
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_23",
+"dur": 13.1
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_25",
+"dur": 7.0
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_26",
+"dur": 9.8
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_27",
+"dur": 7.4
+},
+{
+"ch": "inside_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_28",
+"dur": 7.0
+},
+{
+"ch": "ugrnd_ambient",
+"stem": "ambient/trx/spooks_below/ambient/sound_03",
+"dur": 8.6
+},
+{
+"ch": "ugrnd_ambient",
+"stem": "ambient/trx/spooks_below/ambient/sound_04",
+"dur": 7.7
+},
+{
+"ch": "ugrnd_ambient",
+"stem": "ambient/trx/spooks_below/ambient/sound_05",
+"dur": 7.0
+},
+{
+"ch": "ugrnd_ambient",
+"stem": "ambient/trx/spooks_below/ambient/sound_06",
+"dur": 13.0
+},
+{
+"ch": "ugrnd_ambient",
+"stem": "ambient/trx/spooks_below/ambient/sound_12",
+"dur": 4.6
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_01",
+"dur": 9.8
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_02",
+"dur": 9.6
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_03",
+"dur": 12.6
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_04",
+"dur": 7.0
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_05",
+"dur": 10.5
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_06",
+"dur": 11.8
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_07",
+"dur": 11.0
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_08",
+"dur": 15.5
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_09",
+"dur": 17.4
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_10",
+"dur": 9.9
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_11",
+"dur": 11.5
+},
+{
+"ch": "ugrnd_ambient_machine",
+"stem": "ambient/trx/spooks_below/machine/sound_12",
+"dur": 11.6
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_1",
+"dur": 15.0
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_2",
+"dur": 15.0
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_3",
+"dur": 12.0
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_13",
+"dur": 5.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_22",
+"dur": 4.2
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_25",
+"dur": 64.0
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_27",
+"dur": 58.8
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_12",
+"dur": 5.4
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_16",
+"dur": 8.6
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_17",
+"dur": 6.0
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_18",
+"dur": 7.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_19",
+"dur": 7.0
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_20",
+"dur": 8.1
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_22",
+"dur": 10.4
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_25",
+"dur": 51.6
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_26",
+"dur": 35.4
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_28",
+"dur": 4.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_32",
+"dur": 5.5
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_2",
+"dur": 9.8
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_29",
+"dur": 7.0
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_30",
+"dur": 6.1
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_31",
+"dur": 15.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_33",
+"dur": 7.9
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_34",
+"dur": 10.5
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_35",
+"dur": 7.4
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_37",
+"dur": 6.3
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_39",
+"dur": 6.3
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_44",
+"dur": 9.8
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_45",
+"dur": 25.4
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_47",
+"dur": 11.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_48",
+"dur": 10.6
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_49",
+"dur": 10.1
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_53",
+"dur": 9.8
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_55",
+"dur": 4.3
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_56",
+"dur": 7.1
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_59",
+"dur": 7.9
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_62",
+"dur": 5.5
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_64",
+"dur": 6.8
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_65",
+"dur": 6.4
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_66",
+"dur": 7.2
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_67",
+"dur": 6.2
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_68",
+"dur": 6.1
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_74",
+"dur": 11.6
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_76",
+"dur": 4.4
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_81",
+"dur": 7.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_82",
+"dur": 4.8
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_84",
+"dur": 4.1
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_85",
+"dur": 8.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_86",
+"dur": 10.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_87",
+"dur": 8.7
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_89",
+"dur": 4.6
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_90",
+"dur": 7.6
+},
+{
+"ch": "ugrnd_ambient_new",
+"stem": "ambient/soundscape/underground/under_91",
+"dur": 5.5
+},
+{
+"ch": "ugrnd_banging",
+"stem": "ambient/trx/spooks_below/banging/sound_03",
+"dur": 4.7
+},
+{
+"ch": "ugrnd_drone",
+"stem": "ambient/trx/spooks_below/drone/sound_01",
+"dur": 4.2
+},
+{
+"ch": "ugrnd_drone",
+"stem": "ambient/trx/spooks_below/drone/sound_02",
+"dur": 4.6
+},
+{
+"ch": "ugrnd_drone",
+"stem": "ambient/trx/spooks_below/drone/sound_03",
+"dur": 5.6
+},
+{
+"ch": "ugrnd_drone",
+"stem": "ambient/trx/spooks_below/drone/sound_04",
+"dur": 8.1
+},
+{
+"ch": "ugrnd_drone",
+"stem": "ambient/trx/spooks_below/drone/sound_05",
+"dur": 9.0
+},
+{
+"ch": "ugrnd_drone",
+"stem": "ambient/trx/spooks_below/drone/sound_06",
+"dur": 9.3
+},
+{
+"ch": "ugrnd_lab",
+"stem": "ambient/trx/spooks_below/lab/sound_02",
+"dur": 5.5
+},
+{
+"ch": "ugrnd_lab",
+"stem": "ambient/trx/spooks_below/lab/sound_03",
+"dur": 6.7
+},
+{
+"ch": "ugrnd_lab",
+"stem": "ambient/trx/spooks_below/lab/sound_04",
+"dur": 6.0
+},
+{
+"ch": "ugrnd_lab",
+"stem": "ambient/trx/spooks_below/lab/sound_05",
+"dur": 6.0
+},
+{
+"ch": "ugrnd_lab",
+"stem": "ambient/trx/spooks_below/lab/sound_06",
+"dur": 4.1
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_01",
+"dur": 5.4
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_02",
+"dur": 6.4
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_03",
+"dur": 6.0
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_04",
+"dur": 5.7
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_05",
+"dur": 5.2
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_06",
+"dur": 6.7
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_07",
+"dur": 4.1
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_08",
+"dur": 6.0
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_09",
+"dur": 6.3
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_10",
+"dur": 7.5
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_11",
+"dur": 8.6
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_12",
+"dur": 7.6
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_13",
+"dur": 6.1
+},
+{
+"ch": "ugrnd_metal",
+"stem": "ambient/trx/spooks_below/metal/sound_14",
+"dur": 5.5
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_01",
+"dur": 9.0
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_02",
+"dur": 9.9
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_03",
+"dur": 8.2
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_04",
+"dur": 9.0
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_05",
+"dur": 9.2
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_06",
+"dur": 4.7
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_07",
+"dur": 8.0
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_08",
+"dur": 7.1
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_09",
+"dur": 9.8
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_10",
+"dur": 10.7
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_11",
+"dur": 10.6
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_12",
+"dur": 11.0
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_13",
+"dur": 9.9
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_14",
+"dur": 7.3
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_15",
+"dur": 7.5
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_16",
+"dur": 6.8
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_17",
+"dur": 6.8
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_18",
+"dur": 8.0
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_19",
+"dur": 7.1
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_20",
+"dur": 7.1
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_21",
+"dur": 9.8
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_22",
+"dur": 13.7
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_23",
+"dur": 13.1
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_24",
+"dur": 14.0
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_25",
+"dur": 7.0
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_26",
+"dur": 9.8
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_27",
+"dur": 7.4
+},
+{
+"ch": "ugrnd_noise",
+"stem": "ambient/trx/spooks_below/noise/sound_28",
+"dur": 7.0
+},
+{
+"ch": "ugrnd_rats",
+"stem": "ambient/trx/spooks_below/rats/sound_04",
+"dur": 4.6
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_02",
+"dur": 4.2
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_03",
+"dur": 8.9
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_04",
+"dur": 8.5
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_05",
+"dur": 11.1
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_06",
+"dur": 9.2
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_07",
+"dur": 13.5
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_08",
+"dur": 12.7
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_09",
+"dur": 8.2
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_10",
+"dur": 7.3
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_11",
+"dur": 7.9
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_12",
+"dur": 10.8
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_13",
+"dur": 9.4
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_14",
+"dur": 4.7
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_15",
+"dur": 9.4
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_17",
+"dur": 10.9
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_18",
+"dur": 22.6
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_19",
+"dur": 10.8
+},
+{
+"ch": "ugrnd_voices",
+"stem": "ambient/trx/spooks_below/spooks/sound_20",
+"dur": 11.9
+},
+{
+"ch": "underground_background_1",
+"stem": "ambient/soundscape/background/underground_2",
+"dur": 290.9
+},
+{
+"ch": "underground_background_1",
+"stem": "ambient/soundscape/background/underground_2",
+"dur": 290.9
+},
+{
+"ch": "underground_background_1",
+"stem": "ambient/soundscape/background/underground_2",
+"dur": 9.0
+},
+{
+"ch": "underground_background_2",
+"stem": "ambient/soundscape/background/underground_3",
+"dur": 250.3
+},
+{
+"ch": "underground_background_2",
+"stem": "ambient/soundscape/background/underground_3",
+"dur": 241.3
+},
+{
+"ch": "underground_background_2",
+"stem": "ambient/soundscape/background/underground_3",
+"dur": 9.0
+},
+{
+"ch": "underground_background_2",
+"stem": "ambient/soundscape/background/underground/underground_2",
+"dur": 290.9
+},
+{
+"ch": "underground_background_3",
+"stem": "ambient/soundscape/background/underground_4",
+"dur": 39.6
+},
+{
+"ch": "underground_background_3",
+"stem": "ambient/soundscape/background/underground_4",
+"dur": 9.0
+},
+{
+"ch": "underground_background_3",
+"stem": "ambient/soundscape/background/underground/underground_3",
+"dur": 241.3
+},
+{
+"ch": "underground_background_4",
+"stem": "ambient/soundscape/background/underground/underground_4",
+"dur": 38.6
+},
+{
+"ch": "underground_background_5",
+"stem": "ambient/soundscape/background/underground/underground_5",
+"dur": 116.7
+},
+{
+"ch": "underground_background_6",
+"stem": "ambient/soundscape/background/underground/underground_6",
+"dur": 58.6
+},
+{
+"ch": "underground_background_7",
+"stem": "ambient/soundscape/background/underground/underground_7",
+"dur": 24.5
+},
+{
+"ch": "underground_background_8",
+"stem": "ambient/soundscape/background/underground/underground_8",
+"dur": 29.4
+}
+],
+"wind": [
+{
+"ch": "background_creepy_low_wind",
+"stem": "ambient/soundscape/background/North/creepy_low_wind",
+"dur": 75.8
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust1",
+"dur": 18.4
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust2",
+"dur": 14.1
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust6",
+"dur": 7.3
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust7",
+"dur": 9.4
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust8",
+"dur": 13.7
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust9",
+"dur": 13.2
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust10",
+"dur": 18.5
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust12",
+"dur": 18.2
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust13",
+"dur": 12.5
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust14",
+"dur": 9.7
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust15",
+"dur": 13.1
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust16",
+"dur": 9.6
+},
+{
+"ch": "wind_creep",
+"stem": "ambient/soundscape/wind/spookgust17",
+"dur": 9.3
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust2",
+"dur": 14.1
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust8",
+"dur": 13.7
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust9",
+"dur": 13.2
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust10",
+"dur": 18.5
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust12",
+"dur": 18.2
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust13",
+"dur": 12.5
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust14",
+"dur": 9.7
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust15",
+"dur": 13.1
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust16",
+"dur": 9.6
+},
+{
+"ch": "wind_creep_alt",
+"stem": "ambient/soundscape/wind/spookgust17",
+"dur": 9.3
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust1",
+"dur": 18.4
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust2",
+"dur": 14.1
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust6",
+"dur": 7.3
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust7",
+"dur": 9.4
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust8",
+"dur": 13.7
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust9",
+"dur": 13.2
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust10",
+"dur": 18.5
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust12",
+"dur": 18.2
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust13",
+"dur": 12.5
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust14",
+"dur": 9.7
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust15",
+"dur": 13.1
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust16",
+"dur": 9.6
+},
+{
+"ch": "wind_creep_urban",
+"stem": "ambient/soundscape/wind/spookgust17",
+"dur": 9.3
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind1",
+"dur": 5.1
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind2",
+"dur": 6.1
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind3",
+"dur": 6.4
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind4",
+"dur": 6.1
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind5",
+"dur": 8.3
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind6",
+"dur": 8.3
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind7",
+"dur": 8.3
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind8",
+"dur": 8.3
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind9",
+"dur": 8.3
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind10",
+"dur": 6.1
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind11",
+"dur": 5.5
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind12",
+"dur": 7.4
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind13",
+"dur": 5.7
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind14",
+"dur": 5.2
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind15",
+"dur": 4.7
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind16",
+"dur": 4.9
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind17",
+"dur": 6.8
+},
+{
+"ch": "wind_gale",
+"stem": "ambient/soundscape/wind/Galewind18",
+"dur": 5.8
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust1",
+"dur": 9.4
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust2",
+"dur": 7.1
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust3",
+"dur": 7.3
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust5",
+"dur": 9.7
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust6",
+"dur": 9.0
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust7",
+"dur": 12.5
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust8",
+"dur": 7.7
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust9",
+"dur": 10.7
+},
+{
+"ch": "wind_strong",
+"stem": "ambient/soundscape/wind/strongust10",
+"dur": 15.3
+}
+]
+}
