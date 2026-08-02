@@ -22,7 +22,7 @@ import soundpool as sp
 MANUAL_FILL = {
     "out_mutants": {
         "root": "C:/Users/damian/Downloads/extra_mods_analysys/Dark Signal Amplified Soundscape/gamedata/sounds/ambient/soundscape/mutants",
-        "pattern": "distant", "mono": True, "limit": 48,
+        "pattern": "distant", "mono": False, "limit": 100000,   # no cap: capture every distant-creature call
     },
 }
 LOWQ_BITRATE = 32000  # drop clearly junk-bitrate files when a channel has better
@@ -88,6 +88,27 @@ GRID_GROUPS = {
     "aa_animal_accent": ["owls", "dogs", "crows", "crows_clear", "crows_forest", "crows_retune", "birds_night"],
 }
 GRID = {member: grid for grid, members in GRID_GROUPS.items() for member in members}
+
+# Folder-tree capture: the packs ship far more dark content than they wire into a
+# channel's sounds= list (proven by the ledger: 1103 genuinely-new unused dark
+# files). So we pull dark content from the FOLDER TREES directly, not just
+# channel-referenced files. First matching substring (checked in order) maps the
+# file to a channel; content-hash dedup collapses cross-tree copies. This is how
+# ALL the horror (distant mutants, screams, spooks, underground) gets in.
+DARK_FILL = [
+    ("/screams", "out_screams"),
+    ("/mutants/", "out_mutants"), ("spooks_above/mutants", "out_mutants"),
+    ("amb_dark", "out_dark_amb"), ("amb_night", "out_night_amb"),
+    ("spooks_below/metal", "ugrnd_metal"), ("spooks_below/banging", "ugrnd_banging"),
+    ("spooks_below/rats", "ugrnd_rats"), ("spooks_below/noise", "ugrnd_noise"),
+    ("spooks_below/lab", "ugrnd_lab"), ("water_drip", "ugrnd_drip"), ("/drip", "ugrnd_drip"),
+    ("spooks_below/machine", "ugrnd_ambient_machine"), ("spooks_below/ambient", "ugrnd_ambient"),
+    ("spooks_below/drone", "ugrnd_drone"), ("spooks_above/drone", "out_drone"),
+    ("spooks_below/spooks", "out_spooks"), ("spooks_above/spooks", "out_spooks"), ("/spooks/", "out_spooks"),
+    ("/thunder", "storm"), ("/rain", "rain_gust"),
+    ("/shooting", "out_gunfire"), ("wind_dark", "wind_heavy"),
+    ("spoops/urban_drones", "urban_drones"), ("spoops/drones", "out_drone"), ("/drones", "out_drone"),
+]
 
 # priority order: settings for a shared channel come from the first that defines it
 MODS = [
@@ -207,6 +228,28 @@ def cmd_plan(_):
                           "channels": info.get("channels", 0)})
         cands.sort(key=lambda c: -c["bitrate"])
         pool[chan].extend(cands[:rule.get("limit", 48)])
+
+    # 1c. FOLDER-TREE capture: pull ALL dark content from the trees, not just files a
+    #     channel wires. The packs ship far more than they reference (ledger proof).
+    fill_added = collections.Counter()
+    for name, gd in MODS:
+        sroot = Path(gd) / "sounds"
+        if not sroot.is_dir():
+            continue
+        for f in sroot.rglob("*.ogg"):
+            rel = f.as_posix().lower()
+            chan = next((c for sub, c in DARK_FILL if sub in rel), None)
+            if not chan:
+                continue
+            info = sp.probe(str(f)) or {}
+            if info.get("sample_rate") != 44100:
+                offrate += 1
+                continue
+            pool[chan].append({"abs": str(f), "stem": f.as_posix().split("/sounds/")[-1][:-4],
+                               "pool": name, "bitrate": info.get("bit_rate", 0),
+                               "channels": info.get("channels", 0)})
+            fill_added[chan] += 1
+    print(f"folder-tree capture added (pre-dedup): {dict(fill_added)}")
 
     # 2. EVERY channel the base defines is emitted (missing section = engine CTD).
     #    Filled channels get our deduped content; unfilled ones (blowout/emission,
