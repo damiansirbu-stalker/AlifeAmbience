@@ -1,102 +1,74 @@
-================================================================================
-  ALIFEAMBIENCE
-  A dark-mood ambient overlay for S.T.A.L.K.E.R. Anomaly / G.A.M.M.A.
-================================================================================
+AlifeAmbience: dark horror ambience and in-world audio control for STALKER Anomaly / GAMMA, by Damian
+Version: next (xlibs optional; no modded exes required)
+GitHub: https://github.com/damiansirbu-stalker/AlifeAmbience
+Changelog: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/changelog
+Architecture: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/architecture.md
+Russian / Na russkom: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/readme_ru.txt
+Bugs, suggestions: https://github.com/damiansirbu-stalker/AlifeAmbience/issues
 
-AlifeAmbience layers the Zone's dark side over your existing ambience. It gathers
-the dreadful, horror, and mournful sounds from several soundscape packs, measures
-each one, and composes them on top of whatever ambient mod you run. It does not
-replace your soundscape; it adds to it through DLTX, so it works alongside GAMMA's
-ambience, vanilla, or any other soundscape, at any load position.
+! Reset MCM settings to defaults after updating !
 
-The goal is immersion and variety, not raw volume. Dread here comes from distance,
-rarity, and surprise: a far-off scream in near-silence, not a wall of noise.
+The Zone used to be frightening. Modern soundscape mods sharpened its realism and, in
+the trade, stripped the horror. AlifeAmbience puts it back, and hands you a mixer for the
+in-world sound the Zone already plays.
 
-What it adds
-------------
-Two layers, on top of the untouched engine bed:
+Why it is different:
+- Old-school horror, restored. The dread the realism packs removed: a scream past the
+  treeline, a groan under the ground, wind that carries something wrong.
+- Measured, not dumped. Every sound is analysed by tools for spectral shape, loudness,
+  and length, then deduplicated and loudness-leveled. No junk, no duplicates, no guesswork.
+- Composes, never overrides. Most packs carry thousands of files that all rewrite the same
+  base channels, so half never fire and the rest collide. This one appends with DLTX and
+  places every sound on purpose, over GAMMA, vanilla, or any soundscape.
+- Provable. An in-game trace logs every sound as it plays. Every file traces back to its
+  origin mod, folder, filename, channel, and exact settings.
+- Configurable. MCM control of the atmosphere per mood and of the in-world radios,
+  megaphones, and instruments.
+- Growing. Original sounds recorded for this mod, and a scripted system that triggers
+  dread inside buildings and lairs, are in progress.
 
-- TEXTURE - a continuous low bed matched to where you are: machine and metal in the
-  X-labs, dripping tunnels in the sewers and bunkers, storm and rain in bad weather,
-  fog on foggy days, a dark drone after dusk, a lighter wind by day. One bed at a
-  time, crossfaded, quiet, under everything.
-- ACCENT - rare one-shot scares placed around you: distant mutant growls and
-  screams, spooks, underground rats and metal groans and drips, far-off gunfire and
-  drones, owls and distant dogs and crows, storm and wind. Chosen to fit the level,
-  the time of day, and the weather.
+Two systems, two MCM tabs.
 
-What it does NOT touch
-----------------------
-- Generic daytime life (birdsong, insects, plain wind, pleasant foliage). Your base
-  ambience keeps providing those.
-- Emission and psi-storm sound. Left to their own systems.
+Atmosphere:
+  A dark ambient layer over your untouched engine bed, in two parts.
+  Texture is one continuous low bed matched to where you stand: machine and metal in the
+  X-Labs, dripping stone in the sewers, storm and rain in bad weather, fog on foggy days,
+  a dark drone after dusk, a lighter wind by day.
+  Accent is rare one-shot scares placed around you: distant growls and screams, metal
+  groans and drips underground, far gunfire and drones in the ruins, owls and dogs and
+  crows in the wild, storm and wind.
+  Placement is traced from where the source packs used each sound, per level, per hour,
+  per weather, then corrected against S.T.A.L.K.E.R. canon: underground labs get only
+  tunnel dread, the whisper level is haunted dread and wind, city ruins lean human,
+  swamps lean wildlife and fog.
+  Fear comes from distance, rarity, and surprise, not volume.
 
-Where things play
------------------
-Placement is not random and not the same everywhere. Each sound is put where the
-source packs actually used it - traced from their own configs, per level, per time
-of day, per weather - then refined for the special places against S.T.A.L.K.E.R.
-canon: the underground labs get only the underground bed and tunnel scares; the
-whisper level is dread and wind with no wildlife or people; city ruins lean human
-(distant gunfire, drones) and the open swamps and fields lean wildlife and weather.
-Night is heavier than day; owls replace crows after dusk; storms and fog bring their
-own layer.
+Diegetic:
+  Volume, enable, and frequency control for the in-world sound the characters hear: base
+  and campfire radios, megaphone announcers, campfire guitar and harmonica. At default it
+  changes nothing. Turn a base radio down without touching the rest, or silence the
+  megaphones and keep the guitar. The instruments need a campfire-instrument mod present.
 
-How it is built (the method)
-----------------------------
-AlifeAmbience is generated by a tool from the source packs, not hand-assembled, and
-every choice is measured, not guessed:
+How it is built:
+  A tool measures every sound and proves the result. Whether a sound becomes a looped bed
+  or a one-shot scare is decided from its measured length and steadiness, not its filename.
+  Identical files across packs collapse to one by content hash. Loudness is leveled per
+  group, outliers only, so a whisper and a scream keep their difference. A content-hash
+  ledger proves no dark sound in a source pack is missed, and a provenance record maps
+  every included sound back to its origin. The whole overlay rebuilds from the packs in
+  one run.
 
-- Measured, not named. Each sound is analysed with signal-analysis tools (ffmpeg
-  spectral centroid and flatness, crest factor, EBU R128 loudness; ffprobe
-  duration). Whether a sound becomes a looped bed or a one-shot scare is decided
-  from its measured length, steadiness, and transient - not from its filename.
-- Deduplicated by content. Identical files that several packs reship collapse to one
-  copy by exact content hash (md5), while genuinely different sounds are always kept.
-  Acoustic "sounds-similar" matching was tried and rejected - it merged distinct
-  screams.
-- Loudness-levelled without flattening. Every sound's integrated loudness is measured
-  (EBU R128, ffmpeg ebur128). Within each group the median is the reference, and only
-  the OUTLIERS - the few sitting far from it - are gained back toward the median
-  (ffmpeg volume=<dB>). In this build that is 148 outlier source sounds, so 203 of the
-  1933 shipped files are re-encoded; the other 1730 ship BYTE-IDENTICAL to source (no
-  re-encode, verified by content hash). It is never a global normalize - dynamics are
-  preserved, and a whisper and a scream are not forced to one level.
-- Quality-gated. Only 44.1 kHz OGG is kept (the Anomaly standard); off-spec files are
-  dropped and accounted for.
-- Nothing lost, everything traced. A content-hash ledger proves that no dark, playable
-  sound in any source pack is left uncaptured (the target is zero), and a provenance
-  record maps every shipped sound back to its original pack, path, channel, settings,
-  and the levels and times it originally played in.
+Installation:
+  A DLTX overlay plus a few scripts. Loads at any position, changes nothing in the engine
+  bed. Requires 44.1 kHz OGG playback, the Anomaly standard. The MCM and the in-game trace
+  need xlibs. Without xlibs the mod still runs, content only.
 
-The build is reproducible end to end: point the tool at the packs and run it, and it
-regenerates the whole overlay - classify, level, place, deploy, and prove. Adopting a
-new pack or sound is a re-run, not a rewrite.
-
-By the numbers
---------------
-Pooled 5441 -> 2596 dark sounds kept after dedup and folder-tree capture. Shipped:
-1703 one-shot accents across five moods (dread, underground, weather, human, animal)
-and 230 looped texture beds across six pools (wind, dread, fog, storm/rain, and
-underground split into lab vs sewer, so a lab does not sound like a tunnel), placed
-over 21 level presets by level, time of day, and weather. Coverage of dark source
-content: complete (uncaptured = 0, by the content-hash ledger).
-
-Installation
-------------
-A DLTX overlay plus one texture-player script; it can load at any position and does
-nothing to the engine bed. Requires 44.1 kHz OGG playback (the Anomaly standard).
-
-Credits
--------
-AlifeAmbience owns only the configuration and the build tooling. All audio is drawn
-from these community packs, with thanks to their authors:
-
+Credits:
+  The Diegetic tab plays the game's own in-world sound and adds no audio. The Atmosphere
+  content is drawn from these community packs, with thanks to their authors:
     Dark Signal Weather and Ambiance   - Shrike
     Dark Signal Amplified Soundscape   - Shrike
     Soundscape Overhaul                - Solarint
     RETUNE Ambient Sounds              - Aphrodite_child
-
-Used under the terms on each source page; only the selected audio is redistributed,
-with attribution. If an author requests removal, their pack is dropped from the build.
-The full method is in doc/architecture.md; per-sound origin is in tools/provenance.tsv.
+  Used under the terms on each source page. Only the selected audio is redistributed, with
+  attribution. If an author requests removal, their pack is dropped from the build.
