@@ -15,8 +15,9 @@ in-world sound the Zone already plays.
 Why it is different:
 - Old-school horror, restored. The dread the realism packs removed: a scream past the
   treeline, a groan under the ground, wind that carries something wrong.
-- Measured, not dumped. Every sound is analysed by tools for spectral shape, loudness,
-  and length, then deduplicated and loudness-leveled. No junk, no duplicates, no guesswork.
+- Measured, not dumped. Every sound goes through signal analysis for spectral shape,
+  loudness, and length, then content-hash dedup and per-group loudness leveling. No junk,
+  no duplicates, no guesswork.
 - Composes, never overrides. Most packs carry thousands of files that all rewrite the same
   base channels, so half never fire and the rest collide. This one appends with DLTX and
   places every sound on purpose, over GAMMA, vanilla, or any soundscape.
@@ -50,8 +51,9 @@ Diegetic:
   megaphones and keep the guitar. The instruments need a campfire-instrument mod present.
 
 How it is built:
-  A tool measures every sound and proves the result. Whether a sound becomes a looped bed
-  or a one-shot scare is decided from its measured length and steadiness, not its filename.
+  Every sound is put through signal analysis before it goes in, and the result is proven.
+  Whether it becomes a looped bed or a one-shot scare is decided from measured length,
+  steadiness (crest factor), and loudness (EBU R128), not from its filename.
   Identical files across packs collapse to one by content hash. Loudness is leveled per
   group, outliers only, so a whisper and a scream keep their difference. A content-hash
   ledger proves no dark sound in a source pack is missed, and a provenance record maps
