@@ -497,8 +497,30 @@ def _emit_audio(entry, dst, gain):
                 "-c:a", "libvorbis", "-ar", "44100", str(dst)])
 
 
-ACC_SETTINGS = ["min_distance = 45", "max_distance = 100",
-                "period0 = 20000", "period1 = 40000", "period2 = 30000", "period3 = 60000"]
+# Per-mood channel settings = the ORIGINAL per-mood values, not a flat baseline. Each
+# value is the median across the source channels that mood pools (indoor = the mood's
+# dominant flag). The pack authors set these deliberately: underground plays CLOSE and
+# indoor (so it is loud in tunnels, not 0.3), weather far and frequent (5s), human far
+# and rare (minutes). Grouping is per mood, so one value per mood; exact per-channel
+# settings would require per-channel channels (see readme note).
+MOOD_SETTINGS = {
+    "dread":       {"min": 50, "max": 120, "p": (12000, 15000, 24000, 26000),    "indoor": False, "height": 15},
+    "underground": {"min": 10, "max": 50,  "p": (10000, 20000, 11000, 30000),    "indoor": True,  "height": -1},
+    "weather":     {"min": 30, "max": 200, "p": (5000, 5000, 5000, 5000),        "indoor": False, "height": 10},
+    "human":       {"min": 45, "max": 80,  "p": (120000, 300000, 180000, 360000), "indoor": False, "height": 15},
+    "animal":      {"min": 45, "max": 80,  "p": (20000, 60000, 30000, 80000),    "indoor": False, "height": 15},
+}
+
+
+def _acc_settings(mood):
+    s = MOOD_SETTINGS[mood]
+    lines = [f"min_distance = {s['min']}", f"max_distance = {s['max']}"]
+    for i, p in enumerate(s["p"]):
+        lines.append(f"period{i} = {p}")
+    lines.append(f"height = {s['height']}")
+    if s["indoor"]:
+        lines.append("indoor = true")
+    return lines
 
 
 def deploy_texture(root, textures, gain):
@@ -545,10 +567,20 @@ def cmd_deploy(a):
         entries = accents[mood]
         for i, e in enumerate(entries, 1):
             _emit_audio(e, snd / "acc" / mood / f"{i}.ogg", gain)
-        stems = ", ".join(f"zs\\acc\\{mood}\\{i}" for i in range(1, len(entries) + 1))
         chan_lines.append(f"@[aa_acc_{mood}]")
-        chan_lines.extend(ACC_SETTINGS)
-        chan_lines.append(f"sounds = {stems}\n")
+        chan_lines.extend(_acc_settings(mood))
+        # ONE sound per line. A single `sounds = a, b, c, ...` line with hundreds of
+        # entries overflows the engine's fixed LTX read buffer (IReader::r_string,
+        # FS.cpp) and CTDs at load ("Dest string less than needed"). DLTX >append
+        # keeps every input line short; the merged value is stored as an unbounded
+        # shared_str, so the engine reads the full list back with no limit.
+        if entries:
+            chan_lines.append(f"sounds = zs\\acc\\{mood}\\1")
+            for i in range(2, len(entries) + 1):
+                chan_lines.append(f">sounds = zs\\acc\\{mood}\\{i}")
+        else:
+            chan_lines.append("sounds = ambient\\no_sound")
+        chan_lines.append("")
     (env / "mod_sound_channels_alifeambience.ltx").write_text("\n".join(chan_lines), encoding="utf-8")
 
     deploy_texture(root, textures, gain)
@@ -590,6 +622,14 @@ def _section_moods(fname, sec, per_pack, ourch):
     return [m for m in MOOD_ORDER if m in moods]
 
 
+# Vanilla presets no pack rebinds away. Portability: on bare vanilla (no soundscape
+# packs), darkscape/red-forest use environment_forest_more and the coast uses
+# environment_swamp_coast; alias them to the nearest generated distribution so every
+# vanilla preset is overlaid too. On GAMMA these are moot (the packs rebind to the 21).
+PRESET_ALIASES = {"environment_forest_more": "environment_forest",
+                  "environment_swamp_coast": "environment_swamp"}
+
+
 def write_presets(env):
     """Emit mod_<preset>_alifeambience.ltx: for each (level, section) append our
     evidence-placed mood channels via >sound_channels_dynamic. Sections the source
@@ -598,18 +638,25 @@ def write_presets(env):
     ourch = {r["ch"] for r in json.loads((HERE / "classification.json").read_text())}
     per_pack = {name: parse_presets(gd) for name, gd in MODS if name != "vanilla"}
     base = parse_presets("D:/Games/GAMMA/GAMMA/mods/304- Dark Signal Weather and Ambiance Audio - Shrike/gamedata")
-    for fname, secs in base.items():
+
+    def emit(out_stem, src_fname, secs):
         lines = [HDR, ""]
         for sec in secs:
-            moods = _section_moods(fname, sec, per_pack, ourch)
+            moods = _section_moods(src_fname, sec, per_pack, ourch)
             if not moods:
                 continue
             lines.append(f"![{sec}]")
             for m in moods:
                 lines.append(f">sound_channels_dynamic = aa_acc_{m}")
             lines.append("")
-        stem = fname[:-4]
-        (env / "ambients/presets" / f"mod_{stem}_alifeambience.ltx").write_text("\n".join(lines), encoding="utf-8")
+        (env / "ambients/presets" / f"mod_{out_stem}_alifeambience.ltx").write_text("\n".join(lines), encoding="utf-8")
+
+    for fname, secs in base.items():
+        emit(fname[:-4], fname, secs)
+    for alias_stem, src_stem in PRESET_ALIASES.items():   # vanilla-only presets
+        src_fname = src_stem + ".ltx"
+        if src_fname in base:
+            emit(alias_stem, src_fname, base[src_fname])
 
 
 # --- ledger (the content-hash proof: UNUSED-DARK must be 0) -------------------

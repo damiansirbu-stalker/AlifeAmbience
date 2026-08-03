@@ -1,0 +1,183 @@
+--- aa_sound: AlifeAmbience runtime control + trace for the dynamic accent layer.
+---
+--- The engine's dynamic ambient one-shots are played by vanilla sound_ambient.update_ambient,
+--- a CreateTimeEvent action re-armed once per second (sound_ambient.script:86, :270). That
+--- function computes each play's channel, file, distance and volume from FILE-LOCAL state
+--- (snd_chanels/next_idx/opt) that no other script can read, and it exposes no callback. So to
+--- trace it - or to tune it per mood - the only Lua path is to OWN the event slot: the queue
+--- dispatches by stored function value (_g.script:374) and CreateTimeEvent only fills an EMPTY
+--- slot (:345), so a reassignment is dead and a bare re-add is a no-op; RemoveTimeEvent then
+--- CreateTimeEvent installs ours. We keep a faithful clone of update_ambient + reset_settings
+--- (own state, public API only) and insert trace + the per-mood volume/rarity/distance knobs at
+--- the vanilla injection points. GAMMA runs the vanilla script unmodified (verified), so this
+--- clone matches what ships.
+---
+--- Neutral is pass-through (I14): with tracing off and every knob at 1.0 we do not own the slot
+--- at all - vanilla runs untouched, zero cost. We take ownership only while a feature is active,
+--- and hand it back (priming vanilla's state first) when all features return to neutral. This is
+--- the at_world_trace refresh-on-option-change pattern.
+
+local math_random, math_rad, math_cos, math_sin = math.random, math.rad, math.cos, math.sin
+local ini_file, parse_list, time_global = ini_file, parse_list, time_global
+local GetEvent, sound_object, vector = GetEvent, sound_object, vector
+
+local MOODS = { "dread", "underground", "weather", "human", "animal" }
+
+-- Our own copy of the dynamic-layer state (we cannot read vanilla's file-locals).
+local snd_chanels = {}
+local tot_size = 0
+local next_idx = 0
+local last_hour = nil
+local opt_ambient_volume = 1
+
+-- Snapshot of the knobs, refreshed from MCM. Neutral = pass-through.
+local vol = { global = 1, dread = 1, underground = 1, weather = 1, human = 1, animal = 1 }
+local rarity = 1        -- multiplies the reschedule period (higher = rarer)
+local distance = 1      -- multiplies the computed spawn radius
+
+-- ---------------------------------------------------------------------------
+-- Faithful clone of sound_ambient.reset_settings (:24-71), writing OUR state.
+-- ---------------------------------------------------------------------------
+local function reset_settings(level_name, ambient)
+    snd_chanels = {}
+    if not (level_name and ambient and ambient ~= "") then return false end
+    local ini_lvl = ini_file("environment\\ambients\\" .. level_name .. ".ltx")
+    if not ini_lvl then return false end
+    local channels = parse_list(ini_lvl, ambient, "sound_channels_dynamic")
+    if #channels == 0 then return false end
+    local cached = {}
+    local ini_snd = ini_file("environment\\sound_channels.ltx")
+    for i = 1, #channels do
+        local ch = channels[i]
+        if ini_snd:section_exist(ch) and not cached[ch] then
+            cached[ch] = true
+            local t = {}
+            t.name = ch
+            t.max_dist = ini_snd:r_float_ex(ch, "max_distance")
+            t.min_dist = ini_snd:r_float_ex(ch, "min_distance")
+            t.height = ini_snd:r_float_ex(ch, "height") or 0
+            t.indoor = ini_snd:r_bool_ex(ch, "indoor") or false
+            t.periods = { ini_snd:r_float_ex(ch, "period0"), ini_snd:r_float_ex(ch, "period1"),
+                          ini_snd:r_float_ex(ch, "period2"), ini_snd:r_float_ex(ch, "period3") }
+            t.sounds = parse_list(ini_snd, ch, "sounds")
+            t.mood = ch:match("^aa_acc_(.+)$")   -- our accent channels name their mood
+            snd_chanels[#snd_chanels + 1] = t
+        end
+    end
+    tot_size = #snd_chanels
+    return true
+end
+
+-- ---------------------------------------------------------------------------
+-- Faithful clone of sound_ambient.update_ambient (:86-178) + trace + knobs.
+-- ---------------------------------------------------------------------------
+local function update_ambient_owned()
+    ResetTimeEvent("sound_channels", "update_ambient", 1)
+
+    local next_hour = level.get_time_hours()
+    if next_hour ~= last_hour then
+        last_hour = next_hour
+        next_idx = 0
+        local ambient = level_weathers.get_weather_manager():get_curr_ambient()
+        return not reset_settings(level.name(), ambient)   -- is_set -> stay(false); else self-remove(true)
+    end
+
+    next_idx = next_idx + 1
+    if next_idx > tot_size then next_idx = 1 end
+
+    local tg = time_global()
+    local ch = snd_chanels[next_idx]
+    if not ch then return false end
+    if not ch.next then
+        ch.next = tg + math_random(1, (ch.periods[math_random(4)] + 1))
+        return false
+    end
+
+    if ch.next <= tg then
+        local inside = GetEvent("current_safe_cover")
+        local bLevelUnderground = GetEvent("underground")
+        local actor = db.actor
+        local pos = actor:position()
+        local max_dist = ch.max_dist
+        local min_dist = bLevelUnderground and ch.min_dist or ((max_dist + ch.min_dist) / 2)
+        local dist = (math_random(min_dist, max_dist) / 2) * distance          -- KNOB: distance
+        local angle_rad = math_rad(math_random(0, 359))
+        local vec = vector():set(pos.x + math_cos(angle_rad) * dist, pos.y + ch.height,
+                                 pos.z + math_sin(angle_rad) * dist)
+
+        local file = ch.sounds[math_random(#ch.sounds)]
+        ch.snd = sound_object(file)
+        ch.snd:play_at_pos(actor, vec)
+
+        local v
+        if bLevelUnderground or inside then
+            v = ch.indoor and 1 or 0.3
+        else
+            v = ch.indoor and 0 or 1
+        end
+        v = v * opt_ambient_volume * (ch.mood and vol[ch.mood] or vol.global)  -- KNOB: per-mood volume
+        ch.snd.volume = v
+
+        ch.next = tg + (ch.periods[math_random(4)]) * rarity                    -- KNOB: rarity
+
+        if aa_debug.on() then
+            aa_debug.dbg("play ch=%s mood=%s file=%s dist=%.1f vol=%.2f ug=%s inside=%s",
+                ch.name, aa_debug.show(ch.mood), file, dist, v,
+                aa_debug.show(bLevelUnderground), aa_debug.show(inside))
+        end
+    end
+
+    return false
+end
+
+-- ---------------------------------------------------------------------------
+-- Ownership: own the slot only while a feature is active (I14 pass-through).
+-- ---------------------------------------------------------------------------
+local _owned = false
+
+local function _feature_active()
+    if aa_debug.on() then return true end
+    if rarity ~= 1 or distance ~= 1 or vol.global ~= 1 then return true end
+    for i = 1, #MOODS do if vol[MOODS[i]] ~= 1 then return true end end
+    return false
+end
+
+local function _apply_owned()
+    local want = _feature_active()
+    if want == _owned then return end
+    _owned = want
+    if _owned then
+        -- take the slot: robust to whether vanilla has registered yet (CreateTimeEvent
+        -- only fills an empty slot, so if vanilla registers later it no-ops onto ours).
+        RemoveTimeEvent("sound_channels", "update_ambient")
+        CreateTimeEvent("sound_channels", "update_ambient", 1, update_ambient_owned)
+        last_hour = nil; next_idx = 0            -- force a fresh reset on our first tick
+        aa_debug.info("aa_sound: owning update_ambient (a control feature is active)")
+    else
+        -- hand back to vanilla; prime its file-local state so it cannot tick on an
+        -- empty table (sound_ambient.reset_settings writes vanilla's own snd_chanels).
+        -- Guarded on db.actor: on_option_change can fire from the MCM menu with no level.
+        if db.actor then
+            local amb = level_weathers.get_weather_manager():get_curr_ambient()
+            if amb then sound_ambient.reset_settings(level.name(), amb) end
+        end
+        RemoveTimeEvent("sound_channels", "update_ambient")
+        CreateTimeEvent("sound_channels", "update_ambient", 1, sound_ambient.update_ambient)
+        aa_debug.info("aa_sound: released update_ambient back to vanilla (neutral)")
+    end
+end
+
+local function refresh()
+    vol.global = aa_mcm.get_config("vol_global") or 1
+    for i = 1, #MOODS do vol[MOODS[i]] = aa_mcm.get_config("vol_" .. MOODS[i]) or 1 end
+    rarity = aa_mcm.get_config("rarity") or 1
+    distance = aa_mcm.get_config("distance") or 1
+    opt_ambient_volume = (ui_options and ui_options.get("sound/environment/ambient_volume")) or 1
+    _apply_owned()
+end
+
+function on_game_start()
+    RegisterScriptCallback("actor_on_first_update",      refresh)
+    RegisterScriptCallback("on_option_change",           refresh)
+    RegisterScriptCallback("mcm_option_restore_default", refresh)
+end

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+  <string id="ui_mcm_menu_aa">
+    <text>AlifeAmbience</text>
+  </string>
+  <string id="ui_mcm_aa_desc">
+    <text>Dark ambient overlay. Every control at 1.0 means no change from the base soundscape; move one and the runtime layer takes over the dynamic ambient to apply it.</text>
+  </string>
+
+  <string id="ui_mcm_aa_hdr_moods">
+    <text>Accent volume by mood</text>
+  </string>
+  <string id="ui_mcm_aa_vol_global">
+    <text>Accent volume (all)</text>
+  </string>
+  <string id="ui_mcm_aa_vol_global_desc">
+    <text>Volume multiplier for every dynamic ambient one-shot.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_dread">
+    <text>Dread volume</text>
+  </string>
+  <string id="ui_mcm_aa_vol_dread_desc">
+    <text>Volume of dread accents: screams, spooks, mutant growls, dark ambience.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_underground">
+    <text>Underground volume</text>
+  </string>
+  <string id="ui_mcm_aa_vol_underground_desc">
+    <text>Volume of tunnel and lab accents: rats, metal, drips, machinery.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_weather">
+    <text>Weather volume</text>
+  </string>
+  <string id="ui_mcm_aa_vol_weather_desc">
+    <text>Volume of storm, rain and wind accents.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_human">
+    <text>Human volume</text>
+  </string>
+  <string id="ui_mcm_aa_vol_human_desc">
+    <text>Volume of distant gunfire and drone accents.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_animal">
+    <text>Animal volume</text>
+  </string>
+  <string id="ui_mcm_aa_vol_animal_desc">
+    <text>Volume of crow, dog and owl accents.</text>
+  </string>
+
+  <string id="ui_mcm_aa_hdr_feel">
+    <text>Frequency and distance</text>
+  </string>
+  <string id="ui_mcm_aa_rarity">
+    <text>Rarity</text>
+  </string>
+  <string id="ui_mcm_aa_rarity_desc">
+    <text>Wait between accents. Higher plays them less often.</text>
+  </string>
+  <string id="ui_mcm_aa_distance">
+    <text>Distance</text>
+  </string>
+  <string id="ui_mcm_aa_distance_desc">
+    <text>How far accents spawn. Higher is farther and quieter.</text>
+  </string>
+  <string id="ui_mcm_aa_texture_volume">
+    <text>Texture bed volume</text>
+  </string>
+  <string id="ui_mcm_aa_texture_volume_desc">
+    <text>Loudness of the continuous looped bed under everything.</text>
+  </string>
+
+  <string id="ui_mcm_aa_hdr_dev">
+    <text>Development</text>
+  </string>
+  <string id="ui_mcm_aa_log_level">
+    <text>Ambient trace</text>
+  </string>
+  <string id="ui_mcm_aa_log_level_desc">
+    <text>Records each ambient play to alifeambience.log with channel, mood, file, distance, volume and context. Use to diagnose the soundscape.</text>
+  </string>
+  <string id="aa_log_level_lst_off">
+    <text>Off</text>
+  </string>
+  <string id="aa_log_level_lst_info">
+    <text>Info</text>
+  </string>
+  <string id="aa_log_level_lst_debug">
+    <text>Trace every ambient play</text>
+  </string>
+  <string id="aa_log_level_lst_trace">
+    <text>Trace (verbose)</text>
+  </string>
+  <string id="ui_mcm_aa_log_flush">
+    <text>Flush log each line</text>
+  </string>
+  <string id="ui_mcm_aa_log_flush_desc">
+    <text>Write every line immediately. Slower; use only when hunting a crash.</text>
+  </string>
+</string_table>

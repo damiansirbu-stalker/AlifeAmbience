@@ -15,8 +15,14 @@
 -- them. If the config is absent it no-ops - safe on a partial install.
 
 local FADE_STEP   = 0.08   -- volume change per update tick (about 1s to fade)
-local BASE_VOLUME = 0.55   -- ceiling for the texture layer (quiet, under the mix); MCM later
+local BASE_VOLUME = 0.55   -- default ceiling for the texture layer (quiet, under the mix)
 local CFG         = "scripts\\aa_texture_beds.ltx"
+
+-- The texture ceiling, from MCM if xlibs+MCM are present, else the default. Guarded so
+-- the texture player runs on any Anomaly with or without the control layer.
+local function base_vol()
+    return (aa_mcm and aa_mcm.get_config and aa_mcm.get_config("texture_volume")) or BASE_VOLUME
+end
 
 local _beds    = nil       -- { bedname = { theme, theme, ... } }
 local _cur     = nil       -- currently playing { bed, theme, vol }
@@ -98,8 +104,9 @@ local function tick()
         _cur = { bed = _target, theme = theme, vol = 0 }
     end
 
-    if _cur.vol < BASE_VOLUME then                  -- fade the current bed in
-        _cur.vol = math.min(BASE_VOLUME, _cur.vol + FADE_STEP)
+    local ceil = base_vol()
+    if _cur.vol < ceil then                         -- fade the current bed in
+        _cur.vol = math.min(ceil, _cur.vol + FADE_STEP)
         xr_sound.set_volume_sound_looped(id, _cur.theme, _cur.vol)
     end
 end
