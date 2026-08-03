@@ -1,5 +1,5 @@
 {
-  "_doc": "Resource-pool registry for Zone Soundscape. Add or remove a pool here, then re-run soundpool.py inventory + select. 'root' points at a gamedata/sounds tree. 'priority' is a tie-break only (lower wins) per architecture invariant I5; true quality is decided by spectral rolloff, not this number.",
+  "_doc": "AlifeAmbience candidate source-pool registry for the LEGACY standalone soundpool.py (inventory + select). The authoritative source list for the shipped build is merge.py MODS; only DarkSigWeather, Soundscape Overhaul, RETUNE, and Dark Signal Amplified actually ship (see provenance.tsv). AudioExpansion and RealDistMutants are candidates that contributed nothing to the build. 'root' points at a gamedata/sounds tree. 'priority' is a tie-break only (lower wins) per architecture invariant I5; true quality is decided by spectral rolloff, not this number.",
 
   "pools": [
     {"name": "DSAmplified",     "priority": 1, "root": "C:/Users/damian/Downloads/extra_mods_analysys/Dark Signal Amplified Soundscape/gamedata/sounds", "author": "Shrike (Dark Signal)", "url": "https://www.moddb.com/mods/stalker-anomaly/addons/dark-signal-amplified-soundscape"},

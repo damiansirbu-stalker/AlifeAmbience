@@ -20,6 +20,7 @@
 local math_random, math_rad, math_cos, math_sin = math.random, math.rad, math.cos, math.sin
 local ini_file, parse_list, time_global = ini_file, parse_list, time_global
 local GetEvent, sound_object, vector = GetEvent, sound_object, vector
+local RegisterScriptCallback = RegisterScriptCallback
 
 local MOODS = { "dread", "underground", "weather", "human", "animal" }
 
@@ -28,12 +29,16 @@ local snd_chanels = {}
 local tot_size = 0
 local next_idx = 0
 local last_hour = nil
+-- current ambient section (time+weather), carried into the accent trace line
+local last_ambient = nil
 local opt_ambient_volume = 1
 
 -- Snapshot of the knobs, refreshed from MCM. Neutral = pass-through.
 local vol = { global = 1, dread = 1, underground = 1, weather = 1, human = 1, animal = 1 }
-local rarity = 1        -- multiplies the reschedule period (higher = rarer)
-local distance = 1      -- multiplies the computed spawn radius
+-- multiplies the reschedule period (higher = rarer)
+local rarity = 1
+-- multiplies the computed spawn radius
+local distance = 1
 
 -- ---------------------------------------------------------------------------
 -- Faithful clone of sound_ambient.reset_settings (:24-71), writing OUR state.
@@ -51,21 +56,64 @@ local function reset_settings(level_name, ambient)
         local ch = channels[i]
         if ini_snd:section_exist(ch) and not cached[ch] then
             cached[ch] = true
-            local t = {}
-            t.name = ch
-            t.max_dist = ini_snd:r_float_ex(ch, "max_distance")
-            t.min_dist = ini_snd:r_float_ex(ch, "min_distance")
-            t.height = ini_snd:r_float_ex(ch, "height") or 0
-            t.indoor = ini_snd:r_bool_ex(ch, "indoor") or false
-            t.periods = { ini_snd:r_float_ex(ch, "period0"), ini_snd:r_float_ex(ch, "period1"),
-                          ini_snd:r_float_ex(ch, "period2"), ini_snd:r_float_ex(ch, "period3") }
-            t.sounds = parse_list(ini_snd, ch, "sounds")
-            t.mood = ch:match("^aa_acc_(.+)$")   -- our accent channels name their mood
-            snd_chanels[#snd_chanels + 1] = t
+            local entry = {}
+            entry.name = ch
+            entry.max_dist = ini_snd:r_float_ex(ch, "max_distance")
+            entry.min_dist = ini_snd:r_float_ex(ch, "min_distance")
+            entry.height = ini_snd:r_float_ex(ch, "height") or 0
+            entry.indoor = ini_snd:r_bool_ex(ch, "indoor") or false
+            entry.periods = { ini_snd:r_float_ex(ch, "period0"), ini_snd:r_float_ex(ch, "period1"),
+                              ini_snd:r_float_ex(ch, "period2"), ini_snd:r_float_ex(ch, "period3") }
+            entry.sounds = parse_list(ini_snd, ch, "sounds")
+            -- our accent channels name their mood: aa_acc_<mood>_<n>
+            entry.mood = ch:match("^aa_acc_(%a+)_%d+$") or ch:match("^aa_acc_(.+)$")
+            snd_chanels[#snd_chanels + 1] = entry
         end
     end
     tot_size = #snd_chanels
     return true
+end
+
+-- ---------------------------------------------------------------------------
+-- Spawn one channel's sound around the actor (the play block of update_ambient,
+-- :96-128), applying the distance/volume/rarity knobs and the trace.
+-- ---------------------------------------------------------------------------
+local function play_channel(ch, tg)
+    local inside = GetEvent("current_safe_cover")
+    local underground = GetEvent("underground")
+    local actor = db.actor
+    local pos = actor:position()
+    local max_dist = ch.max_dist
+    local min_dist = underground and ch.min_dist or ((max_dist + ch.min_dist) / 2)
+    -- KNOB: distance multiplies the spawn radius
+    local dist = (math_random(min_dist, max_dist) / 2) * distance
+    local angle_rad = math_rad(math_random(0, 359))
+    local vec = vector():set(pos.x + math_cos(angle_rad) * dist, pos.y + ch.height,
+                             pos.z + math_sin(angle_rad) * dist)
+
+    local file = ch.sounds[math_random(#ch.sounds)]
+    ch.snd = sound_object(file)
+    ch.snd:play_at_pos(actor, vec)
+
+    local level_vol
+    if underground or inside then
+        level_vol = ch.indoor and 1 or 0.3
+    else
+        level_vol = ch.indoor and 0 or 1
+    end
+    -- KNOB: per-mood volume
+    level_vol = level_vol * opt_ambient_volume * (ch.mood and vol[ch.mood] or vol.global)
+    ch.snd.volume = level_vol
+
+    -- KNOB: rarity multiplies the reschedule period
+    ch.next = tg + (ch.periods[math_random(4)]) * rarity
+
+    if aa_debug.on() then
+        aa_debug.dbg("accent lvl=%s amb=%s ch=%s mood=%s file=%s dist=%.1f vol=%.2f ug=%s inside=%s",
+            aa_debug.show(level.name()), aa_debug.show(last_ambient),
+            ch.name, aa_debug.show(ch.mood), file, dist, level_vol,
+            aa_debug.show(underground), aa_debug.show(inside))
+    end
 end
 
 -- ---------------------------------------------------------------------------
@@ -74,12 +122,15 @@ end
 local function update_ambient_owned()
     ResetTimeEvent("sound_channels", "update_ambient", 1)
 
+    if not level.present() then return false end
     local next_hour = level.get_time_hours()
     if next_hour ~= last_hour then
         last_hour = next_hour
         next_idx = 0
         local ambient = level_weathers.get_weather_manager():get_curr_ambient()
-        return not reset_settings(level.name(), ambient)   -- is_set -> stay(false); else self-remove(true)
+        last_ambient = ambient
+        -- is_set -> stay (false); else self-remove (true)
+        return not reset_settings(level.name(), ambient)
     end
 
     next_idx = next_idx + 1
@@ -94,37 +145,7 @@ local function update_ambient_owned()
     end
 
     if ch.next <= tg then
-        local inside = GetEvent("current_safe_cover")
-        local bLevelUnderground = GetEvent("underground")
-        local actor = db.actor
-        local pos = actor:position()
-        local max_dist = ch.max_dist
-        local min_dist = bLevelUnderground and ch.min_dist or ((max_dist + ch.min_dist) / 2)
-        local dist = (math_random(min_dist, max_dist) / 2) * distance          -- KNOB: distance
-        local angle_rad = math_rad(math_random(0, 359))
-        local vec = vector():set(pos.x + math_cos(angle_rad) * dist, pos.y + ch.height,
-                                 pos.z + math_sin(angle_rad) * dist)
-
-        local file = ch.sounds[math_random(#ch.sounds)]
-        ch.snd = sound_object(file)
-        ch.snd:play_at_pos(actor, vec)
-
-        local v
-        if bLevelUnderground or inside then
-            v = ch.indoor and 1 or 0.3
-        else
-            v = ch.indoor and 0 or 1
-        end
-        v = v * opt_ambient_volume * (ch.mood and vol[ch.mood] or vol.global)  -- KNOB: per-mood volume
-        ch.snd.volume = v
-
-        ch.next = tg + (ch.periods[math_random(4)]) * rarity                    -- KNOB: rarity
-
-        if aa_debug.on() then
-            aa_debug.dbg("play ch=%s mood=%s file=%s dist=%.1f vol=%.2f ug=%s inside=%s",
-                ch.name, aa_debug.show(ch.mood), file, dist, v,
-                aa_debug.show(bLevelUnderground), aa_debug.show(inside))
-        end
+        play_channel(ch, tg)
     end
 
     return false
@@ -151,15 +172,17 @@ local function _apply_owned()
         -- only fills an empty slot, so if vanilla registers later it no-ops onto ours).
         RemoveTimeEvent("sound_channels", "update_ambient")
         CreateTimeEvent("sound_channels", "update_ambient", 1, update_ambient_owned)
-        last_hour = nil; next_idx = 0            -- force a fresh reset on our first tick
+        -- force a fresh reset on our first tick
+        last_hour = nil
+        next_idx = 0
         aa_debug.info("aa_sound: owning update_ambient (a control feature is active)")
     else
         -- hand back to vanilla; prime its file-local state so it cannot tick on an
         -- empty table (sound_ambient.reset_settings writes vanilla's own snd_chanels).
         -- Guarded on db.actor: on_option_change can fire from the MCM menu with no level.
         if db.actor then
-            local amb = level_weathers.get_weather_manager():get_curr_ambient()
-            if amb then sound_ambient.reset_settings(level.name(), amb) end
+            local ambient = level_weathers.get_weather_manager():get_curr_ambient()
+            if ambient then sound_ambient.reset_settings(level.name(), ambient) end
         end
         RemoveTimeEvent("sound_channels", "update_ambient")
         CreateTimeEvent("sound_channels", "update_ambient", 1, sound_ambient.update_ambient)

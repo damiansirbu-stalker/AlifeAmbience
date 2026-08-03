@@ -3,6 +3,12 @@
   <string id="ui_mcm_menu_aa">
     <text>AlifeAmbience</text>
   </string>
+  <string id="ui_mcm_menu_atmosphere">
+    <text>Atmosphere</text>
+  </string>
+  <string id="ui_mcm_menu_diegetic">
+    <text>Diegetic</text>
+  </string>
   <string id="ui_mcm_aa_desc">
     <text>Dark ambient overlay. Every control at 1.0 means no change from the base soundscape; move one and the runtime layer takes over the dynamic ambient to apply it.</text>
   </string>
@@ -95,5 +101,91 @@
   </string>
   <string id="ui_mcm_aa_log_flush_desc">
     <text>Write every line immediately. Slower; use only when hunting a crash.</text>
+  </string>
+
+  <string id="ui_mcm_aa_dia_desc">
+    <text>In-world audio the characters hear: base radios, megaphones, campfire instruments. Every control at 1.0 leaves the source as the base game plays it.</text>
+  </string>
+  <string id="ui_mcm_aa_dia_master">
+    <text>Master volume</text>
+  </string>
+  <string id="ui_mcm_aa_dia_master_desc">
+    <text>Volume multiplier applied to every in-world source below.</text>
+  </string>
+
+  <string id="ui_mcm_aa_hdr_dia_radio">
+    <text>Radios</text>
+  </string>
+  <string id="ui_mcm_aa_dia_radio_enabled">
+    <text>Enable radios</text>
+  </string>
+  <string id="ui_mcm_aa_dia_radio_enabled_desc">
+    <text>Base and campfire radios. Off mutes them.</text>
+  </string>
+  <string id="ui_mcm_aa_dia_radio_vol">
+    <text>Radio volume</text>
+  </string>
+  <string id="ui_mcm_aa_dia_radio_vol_desc">
+    <text>Volume of in-world radios.</text>
+  </string>
+  <string id="ui_mcm_aa_dia_radio_freq">
+    <text>Radio pause</text>
+  </string>
+  <string id="ui_mcm_aa_dia_radio_freq_desc">
+    <text>Wait between radio tracks. Higher is longer silence.</text>
+  </string>
+
+  <string id="ui_mcm_aa_hdr_dia_megaphone">
+    <text>Megaphones</text>
+  </string>
+  <string id="ui_mcm_aa_dia_megaphone_enabled">
+    <text>Enable megaphones</text>
+  </string>
+  <string id="ui_mcm_aa_dia_megaphone_enabled_desc">
+    <text>Loudspeaker announcers. Off mutes them.</text>
+  </string>
+  <string id="ui_mcm_aa_dia_megaphone_vol">
+    <text>Megaphone volume</text>
+  </string>
+  <string id="ui_mcm_aa_dia_megaphone_vol_desc">
+    <text>Volume of megaphone announcers.</text>
+  </string>
+  <string id="ui_mcm_aa_dia_megaphone_freq">
+    <text>Megaphone pause</text>
+  </string>
+  <string id="ui_mcm_aa_dia_megaphone_freq_desc">
+    <text>Wait between announcements. Higher is longer silence.</text>
+  </string>
+
+  <string id="ui_mcm_aa_hdr_dia_guitar">
+    <text>Guitar</text>
+  </string>
+  <string id="ui_mcm_aa_dia_guitar_enabled">
+    <text>Enable guitar</text>
+  </string>
+  <string id="ui_mcm_aa_dia_guitar_enabled_desc">
+    <text>Campfire guitar. Needs a guitar animation mod; off with none installed.</text>
+  </string>
+  <string id="ui_mcm_aa_dia_guitar_vol">
+    <text>Guitar volume</text>
+  </string>
+  <string id="ui_mcm_aa_dia_guitar_vol_desc">
+    <text>Volume of campfire guitar.</text>
+  </string>
+
+  <string id="ui_mcm_aa_hdr_dia_harmonica">
+    <text>Harmonica</text>
+  </string>
+  <string id="ui_mcm_aa_dia_harmonica_enabled">
+    <text>Enable harmonica</text>
+  </string>
+  <string id="ui_mcm_aa_dia_harmonica_enabled_desc">
+    <text>Campfire harmonica. Needs a harmonica animation mod; off with none installed.</text>
+  </string>
+  <string id="ui_mcm_aa_dia_harmonica_vol">
+    <text>Harmonica volume</text>
+  </string>
+  <string id="ui_mcm_aa_dia_harmonica_vol_desc">
+    <text>Volume of campfire harmonica.</text>
   </string>
 </string_table>

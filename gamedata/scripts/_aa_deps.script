@@ -1,0 +1,25 @@
+--- _aa_deps: AlifeAmbience dependency note. xlibs is OPTIONAL. The content (accents,
+--- texture beds) runs on any Anomaly; xlibs (xlog, xmcm) only adds the MCM page and the
+--- ambient trace. So this is a SOFT check: if xlibs is present but too old for the control
+--- layer, warn once; never abort, so a stock install still runs content-only.
+
+local tostring = tostring
+
+local MOD_NAME          = "AlifeAmbience"
+local XLIBS_MIN_VERSION = "1.5.1"
+local XLIBS_URL         = "https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001"
+
+--- @return string Version string
+function get_version()
+    return "next"
+end
+
+function on_game_start()
+    -- no xlibs: content-only, nothing to check
+    if not xlibs then return end
+    if xlibs.is_compatible and not xlibs.is_compatible(XLIBS_MIN_VERSION) then
+        local have = xlibs.get_version and xlibs.get_version() or "?"
+        printf("! [%s] xlibs %s is older than %s (%s); the MCM and trace may not load. Content runs anyway.",
+            MOD_NAME, tostring(have), XLIBS_MIN_VERSION, XLIBS_URL)
+    end
+end

@@ -458,14 +458,14 @@ def cmd_loudness(a):
 
 # --- deploy (deterministic: reproduces the N numbering from the JSONs) --------
 
-def _build_layers(mc, cls):
+def _build_layers(mc, cls, ch_to_group, group_key):
     """Group the classified sounds into the deployed structure, deterministically.
-    accents[mood] = [entry,...] in canonical order; textures[bed] = top-TEX_CAP by
-    duration. The source abs is resolved by (ch,stem) via a dict: on a duplicate
-    (ch,stem) - same channel+stem captured from two pools - the last occurrence
-    wins, matching the shipped bytes (proven: provenance self-verify = 0 mismatch)."""
+    accents[group] = [entry,...] in canonical order (group = <mood>_<n>, one per exact
+    settings-tuple); textures[bed] = top-TEX_CAP by duration. The source abs is resolved
+    by (ch,stem) via a dict: on a duplicate (ch,stem) - same channel+stem captured from
+    two pools - the last occurrence wins, matching the shipped bytes."""
     src = {(ch, c["stem"]): c for ch, c in _iter_chosen(mc)}
-    accents = {m: [] for m in MOODS}
+    accents = {g: [] for g in group_key}
     tex_all = {b: [] for b in BEDS}
     for idx, r in enumerate(cls):
         c = src.get((r["ch"], r["stem"]))
@@ -476,7 +476,7 @@ def _build_layers(mc, cls):
         if r["role"] == "texture":
             tex_all[tex_pool(r["ch"])].append(e)
         else:
-            accents[mood_of(r["ch"])].append(e)
+            accents[ch_to_group[r["ch"]]].append(e)
     textures = {b: sorted(v, key=lambda e: (-e["dur"], e["idx"]))[:TEX_CAP] for b, v in tex_all.items()}
     return accents, textures
 
@@ -497,28 +497,74 @@ def _emit_audio(entry, dst, gain):
                 "-c:a", "libvorbis", "-ar", "44100", str(dst)])
 
 
-# Per-mood channel settings = the ORIGINAL per-mood values, not a flat baseline. Each
-# value is the median across the source channels that mood pools (indoor = the mood's
-# dominant flag). The pack authors set these deliberately: underground plays CLOSE and
-# indoor (so it is loud in tunnels, not 0.3), weather far and frequent (5s), human far
-# and rare (minutes). Grouping is per mood, so one value per mood; exact per-channel
-# settings would require per-channel channels (see readme note).
-MOOD_SETTINGS = {
-    "dread":       {"min": 50, "max": 120, "p": (12000, 15000, 24000, 26000),    "indoor": False, "height": 15},
-    "underground": {"min": 10, "max": 50,  "p": (10000, 20000, 11000, 30000),    "indoor": True,  "height": -1},
-    "weather":     {"min": 30, "max": 200, "p": (5000, 5000, 5000, 5000),        "indoor": False, "height": 10},
-    "human":       {"min": 45, "max": 80,  "p": (120000, 300000, 180000, 360000), "indoor": False, "height": 15},
-    "animal":      {"min": 45, "max": 80,  "p": (20000, 60000, 30000, 80000),    "indoor": False, "height": 15},
-}
+# Each accent channel keeps its VERBATIM source settings - no median. Channels are grouped
+# by (mood, exact-settings-tuple): one deployed channel aa_acc_<mood>_<n> per distinct tuple,
+# so a source channel's period/distance/indoor/height survive exactly (provenance-faithful).
+# The mood is only a tag for the MCM knobs; aa_sound reads it off the <mood> in the name.
+def _chan_settings(lines):
+    d = {}
+    for ln in lines or []:
+        m = re.match(r"\s*(\w+)\s*=\s*([\d.]+|true|false)", ln)
+        if m:
+            d[m.group(1)] = m.group(2)
+
+    def num(x, dflt):
+        try:
+            return int(float(x))
+        except (TypeError, ValueError):
+            return dflt
+    return {"min": num(d.get("min_distance"), 45), "max": num(d.get("max_distance"), 80),
+            "p": tuple(num(d.get(f"period{i}"), 0) for i in range(4)),
+            "indoor": d.get("indoor") == "true", "height": num(d.get("height"), 0)}
 
 
-def _acc_settings(mood):
-    s = MOOD_SETTINGS[mood]
-    lines = [f"min_distance = {s['min']}", f"max_distance = {s['max']}"]
-    for i, p in enumerate(s["p"]):
-        lines.append(f"period{i} = {p}")
-    lines.append(f"height = {s['height']}")
-    if s["indoor"]:
+_SETTINGS_CACHE = None
+
+
+def _settings_key(ch):
+    """The exact (min, max, periods, indoor, height) tuple for a source channel."""
+    global _SETTINGS_CACHE
+    if _SETTINGS_CACHE is None:
+        mc = json.loads((HERE / "merged_channels.json").read_text())
+        _SETTINGS_CACHE = {c: _chan_settings(mc[c].get("settings")) for c in mc}
+    s = _SETTINGS_CACHE.get(ch) or _chan_settings(None)
+    return (s["min"], s["max"], s["p"], s["indoor"], s["height"])
+
+
+def accent_group_map(cls):
+    """(ch -> group name, group name -> settings key). One group per (mood, exact-settings),
+    named <mood>_<n>, n stable by sorted settings tuple. Deterministic, so provenance re-derives."""
+    by_mood = {}
+    for r in cls:
+        if r["role"] == "texture":
+            continue
+        ch = r["ch"]
+        by_mood.setdefault(mood_of(ch), {}).setdefault(_settings_key(ch), set()).add(ch)
+    ch_to_group, group_key = {}, {}
+    for mood in MOODS:
+        for n, key in enumerate(sorted(by_mood.get(mood, {})), 1):
+            g = f"{mood}_{n}"
+            group_key[g] = key
+            for ch in by_mood[mood][key]:
+                ch_to_group[ch] = g
+    return ch_to_group, group_key
+
+
+def _group_mood(g):
+    return g.rsplit("_", 1)[0]
+
+
+ACC_PERIOD_FLOOR = 20000   # a period of 0 makes a one-shot fire every tick (spam); floor it.
+                           # The source's 0 is recorded verbatim in provenance; only the deploy floors it.
+
+
+def _acc_settings(key):
+    mn, mx, p, indoor, height = key
+    lines = [f"min_distance = {mn}", f"max_distance = {mx}"]
+    for i, pv in enumerate(p):
+        lines.append(f"period{i} = {pv if pv > 0 else ACC_PERIOD_FLOOR}")
+    lines.append(f"height = {height}")
+    if indoor:
         lines.append("indoor = true")
     return lines
 
@@ -554,30 +600,31 @@ def cmd_deploy(a):
     mc = json.loads((HERE / "merged_channels.json").read_text())
     cls = json.loads((HERE / "classification.json").read_text())
     gain = _gain_map()
-    accents, textures = _build_layers(mc, cls)
+    ch_to_group, group_key = accent_group_map(cls)
+    accents, textures = _build_layers(mc, cls, ch_to_group, group_key)
 
     _clean(snd); _clean(env / "ambients")
     (root / "configs/scripts").mkdir(parents=True, exist_ok=True)
     (root / "configs/misc/sound").mkdir(parents=True, exist_ok=True)
     (env / "ambients/presets").mkdir(parents=True, exist_ok=True)
 
-    # accents: acc\<mood>\N.ogg + @[aa_acc_<mood>]
+    # accents: acc\<mood>_<n>\N.ogg + @[aa_acc_<mood>_<n>], one channel per exact-settings group
     chan_lines = [HDR]
-    for mood in MOODS:
-        entries = accents[mood]
+    for g in sorted(group_key):
+        entries = accents[g]
         for i, e in enumerate(entries, 1):
-            _emit_audio(e, snd / "acc" / mood / f"{i}.ogg", gain)
-        chan_lines.append(f"@[aa_acc_{mood}]")
-        chan_lines.extend(_acc_settings(mood))
+            _emit_audio(e, snd / "acc" / g / f"{i}.ogg", gain)
+        chan_lines.append(f"@[aa_acc_{g}]")
+        chan_lines.extend(_acc_settings(group_key[g]))
         # ONE sound per line. A single `sounds = a, b, c, ...` line with hundreds of
         # entries overflows the engine's fixed LTX read buffer (IReader::r_string,
         # FS.cpp) and CTDs at load ("Dest string less than needed"). DLTX >append
         # keeps every input line short; the merged value is stored as an unbounded
         # shared_str, so the engine reads the full list back with no limit.
         if entries:
-            chan_lines.append(f"sounds = zs\\acc\\{mood}\\1")
+            chan_lines.append(f"sounds = zs\\acc\\{g}\\1")
             for i in range(2, len(entries) + 1):
-                chan_lines.append(f">sounds = zs\\acc\\{mood}\\{i}")
+                chan_lines.append(f">sounds = zs\\acc\\{g}\\{i}")
         else:
             chan_lines.append("sounds = ambient\\no_sound")
         chan_lines.append("")
@@ -585,9 +632,9 @@ def cmd_deploy(a):
 
     deploy_texture(root, textures, gain)
 
-    write_presets(env)
+    write_presets(env, ch_to_group)
     print(f"deployed to {root}")
-    print(f"  accents: " + ", ".join(f"{m} {len(accents[m])}" for m in MOODS))
+    print(f"  accents: {len(group_key)} channels, {sum(len(v) for v in accents.values())} sounds")
     print(f"  textures: " + ", ".join(f"{b} {len(textures[b])}" for b in BEDS))
 
 
@@ -607,19 +654,23 @@ UNDERGROUND_LEVELS = {"environment_underground", "environment_underground_more",
 WHISPER_LEVEL = "environment_whisper"
 
 
-def _section_moods(fname, sec, per_pack, ourch):
-    """The moods evidenced at (level fname, section sec) across all packs, our
-    channels only, then lore-refined for the underground and whisper specials."""
+def _section_groups(fname, sec, per_pack, ch_to_group):
+    """The accent GROUPS evidenced at (level fname, section sec) across all packs (our
+    channels only), lore-refined for the underground and whisper specials. A group plays
+    where one of its source channels was placed - so each channel lands with its own exact
+    settings, at the section the pack authors used it."""
     stem = fname[:-4]
-    if stem in UNDERGROUND_LEVELS:                    # labs: underground only, indoor only
-        return ["underground"] if sec.lower().startswith("indoor") else []
+    if stem in UNDERGROUND_LEVELS:                    # labs: underground groups, indoor only
+        if not sec.lower().startswith("indoor"):
+            return []
+        return sorted({g for g in set(ch_to_group.values()) if _group_mood(g) == "underground"})
     chans = set()
     for pm in per_pack.values():
         chans |= set(pm.get(fname, {}).get(sec, {}).get("dynamic", []))
-    moods = {mood_of(c) for c in chans if c in ourch}
+    groups = {ch_to_group[c] for c in chans if c in ch_to_group}
     if stem == WHISPER_LEVEL:                         # haunted: dread + weather, no wildlife/people
-        moods &= {"dread", "weather"}
-    return [m for m in MOOD_ORDER if m in moods]
+        groups = {g for g in groups if _group_mood(g) in ("dread", "weather")}
+    return sorted(groups)
 
 
 # Vanilla presets no pack rebinds away. Portability: on bare vanilla (no soundscape
@@ -630,24 +681,23 @@ PRESET_ALIASES = {"environment_forest_more": "environment_forest",
                   "environment_swamp_coast": "environment_swamp"}
 
 
-def write_presets(env):
+def write_presets(env, ch_to_group):
     """Emit mod_<preset>_alifeambience.ltx: for each (level, section) append our
-    evidence-placed mood channels via >sound_channels_dynamic. Sections the source
+    evidence-placed accent groups via >sound_channels_dynamic. Sections the source
     left empty for that level (e.g. an underground level's surface hours) get no
     append, so nothing plays where nothing was meant to."""
-    ourch = {r["ch"] for r in json.loads((HERE / "classification.json").read_text())}
     per_pack = {name: parse_presets(gd) for name, gd in MODS if name != "vanilla"}
     base = parse_presets("D:/Games/GAMMA/GAMMA/mods/304- Dark Signal Weather and Ambiance Audio - Shrike/gamedata")
 
     def emit(out_stem, src_fname, secs):
         lines = [HDR, ""]
         for sec in secs:
-            moods = _section_moods(src_fname, sec, per_pack, ourch)
-            if not moods:
+            groups = _section_groups(src_fname, sec, per_pack, ch_to_group)
+            if not groups:
                 continue
             lines.append(f"![{sec}]")
-            for m in moods:
-                lines.append(f">sound_channels_dynamic = aa_acc_{m}")
+            for g in groups:
+                lines.append(f">sound_channels_dynamic = aa_acc_{g}")
             lines.append("")
         (env / "ambients/presets" / f"mod_{out_stem}_alifeambience.ltx").write_text("\n".join(lines), encoding="utf-8")
 
@@ -743,7 +793,8 @@ def cmd_provenance(a):
     mc = json.loads((HERE / "merged_channels.json").read_text())
     cls = json.loads((HERE / "classification.json").read_text())
     gain = _gain_map()
-    accents, textures = _build_layers(mc, cls)
+    ch_to_group, group_key = accent_group_map(cls)
+    accents, textures = _build_layers(mc, cls, ch_to_group, group_key)
     settings = {ch: _parse_settings(mc[ch]["settings"]) for ch in mc}
     ch_sec = _channel_sections()
     zs = GDATA / "sounds/zs"
@@ -772,8 +823,8 @@ def cmd_provenance(a):
                     verify_ok += 1
                 else:
                     verify_bad += 1
-    for mood in MOODS:
-        add(accents[mood], "accent", mood, "acc")
+    for g in sorted(group_key):
+        add(accents[g], "accent", g, "acc")
     for bed in BEDS:
         add(textures[bed], "texture", bed, "tex")
     lines = ["\t".join(cols)] + ["\t".join(r) for r in rows]
