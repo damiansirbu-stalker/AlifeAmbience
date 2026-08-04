@@ -16,15 +16,16 @@ Why it is different:
 - Old-school horror, restored. The dread the realism packs removed: a scream past the
   treeline, a groan under the ground, wind that carries something wrong.
 - Measured, not dumped. Every sound goes through signal analysis for spectral shape,
-  loudness, and length, then content-hash dedup and per-group loudness leveling. No junk,
-  no duplicates, no guesswork.
+  loudness, and length, then a three-stage dedup - exact hash, acoustic fingerprint, and a
+  waveform cross-correlation that tells a re-encoded copy from a genuinely different sound -
+  and per-group loudness leveling. No junk, no duplicates, no lost variety.
 - Never repetitive. Play rates are tuned so a long storm never overlaps into a wall and a
   channel with few sounds is not spammed, and a runtime no-repeat memory means you never
   hear the same call twice - the whole library is heard, not the same 10% on a loop.
 - Composes, never duplicates. It adds its sounds INTO the game's own channels with DLTX,
-  and never ships a sound your install already plays - filtered by content hash AND by
-  acoustic fingerprint, so even a re-encoded copy of a base sound is caught. No collisions,
-  no doubling, no extra density, over GAMMA, vanilla, or any soundscape.
+  and never adds a sound your install already plays - matched by hash, by acoustic
+  fingerprint, and confirmed by waveform, so even a re-encoded copy of a base sound is
+  caught. No collisions, no doubling, no extra density, over GAMMA, vanilla, or any soundscape.
 - Provable. An in-game trace logs every sound as it plays, so an Anomaly run and a GAMMA
   run diff cleanly. Every file traces back to its origin mod, folder, filename, channel,
   and exact settings.
@@ -60,19 +61,21 @@ How it is built:
   Every sound is put through signal analysis before it goes in, and the result is proven.
   Whether it becomes a looped bed or a one-shot scare is decided from measured length,
   steadiness (crest factor), and loudness (EBU R128), not from its filename.
-  Identical files across packs collapse to one by content hash, and anything your install
-  already plays is dropped - by hash and by acoustic fingerprint, so re-encoded copies are
-  caught too. Loudness is leveled per group, outliers only, so a whisper and a scream keep
-  their difference. A ledger proves no net-new dark sound is missed, and a provenance record
-  maps every included sound back to its origin. The whole overlay rebuilds from the packs in
-  one run.
+  Duplicates collapse to one by a three-stage test: exact hash, then acoustic fingerprint to
+  propose re-encoded copies, then a waveform cross-correlation to confirm two files really are
+  the same recording before merging - so genuinely different sounds are never merged away.
+  Anything your install already plays is excluded the same way, and each texture bed is
+  deduped across the channels that feed it, so a continuous bed never loops the same recording.
+  Loudness is leveled per group, outliers only, so a whisper and a scream keep their
+  difference. A ledger proves no net-new dark sound is missed, and a provenance record maps
+  every included sound back to its origin. The whole overlay rebuilds from the packs in one run.
   The pipeline, one command end to end:
-    index what your install plays  ->  pool the packs' dark sounds  ->  drop every
-    duplicate (hash AND acoustic fingerprint)  ->  measure and classify each  ->  level
-    loudness  ->  compose the DLTX overlay  ->  prove coverage and origin.
-  On the current build that meant 2695 candidate sounds pulled, 970 dropped because the
-  game already plays them - including 350 re-encoded copies plain hashing would have
-  missed - and 1593 genuinely new dark sounds shipped: zero duplicates, every one traced.
+    index what your install plays  ->  pool the packs' dark sounds  ->  dedup each channel to
+    one copy per recording (hash, fingerprint, waveform)  ->  measure and classify each  ->
+    level loudness  ->  compose the DLTX overlay  ->  prove coverage and origin.
+  On the current build that meant 5487 candidate sounds pulled and reduced to 1487 genuinely
+  new dark sounds: the waveform test caught 177 re-encoded copies plain hashing kept, every
+  sound the game already plays was excluded, and every included sound traces to its origin.
 
 Installation:
   A DLTX overlay plus a few scripts. Loads at any position, changes nothing in the engine

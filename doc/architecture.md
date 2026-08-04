@@ -49,7 +49,7 @@ provenance every shipped file -> its origin          -> provenance.tsv
 ```
 
 - basedex (`cmd_basedex`): index every sound the install PLAYS, winner-resolved - vanilla's active channels (unpacked from `sounds_ambient.db0`) + the GAMMA winner (Dark Signal) active channels, EXCLUDING its stripped channels (those are ours to restore). Records md5 + Chromaprint fingerprint + duration per sound. Rebuilt when the install's ambient mods change.
-- plan (`cmd_plan`): pool each dark channel's sounds and walk the FOLDER TREES (`DARK_FILL`), because the packs ship far more dark content than any channel references; resolve, gate on codec+rate, md5-dedup. Then BASE-DEDUP: drop any sound the install already plays (`_base_dedup`) by md5 OR by fingerprint >= 0.88 - the packs re-encode the same sound to new bytes, so md5 alone misses the re-encoded copies. Output `merged_channels.json`, the net-new dark corpus.
+- plan (`cmd_plan`): pool each dark channel's sounds and walk the FOLDER TREES (`DARK_FILL`), because the packs ship far more dark content than any channel references; resolve, gate on codec+rate, then DEDUP each channel to one copy per distinct recording - md5, then Chromaprint to propose candidates, then PCM cross-correlation to decide (see Deduplication below). Then BASE-DEDUP: drop any sound the install already plays (`_base_dedup`), fingerprint-matched and cross-correlation-confirmed against the winner-resolved base index. Output `merged_channels.json`, the net-new dark corpus.
 - classify (`cmd_classify`): measure every pooled sound and assign its role (below).
 - loudness (`cmd_loudness`): measure integrated loudness and flag per-group outliers (below).
 - deploy (`cmd_deploy`): route each source channel enrich/restore/define (above), emit the audio to `zs\<channel>\N.ogg`, the DLTX `mod_sound_channels_alifeambience.ltx` (channel defs), `aa_channel_layers.ltx` (the channel->layer map), and the per-preset placement, and the texture pools. Deterministic - the shipped `N.ogg` numbering is a pure function of the JSON inputs, so provenance is recoverable.
@@ -81,9 +81,14 @@ Proof the split is real, not nominal: a drone measures 181 Hz centroid / 0.04
 flatness (dark, tonal, steady -> texture) against a scream at 1276 Hz and tonal but
 short and transient (-> accent), and wind at 7658 Hz (bright, noisy).
 
-Deduplication, two distinct jobs with two distinct tools:
-- WITHIN our corpus: exact content hash (md5). Byte-identical reships across packs collapse to one; distinct sounds never merge. Acoustic fingerprinting is deliberately NOT used here - on this corpus it merged 25 distinct screams to 4, because acoustic similarity is not identity, and losing variety inside a channel is the wrong trade.
-- AGAINST the install (base-dedup): md5 AND acoustic fingerprint (Chromaprint `fpcalc`, similarity >= 0.88, the same same-sound threshold `soundpool` uses). md5 alone is insufficient here: the packs re-encode the same base sound to a different bitrate or container, so the bytes differ and md5 treats it as new. Measured, ~250 of the apparent net-new set were re-encoded duplicates of a sound the install already plays; the fingerprint catches them. The two thresholds differ on purpose - inside a channel we keep near-identical variety; against the base we drop it, because it would double what the install already plays.
+Deduplication - identity is decided by the WAVEFORM, not the filename or the bytes.
+Three stages, cheapest first, so the expensive test only runs on the few pairs the
+cheap ones flag (`dedup_pick` in `merge.py`, `pcm_correlation`/`decode_pcm` in `soundpool.py`):
+- md5 (exact): byte-identical reships across packs collapse to one.
+- Chromaprint fingerprint (recall, `fpcalc`, >= 0.88): PROPOSES candidate same-sound pairs. It is stable across bitrate and codec, so it FINDS the re-encoded copies md5 misses - but it cannot DECIDE. Measured on this corpus, its same-vs-distinct similarity ranges overlap completely: a genuinely distinct sound can score 1.000 (two different rains) and a true re-encode 0.926. At NO threshold does the fingerprint separate them; used to decide it merges distinct screams and distant calls.
+- PCM cross-correlation (the decider, `DEDUP_XCORR` = 0.90): for each candidate pair, decode both to PCM, align by envelope offset (so a Vorbis priming shift or a silence-pad difference cannot defeat it), and take the normalized cross-correlation over the overlap. A re-encode correlates ~1.0, a distinct sound ~0 - a clean gap. Two files merge only under COMPLETE-LINKAGE - every pair in a merged group confirms - so a similarity chain (A~B~C, A!=C) cannot collapse transitively. Ground-truthed against the decoded waveforms: zero distinct sounds merged (MANGLE = 0).
+
+The SAME three-stage identity guards base-dedup (never ship a sound the install already plays): a candidate the fingerprint matches to a base sound is dropped only when the cross-correlation confirms it, so a distinct sound the fingerprint wrongly flags is KEPT, not lost. The base index therefore records md5 + fingerprint + duration + path, so the confirm step can decode the base sound. The intra-corpus and base thresholds are the same waveform test applied to two ends: keep every distinct variant, drop every genuine re-encode, byte or not.
 
 Loudness leveling: per group (channel/bed) take the MEDIAN integrated LUFS as the
 group level, and gain back only the OUTLIERS - files where |LUFS - median| >
@@ -136,16 +141,17 @@ time of day (the dread drone-bed dusk-to-dawn, the lighter wind-bed by day, via
 ## Provenance and proof
 
 - `provenance.tsv` (`cmd_provenance`): every shipped `N.ogg` -> original mod, directory, filename, source channel, that channel's LTX `min/max_distance`/`period0-3`/`indoor`/`height`, the gain applied, and the exact list of original `level:time:weather` sections it played in. Nothing loses its origin under the `N.ogg` rename.
-- Self-verification: the deterministic deploy is re-derived and every VERBATIM shipped file is md5-compared to its claimed source. Current build: 1155 verbatim match, 0 mismatch (the gained files differ by design) - the rename is proven lossless and the provenance exact.
-- `ledger.tsv` (`cmd_ledger`): hash every source ogg against the deployed set and categorise: USED-shipped, USED-gained, HELD-texture-surplus, EMISSION-excluded, BASE-DUP-excluded (the install already plays it - md5 or acoustic), OFFSPEC-48k-excluded, off-scope-or-dup, SKIP-nonambient, and UNUSED-DARK. The invariant: **UNUSED-DARK = 0** - no NET-NEW dark file (one the install doesn't play) is left uncaptured. Current: UNUSED-DARK 0, BASE-DUP-excluded 3771, USED-shipped 996, USED-gained 426, HELD 349, EMISSION 279, OFFSPEC 1.
+- Self-verification: the deterministic deploy is re-derived and every VERBATIM shipped file is md5-compared to its claimed source. Current build: 1066 verbatim match, 0 mismatch (the gained files differ by design) - the rename is proven lossless and the provenance exact.
+- `ledger.tsv` (`cmd_ledger`): hash every source ogg against the deployed set and categorise: USED-shipped, USED-gained, HELD-texture-surplus, EMISSION-excluded, BASE-DUP-excluded (the install already plays it - md5 or cross-correlation), INTRA-DUP-excluded (our own re-encode the PCM dedup dropped - captured then deduped, not missed), OFFSPEC-48k-excluded, off-scope-or-dup, SKIP-nonambient, and UNUSED-DARK. The invariant: **UNUSED-DARK = 0** - no NET-NEW dark file (one the install doesn't play) is left uncaptured. Current: UNUSED-DARK 0, BASE-DUP-excluded 3644, USED-shipped 1310, HELD 269, EMISSION 279, INTRA-DUP-excluded 177, USED-gained 92, OFFSPEC 1.
 
 ## Numbers (current build)
 
 - Base-played index: 1155 sounds the install plays (vanilla + GAMMA winner active).
-- Pooled 5542 -> md5-deduped 2695 -> BASE-DEDUP dropped 970 (620 md5 + 350 acoustic re-encodes) -> 1593 NET-NEW dark sounds kept.
-- Classified: 1081 accent, 512 texture (vocals forced accent).
-- ACCENT: 47 channels - 10 enrich (into base channels), 3 restore (`out_mutants`/`out_screams`/`out_gunfire`), 34 define (`aa_<channel>`). No parallel mood channels; each channel keeps its real name and its VERBATIM source settings. Every channel maps to one of 11 layers via `aa_channel_layers.ltx`.
-- Placement: restore/define channels placed per evidence + lore, density-capped to `SECTION_MAX` 13; with D1 both installs hold - GAMMA avg 8.2 / max 13 / 0 over, vanilla avg 9.1 / max 13 / 0 over. Enrich channels add sounds, not channels, so they carry no density cost.
+- Pooled 5487 -> deduped 2304 (md5, then Chromaprint candidates confirmed by PCM cross-correlation; the PCM stage caught 177 acoustic re-encodes md5 kept) -> BASE-DEDUP dropped 590 md5 + 123 cross-correlation-confirmed the install plays -> 1487 NET-NEW dark sounds kept.
+- Classified: 980 accent, 507 texture (vocals forced accent).
+- ACCENT: 44 channels - 10 enrich (into base channels), 3 restore (`out_mutants`/`out_screams`/`out_gunfire`), 31 define (`aa_<channel>`). No parallel mood channels; each channel keeps its real name and its VERBATIM source settings. Every channel maps to one of 11 layers via `aa_channel_layers.ltx`.
+- Placement: restore/define channels placed per evidence + lore (restore evidence includes vanilla's own presets, so a strip-4 channel only vanilla placed - out_screams - is still re-added), density-capped to `SECTION_MAX` 13; with D1 both installs hold within the cap (max 13, 0 over). Enrich channels add sounds, not channels, so they carry no density cost.
+- Textures: each bed deduped across its pooled source channels (same waveform identity), then capped to TEX_CAP so the cap keeps distinct loops, not repeats.
 - Layer map: 47 our channels + 14 base-played dark channels = 61 mapped, so per-layer volume covers the whole dark soundscape.
 - Play tuning: deployed periods are discrete (>= duration + gap) and variety-weighted; storm's play share dropped 33% -> 20%. Runtime no-repeat variety is default-on.
 - TEXTURE: 6 looped pools - wind, dread, fog, stormrain, underground_lab, underground_sewer - up to 40 loops each by duration (196 total; fog ships 16).
@@ -155,8 +161,8 @@ time of day (the dread drone-bed dusk-to-dawn, the lighter wind-bed by day, via
 
 - I1 Compose, never override. Ship DLTX patches over the ambient config; the engine bed and its asserted channels stay intact, so an overlay cannot cause a missing-channel CTD.
 - I2 Two layers, split by measurement. Texture = looped bed; accent = dynamic one-shot; the boundary is the measured duration/crest/flatness, not the name.
-- I3 Dedup within the corpus by exact content hash (md5); acoustic fingerprinting is not used there (it merges distinct sounds).
-- I3b Never ship a sound the install already plays. Base-dedup drops it by md5 OR by acoustic fingerprint (>= 0.88) against the winner-resolved base-played index (vanilla + GAMMA), so no duplication on either install, byte or re-encode.
+- I3 Deduplicate by the WAVEFORM. Identity is md5 (exact) -> Chromaprint fingerprint (recall: it finds re-encodes but its same/distinct ranges overlap, so it cannot decide) -> PCM cross-correlation (the decider: a re-encode correlates ~1.0, a distinct sound ~0), complete-linkage at 0.90. Distinct variety is never merged (MANGLE = 0); a genuine re-encode never survives.
+- I3b Never ship a sound the install already plays. Base-dedup drops a sound only when the fingerprint matches AND the cross-correlation confirms it, against the winner-resolved base-played index (vanilla + GAMMA), so no duplication on either install, byte or re-encode - and a distinct sound the fingerprint wrongly flags is kept.
 - I3c Work ON the engine's channels, not beside them. Enrich a channel both installs play, restore one the winner strips, define a new one only for a purpose no live base channel provides; never parallel a channel the base already plays.
 - I4 Fitness is codec + sample rate: 44100 Hz vorbis. Off-spec files are dropped and accounted.
 - I5 Loudness by per-group median leveling, outliers only. Preserve dynamics; texture beds sit below accents; distance varies at play.
@@ -178,7 +184,7 @@ time of day (the dread drone-bed dusk-to-dawn, the lighter wind-bed by day, via
 
 ## Tools and data artifacts
 
-- Signal analysis: `ffmpeg` (`aspectralstats` centroid/flatness, `astats` crest, `ebur128` loudness, `volume`+`libvorbis` gain), `ffprobe` (duration/rate/codec/bitrate). Dedup: md5. Chromaprint `fpcalc` evaluated and rejected. Resolved from `$PORTX_ROOT/packages` by `soundpool.py`.
+- Signal analysis: `ffmpeg` (`aspectralstats` centroid/flatness, `astats` crest, `ebur128` loudness, `volume`+`libvorbis` gain), `ffprobe` (duration/rate/codec/bitrate). Dedup identity: md5 (exact) -> Chromaprint `fpcalc` (recall) -> PCM cross-correlation (`pcm_correlation`, the decider). Chromaprint proposes, the waveform decides. Resolved from `$PORTX_ROOT/packages` by `soundpool.py`.
 - Committed data (the audit trail): `merged_channels.json` (pool + per-channel source LTX), `classification.json` (measured features + role per sound), `loudness_outliers.json` (the gained set), `ledger.tsv` (coverage proof), `provenance.tsv` (origin of every shipped sound), `pools.json` (legacy candidate registry for the standalone `soundpool.py`; the authoritative source list is `merge.py` MODS).
 - `merge.py` the pipeline (its `MODS` list is the source of truth); `soundpool.py` the probe/resolver (helper functions used by `merge.py`; its `inventory`/`select` CLI over `pools.json` is legacy).
 

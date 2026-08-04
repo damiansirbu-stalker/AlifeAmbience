@@ -7,8 +7,11 @@ soundscapes stripped, and adds control over the in-world sound the Zone already 
 It works ON the game's own sound channels: it enriches the channels your install plays
 with net-new dark sounds, restores the horror the GAMMA soundscape strips, and defines
 its own channel only where none exists - never a parallel channel, never a duplicate.
-It never ships a sound your install already plays, filtered by content hash AND acoustic
-fingerprint so even a re-encoded copy is caught. Every sound is measured (spectral shape,
+It never adds a sound your install already plays, and never repeats a recording within a
+channel or a texture bed: identity is decided by the waveform - exact hash, acoustic
+fingerprint, then a cross-correlation that tells a re-encoded copy from a genuinely
+different sound - so every duplicate is caught without ever merging real variety away.
+Every sound is measured (spectral shape,
 EBU R128 loudness, length) to decide looped bed vs one-shot; placement is traced from
 where the packs used each sound per level, hour and weather, corrected against
 S.T.A.L.K.E.R. canon, and capped to a vanilla-like density on both installs. Played

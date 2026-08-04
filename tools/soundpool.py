@@ -20,7 +20,9 @@ $FFPROBE / $FFMPEG / $FPCALC overrides, or PATH.
 """
 
 import argparse
+import array
 import json
+import math
 import os
 import re
 import shutil
@@ -147,6 +149,99 @@ def fp_similarity(a, b):
         return 0.0
     bits = sum((a[i] ^ b[i]).bit_count() for i in range(n))
     return 1.0 - bits / (32.0 * n)
+
+
+# --- PCM cross-correlation: the same-recording decider (architecture.md I3) -----
+# Chromaprint proposes candidates (recall) but cannot decide - its similarity ranges
+# for same-vs-distinct overlap (a distinct sound can score 1.0, a re-encode 0.93).
+# md5 alone misses re-encodes. The decider is the normalized cross-correlation of the
+# decoded waveforms: a re-encode correlates ~1.0, a genuinely distinct sound ~0. The
+# constants below are FROZEN as validated (MANGLE=0 over the corpus); do not tune them
+# without re-running the same-vs-distinct separation check.
+PCM_RATE = 4000            # decode sample rate (Hz); enough to capture pitch + transients
+PCM_ENV_FRAME = 100        # envelope frame (samples) for the coarse offset search
+PCM_REFINE = 120           # sample window around the envelope offset for the fine search
+PCM_REFINE_STEP = 6        # stride of the fine search
+_PCM_SILENCE = 150         # |sample| below this is treated as silence when trimming ends
+
+
+def decode_pcm(path):
+    """Decode to a mono list of int16 samples at PCM_RATE, near-silence trimmed off
+    both ends (so leading/trailing padding differences do not defeat alignment)."""
+    r = subprocess.run([tool("ffmpeg"), "-v", "error", "-i", path, "-ac", "1",
+                        "-ar", str(PCM_RATE), "-f", "s16le", "-"], capture_output=True)
+    a = array.array("h")
+    a.frombytes(r.stdout)
+    a = a.tolist()
+    lo, hi = 0, len(a)
+    while lo < hi and abs(a[lo]) < _PCM_SILENCE:
+        lo += 1
+    while hi > lo and abs(a[hi - 1]) < _PCM_SILENCE:
+        hi -= 1
+    return a[lo:hi]
+
+
+def _pcm_envelope(a):
+    F = PCM_ENV_FRAME
+    return [math.sqrt(sum(a[i + k] * a[i + k] for k in range(F)) / F)
+            for i in range(0, len(a) - F, F)]
+
+
+def _pcm_norm(v):
+    if not v:
+        return v
+    m = sum(v) / len(v)
+    d = [x - m for x in v]
+    e = math.sqrt(sum(x * x for x in d)) or 1.0
+    return [x / e for x in d]
+
+
+def _pcm_best_offset(e1, e2):
+    """Coarse alignment: envelope offset (in samples) maximizing envelope correlation."""
+    a, b = _pcm_norm(e1), _pcm_norm(e2)
+    if not a or not b:
+        return 0
+    bo, bs = 0, -2.0
+    for off in range(-len(a) + 1, len(b)):
+        s = sum(x * y for x, y in zip(a[max(0, off):], b[max(0, -off):]))
+        if s > bs:
+            bs, bo = s, off
+    return bo * PCM_ENV_FRAME
+
+
+def _pcm_pearson_at(a, b, off):
+    if off >= 0:
+        x, y = a[off:], b
+    else:
+        x, y = a, b[-off:]
+    n = min(len(x), len(y))
+    if n < 50:
+        return 0.0
+    x, y = x[:n], y[:n]
+    mx, my = sum(x) / n, sum(y) / n
+    sx = sy = sxy = 0.0
+    for i in range(n):
+        dx, dy = x[i] - mx, y[i] - my
+        sx += dx * dx
+        sy += dy * dy
+        sxy += dx * dy
+    return sxy / (math.sqrt(sx * sy) or 1.0)
+
+
+def pcm_correlation(samples_a, samples_b):
+    """Same-recording confidence in [-1, 1]: normalized cross-correlation of two decoded
+    PCM signals (from decode_pcm), aligned by envelope offset then refined by Pearson
+    over the overlap. ~1.0 = the same recording (re-encode); ~0 = a distinct sound.
+    Robust to bitrate, codec and silence padding."""
+    if not samples_a or not samples_b:
+        return 0.0
+    off = _pcm_best_offset(_pcm_envelope(samples_a), _pcm_envelope(samples_b))
+    best = -2.0
+    for o in range(off - PCM_REFINE, off + PCM_REFINE + 1, PCM_REFINE_STEP):
+        r = _pcm_pearson_at(samples_a, samples_b, o)
+        if r > best:
+            best = r
+    return best
 
 
 def mean_rolloff(path):

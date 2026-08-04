@@ -122,11 +122,33 @@
  },
  {
   "ch": "background_tuman_open",
+  "stem": "ambient/soundscape/background/North/tuman_open2",
+  "dur": 135.0,
+  "cen": 4092,
+  "flat": 0.262,
+  "crest": 12.3,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "background_tuman_open",
   "stem": "ambient/trx/background/whisper_tuman",
   "dur": 138.0,
   "cen": 551,
   "flat": 0.135,
   "crest": 4.4,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "background_tuman_open",
+  "stem": "ambient/trx/nature/wind_tuman/sound_08",
+  "dur": 7.2,
+  "cen": 1042,
+  "flat": 0.077,
+  "crest": 6.7,
   "role": "texture",
   "bright": "dark",
   "tone": "tonal"
@@ -144,21 +166,21 @@
  },
  {
   "ch": "background_tuman_open",
-  "stem": "ambient/soundscape/background/North/tuman_open2",
-  "dur": 135.0,
-  "cen": 4092,
-  "flat": 0.262,
-  "crest": 12.3,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "background_tuman_open",
   "stem": "ambient/soundscape/background/North/tuman_open_alt",
   "dur": 164.2,
   "cen": 3549,
   "flat": 0.317,
+  "crest": 7.9,
+  "role": "texture",
+  "bright": "mid",
+  "tone": "mixed"
+ },
+ {
+  "ch": "background_tuman_open",
+  "stem": "ambient/soundscape/background/North/tuman_open_alt2",
+  "dur": 163.9,
+  "cen": 2960,
+  "flat": 0.273,
   "crest": 7.9,
   "role": "texture",
   "bright": "mid",
@@ -171,17 +193,6 @@
   "cen": 2040,
   "flat": 0.196,
   "crest": 6.5,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "background_tuman_open",
-  "stem": "ambient/soundscape/background/North/tuman_open_alt2",
-  "dur": 163.9,
-  "cen": 2960,
-  "flat": 0.273,
-  "crest": 7.9,
   "role": "texture",
   "bright": "mid",
   "tone": "mixed"
@@ -276,11 +287,165 @@
  },
  {
   "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap2",
+  "dur": 14.5,
+  "cen": 12902,
+  "flat": 0.665,
+  "crest": 81.3,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
   "stem": "ambient/soundscape/foliage/snap3",
   "dur": 14.5,
   "cen": 10242,
   "flat": 0.628,
   "crest": 154.4,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap4",
+  "dur": 14.5,
+  "cen": 11689,
+  "flat": 0.678,
+  "crest": 109.5,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap5",
+  "dur": 14.5,
+  "cen": 11245,
+  "flat": 0.656,
+  "crest": 77.7,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap7",
+  "dur": 14.5,
+  "cen": 11267,
+  "flat": 0.672,
+  "crest": 150.8,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap8",
+  "dur": 14.5,
+  "cen": 11298,
+  "flat": 0.671,
+  "crest": 92.8,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap9",
+  "dur": 14.5,
+  "cen": 11755,
+  "flat": 0.654,
+  "crest": 209.9,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap10",
+  "dur": 14.5,
+  "cen": 15052,
+  "flat": 0.647,
+  "crest": 148.7,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap11",
+  "dur": 14.5,
+  "cen": 15143,
+  "flat": 0.641,
+  "crest": 182.7,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap12",
+  "dur": 14.5,
+  "cen": 14948,
+  "flat": 0.643,
+  "crest": 81.8,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap13",
+  "dur": 14.5,
+  "cen": 15026,
+  "flat": 0.646,
+  "crest": 140.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap16",
+  "dur": 14.5,
+  "cen": 14776,
+  "flat": 0.653,
+  "crest": 220.8,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap17",
+  "dur": 14.5,
+  "cen": 15083,
+  "flat": 0.647,
+  "crest": 151.5,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap18",
+  "dur": 14.5,
+  "cen": 14240,
+  "flat": 0.648,
+  "crest": 171.3,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "branch",
+  "stem": "ambient/soundscape/foliage/snap19",
+  "dur": 14.5,
+  "cen": 14727,
+  "flat": 0.65,
+  "crest": 202.5,
   "role": "accent",
   "bright": "bright",
   "tone": "noisy"
@@ -693,105 +858,6 @@
   "tone": "noisy"
  },
  {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime1",
-  "dur": 3.3,
-  "cen": 4469,
-  "flat": 0.289,
-  "crest": 8.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime2",
-  "dur": 3.8,
-  "cen": 4824,
-  "flat": 0.305,
-  "crest": 9.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime3",
-  "dur": 3.8,
-  "cen": 5109,
-  "flat": 0.335,
-  "crest": 8.9,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime4",
-  "dur": 5.6,
-  "cen": 5291,
-  "flat": 0.34,
-  "crest": 10.0,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime5",
-  "dur": 5.6,
-  "cen": 4319,
-  "flat": 0.292,
-  "crest": 15.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime6",
-  "dur": 5.6,
-  "cen": 4396,
-  "flat": 0.304,
-  "crest": 11.7,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime7",
-  "dur": 5.1,
-  "cen": 4070,
-  "flat": 0.272,
-  "crest": 10.0,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime8",
-  "dur": 4.7,
-  "cen": 5089,
-  "flat": 0.333,
-  "crest": 10.8,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "chimes",
-  "stem": "ambient/soundscape/foliage/chime9",
-  "dur": 6.9,
-  "cen": 4712,
-  "flat": 0.301,
-  "crest": 11.7,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
   "ch": "crows",
   "stem": "ambient/trx/nature/crow/sound_13",
   "dur": 6.0,
@@ -805,17 +871,6 @@
  {
   "ch": "crows",
   "stem": "ambient/trx/nature/crow/sound_14",
-  "dur": 5.8,
-  "cen": 2120,
-  "flat": 0.305,
-  "crest": 8.3,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "crows",
-  "stem": "ambient/trx/nature/crow/sound_15",
   "dur": 5.8,
   "cen": 2120,
   "flat": 0.305,
@@ -893,39 +948,6 @@
  {
   "ch": "crows",
   "stem": "ambient/trx/nature/crow/sound_22",
-  "dur": 2.9,
-  "cen": 1465,
-  "flat": 0.119,
-  "crest": 6.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "crows",
-  "stem": "ambient/trx/nature/crow/sound_23",
-  "dur": 2.9,
-  "cen": 1468,
-  "flat": 0.119,
-  "crest": 6.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "crows",
-  "stem": "ambient/trx/nature/crow/sound_24",
-  "dur": 2.9,
-  "cen": 1468,
-  "flat": 0.119,
-  "crest": 6.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "crows",
-  "stem": "ambient/trx/nature/crow/sound_25",
   "dur": 2.9,
   "cen": 1465,
   "flat": 0.119,
@@ -1585,6 +1607,17 @@
  },
  {
   "ch": "day_drones",
+  "stem": "ambient/Soundscape/Spoops/day_drones/drone19",
+  "dur": 9.9,
+  "cen": 4244,
+  "flat": 0.206,
+  "crest": 5.4,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "day_drones",
   "stem": "ambient/Soundscape/Spoops/day_drones/drone2",
   "dur": 1.1,
   "cen": 2508,
@@ -1728,17 +1761,6 @@
  },
  {
   "ch": "day_drones",
-  "stem": "ambient/Soundscape/Spoops/day_drones/drone15",
-  "dur": 8.0,
-  "cen": 2684,
-  "flat": 0.109,
-  "crest": 4.9,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "day_drones",
   "stem": "ambient/Soundscape/Spoops/day_drones/drone16",
   "dur": 15.2,
   "cen": 4094,
@@ -1750,14 +1772,14 @@
  },
  {
   "ch": "day_drones",
-  "stem": "ambient/Soundscape/Spoops/day_drones/drone19",
-  "dur": 9.9,
-  "cen": 4244,
-  "flat": 0.206,
-  "crest": 5.4,
+  "stem": "ambient/Soundscape/Spoops/day_drones/drone20",
+  "dur": 6.3,
+  "cen": 408,
+  "flat": 0.079,
+  "crest": 6.6,
   "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
+  "bright": "dark",
+  "tone": "tonal"
  },
  {
   "ch": "day_drones",
@@ -1802,6 +1824,17 @@
   "role": "accent",
   "bright": "mid",
   "tone": "tonal"
+ },
+ {
+  "ch": "day_drones",
+  "stem": "ambient/Soundscape/Spoops/day_drones/drone25",
+  "dur": 16.0,
+  "cen": 5654,
+  "flat": 0.189,
+  "crest": 7.6,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
  },
  {
   "ch": "dogs",
@@ -2355,17 +2388,6 @@
  },
  {
   "ch": "drones",
-  "stem": "ambient/Soundscape/Spoops/drones/drone31",
-  "dur": 12.0,
-  "cen": 1890,
-  "flat": 0.085,
-  "crest": 5.1,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "drones",
   "stem": "ambient/Soundscape/Spoops/drones/drone33",
   "dur": 6.6,
   "cen": 2913,
@@ -2619,6 +2641,94 @@
  },
  {
   "ch": "foliage_spook",
+  "stem": "ambient/soundscape/foliage/snap9",
+  "dur": 14.5,
+  "cen": 11755,
+  "flat": 0.654,
+  "crest": 209.9,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "foliage_spook",
+  "stem": "ambient/soundscape/foliage/snap10",
+  "dur": 14.5,
+  "cen": 15052,
+  "flat": 0.647,
+  "crest": 148.7,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "foliage_spook",
+  "stem": "ambient/soundscape/foliage/snap11",
+  "dur": 14.5,
+  "cen": 15143,
+  "flat": 0.641,
+  "crest": 182.7,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "foliage_spook",
+  "stem": "ambient/soundscape/foliage/snap12",
+  "dur": 14.5,
+  "cen": 14948,
+  "flat": 0.643,
+  "crest": 81.8,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "foliage_spook",
+  "stem": "ambient/soundscape/foliage/snap13",
+  "dur": 14.5,
+  "cen": 15026,
+  "flat": 0.646,
+  "crest": 140.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "foliage_spook",
+  "stem": "ambient/soundscape/foliage/snap16",
+  "dur": 14.5,
+  "cen": 14776,
+  "flat": 0.653,
+  "crest": 220.8,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "foliage_spook",
+  "stem": "ambient/soundscape/foliage/snap17",
+  "dur": 14.5,
+  "cen": 15083,
+  "flat": 0.647,
+  "crest": 151.5,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "foliage_spook",
+  "stem": "ambient/soundscape/foliage/snap18",
+  "dur": 14.5,
+  "cen": 14240,
+  "flat": 0.648,
+  "crest": 171.3,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "foliage_spook",
   "stem": "ambient/soundscape/foliage/snap14",
   "dur": 14.5,
   "cen": 8620,
@@ -2806,6 +2916,39 @@
  },
  {
   "ch": "out_dark_amb",
+  "stem": "ambient/trx/spooks_above/amb_dark/sound_12",
+  "dur": 18.1,
+  "cen": 12948,
+  "flat": 0.681,
+  "crest": 20.8,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_dark_amb",
+  "stem": "ambient/trx/spooks_above/amb_dark/sound_14",
+  "dur": 18.1,
+  "cen": 11816,
+  "flat": 0.627,
+  "crest": 14.9,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_dark_amb",
+  "stem": "ambient/trx/spooks_above/amb_dark/sound_16",
+  "dur": 17.5,
+  "cen": 12936,
+  "flat": 0.671,
+  "crest": 22.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_dark_amb",
   "stem": "ambient/trx/spooks_above/amb_dark/sound_08",
   "dur": 17.5,
   "cen": 10155,
@@ -2839,28 +2982,6 @@
  },
  {
   "ch": "out_dark_amb",
-  "stem": "ambient/trx/spooks_above/amb_dark/sound_12",
-  "dur": 18.1,
-  "cen": 12948,
-  "flat": 0.681,
-  "crest": 20.8,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_dark_amb",
-  "stem": "ambient/trx/spooks_above/amb_dark/sound_14",
-  "dur": 18.1,
-  "cen": 11816,
-  "flat": 0.627,
-  "crest": 14.9,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_dark_amb",
   "stem": "ambient/trx/spooks_above/amb_dark/sound_15",
   "dur": 15.4,
   "cen": 7004,
@@ -2869,17 +2990,6 @@
   "role": "accent",
   "bright": "bright",
   "tone": "mixed"
- },
- {
-  "ch": "out_dark_amb",
-  "stem": "ambient/trx/spooks_above/amb_dark/sound_16",
-  "dur": 17.5,
-  "cen": 12936,
-  "flat": 0.671,
-  "crest": 22.0,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
  },
  {
   "ch": "out_dark_amb",
@@ -3191,6 +3301,116 @@
  },
  {
   "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound1",
+  "dur": 14.5,
+  "cen": 14562,
+  "flat": 0.603,
+  "crest": 40.5,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound4",
+  "dur": 14.5,
+  "cen": 14111,
+  "flat": 0.584,
+  "crest": 18.1,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound5",
+  "dur": 14.5,
+  "cen": 14181,
+  "flat": 0.556,
+  "crest": 16.6,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound12",
+  "dur": 14.5,
+  "cen": 15157,
+  "flat": 0.625,
+  "crest": 33.4,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound20",
+  "dur": 14.5,
+  "cen": 15078,
+  "flat": 0.632,
+  "crest": 43.3,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound21",
+  "dur": 14.5,
+  "cen": 14761,
+  "flat": 0.63,
+  "crest": 37.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound22",
+  "dur": 14.5,
+  "cen": 14592,
+  "flat": 0.655,
+  "crest": 53.9,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound23",
+  "dur": 14.5,
+  "cen": 13964,
+  "flat": 0.639,
+  "crest": 39.5,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound24",
+  "dur": 14.5,
+  "cen": 13557,
+  "flat": 0.627,
+  "crest": 63.3,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound26",
+  "dur": 14.5,
+  "cen": 12973,
+  "flat": 0.521,
+  "crest": 10.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_day_spoops",
   "stem": "ambient/Soundscape/Spoops/Day_spoops/sound2",
   "dur": 14.5,
   "cen": 11640,
@@ -3345,6 +3565,17 @@
  },
  {
   "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound19",
+  "dur": 16.0,
+  "cen": 5654,
+  "flat": 0.189,
+  "crest": 7.6,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_day_spoops",
   "stem": "ambient/Soundscape/Spoops/Day_spoops/sound25",
   "dur": 20.4,
   "cen": 8762,
@@ -3463,17 +3694,6 @@
   "role": "accent",
   "bright": "mid",
   "tone": "tonal"
- },
- {
-  "ch": "out_day_spoops",
-  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound40",
-  "dur": 4.5,
-  "cen": 3578,
-  "flat": 0.17,
-  "crest": 4.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
  },
  {
   "ch": "out_day_spoops",
@@ -3664,17 +3884,6 @@
  },
  {
   "ch": "out_day_spoops",
-  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound58",
-  "dur": 3.1,
-  "cen": 6273,
-  "flat": 0.486,
-  "crest": 17.3,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_day_spoops",
   "stem": "ambient/Soundscape/Spoops/Day_spoops/sound59",
   "dur": 7.3,
   "cen": 3403,
@@ -3683,6 +3892,17 @@
   "role": "accent",
   "bright": "mid",
   "tone": "mixed"
+ },
+ {
+  "ch": "out_day_spoops",
+  "stem": "ambient/Soundscape/Spoops/Day_spoops/sound58",
+  "dur": 3.1,
+  "cen": 6273,
+  "flat": 0.486,
+  "crest": 17.3,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
  },
  {
   "ch": "out_day_spoops",
@@ -4027,17 +4247,6 @@
  },
  {
   "ch": "out_drone",
-  "stem": "ambient/soundscape/Spoops/drones/drone4",
-  "dur": 12.0,
-  "cen": 1885,
-  "flat": 0.085,
-  "crest": 5.1,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_drone",
   "stem": "ambient/soundscape/Spoops/drones/drone40",
   "dur": 1.3,
   "cen": 2731,
@@ -4379,17 +4588,6 @@
  },
  {
   "ch": "out_gunfire",
-  "stem": "ambient/trx/spooks_above/shooting/sound_19",
-  "dur": 5.0,
-  "cen": 4683,
-  "flat": 0.356,
-  "crest": 8.5,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_gunfire",
   "stem": "ambient/trx/spooks_above/shooting/sound_20",
   "dur": 4.0,
   "cen": 2632,
@@ -4456,17 +4654,6 @@
  },
  {
   "ch": "out_gunfire",
-  "stem": "ambient/trx/spooks_above/shooting/sound_26",
-  "dur": 5.5,
-  "cen": 1489,
-  "flat": 0.125,
-  "crest": 13.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_gunfire",
   "stem": "ambient/trx/spooks_above/shooting/sound_27",
   "dur": 6.8,
   "cen": 3011,
@@ -4519,61 +4706,6 @@
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
- },
- {
-  "ch": "out_gunfire",
-  "stem": "ambient/trx/spooks_above/shooting/sound_33",
-  "dur": 11.0,
-  "cen": 3226,
-  "flat": 0.247,
-  "crest": 19.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_gunfire",
-  "stem": "ambient/trx/spooks_above/shooting/sound_34",
-  "dur": 3.2,
-  "cen": 1762,
-  "flat": 0.148,
-  "crest": 16.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_gunfire",
-  "stem": "ambient/trx/spooks_above/shooting/sound_35",
-  "dur": 5.5,
-  "cen": 1489,
-  "flat": 0.125,
-  "crest": 13.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_gunfire",
-  "stem": "ambient/trx/spooks_above/shooting/sound_36",
-  "dur": 9.9,
-  "cen": 4869,
-  "flat": 0.401,
-  "crest": 16.0,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_gunfire",
-  "stem": "ambient/trx/spooks_above/shooting/sound_37",
-  "dur": 9.9,
-  "cen": 2667,
-  "flat": 0.233,
-  "crest": 14.7,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
  },
  {
   "ch": "out_gunfire",
@@ -5138,6 +5270,17 @@
  },
  {
   "ch": "out_mutants",
+  "stem": "ambient/soundscape/mutants/lurker/back/distant_1b",
+  "dur": 4.7,
+  "cen": 956,
+  "flat": 0.036,
+  "crest": 3.0,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "out_mutants",
   "stem": "ambient/soundscape/mutants/lurker/back/distant_2 lurk",
   "dur": 4.2,
   "cen": 1199,
@@ -5146,6 +5289,17 @@
   "role": "accent",
   "bright": "dark",
   "tone": "mixed"
+ },
+ {
+  "ch": "out_mutants",
+  "stem": "ambient/soundscape/mutants/lurker/distant_2",
+  "dur": 4.2,
+  "cen": 1100,
+  "flat": 0.115,
+  "crest": 8.7,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "tonal"
  },
  {
   "ch": "out_mutants",
@@ -5165,17 +5319,6 @@
   "cen": 1444,
   "flat": 0.132,
   "crest": 8.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/lurker/distant_2",
-  "dur": 4.2,
-  "cen": 1100,
-  "flat": 0.115,
-  "crest": 8.7,
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
@@ -5292,6 +5435,17 @@
  },
  {
   "ch": "out_mutants",
+  "stem": "ambient/soundscape/mutants/zombie/distant_2",
+  "dur": 8.5,
+  "cen": 1427,
+  "flat": 0.066,
+  "crest": 6.6,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "out_mutants",
   "stem": "ambient/soundscape/mutants/poltergeist/distant_9",
   "dur": 1.5,
   "cen": 357,
@@ -5385,17 +5539,6 @@
   "cen": 7813,
   "flat": 0.294,
   "crest": 9.6,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/snork/distant_6",
-  "dur": 3.7,
-  "cen": 7148,
-  "flat": 0.304,
-  "crest": 9.3,
   "role": "accent",
   "bright": "bright",
   "tone": "mixed"
@@ -5517,17 +5660,6 @@
   "cen": 1931,
   "flat": 0.072,
   "crest": 7.6,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/zombie/distant_2",
-  "dur": 8.5,
-  "cen": 1427,
-  "flat": 0.066,
-  "crest": 6.6,
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
@@ -5688,6 +5820,17 @@
  },
  {
   "ch": "out_mutants",
+  "stem": "ambient/soundscape/mutants/snork/bck/distant_2b",
+  "dur": 5.9,
+  "cen": 885,
+  "flat": 0.076,
+  "crest": 6.2,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "out_mutants",
   "stem": "ambient/soundscape/mutants/flesh/distant_1",
   "dur": 1.9,
   "cen": 419,
@@ -5695,61 +5838,6 @@
   "crest": 4.3,
   "role": "accent",
   "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/boar/distant_3",
-  "dur": 5.0,
-  "cen": 2492,
-  "flat": 0.251,
-  "crest": 7.6,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/controller/distant_2",
-  "dur": 16.0,
-  "cen": 1231,
-  "flat": 0.143,
-  "crest": 4.5,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/controller/distant_5",
-  "dur": 9.5,
-  "cen": 802,
-  "flat": 0.082,
-  "crest": 6.0,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/controller/distant_6",
-  "dur": 12.2,
-  "cen": 2521,
-  "flat": 0.027,
-  "crest": 4.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/controller/distant_7",
-  "dur": 10.8,
-  "cen": 2118,
-  "flat": 0.023,
-  "crest": 3.7,
-  "role": "accent",
-  "bright": "mid",
   "tone": "tonal"
  },
  {
@@ -5795,105 +5883,6 @@
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/flesh/distant_5",
-  "dur": 5.8,
-  "cen": 870,
-  "flat": 0.044,
-  "crest": 9.0,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_1",
-  "dur": 6.4,
-  "cen": 2486,
-  "flat": 0.19,
-  "crest": 9.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_2",
-  "dur": 7.5,
-  "cen": 2302,
-  "flat": 0.149,
-  "crest": 6.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_3",
-  "dur": 6.0,
-  "cen": 2282,
-  "flat": 0.166,
-  "crest": 4.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_4",
-  "dur": 5.6,
-  "cen": 2626,
-  "flat": 0.182,
-  "crest": 5.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_5",
-  "dur": 4.7,
-  "cen": 2711,
-  "flat": 0.234,
-  "crest": 5.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_6",
-  "dur": 6.3,
-  "cen": 2185,
-  "flat": 0.149,
-  "crest": 7.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_7",
-  "dur": 7.2,
-  "cen": 2175,
-  "flat": 0.154,
-  "crest": 5.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_8",
-  "dur": 6.5,
-  "cen": 2030,
-  "flat": 0.15,
-  "crest": 5.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
  },
  {
   "ch": "out_mutants",
@@ -6040,193 +6029,6 @@
  },
  {
   "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/bloodsucker/distant_1",
-  "dur": 9.1,
-  "cen": 710,
-  "flat": 0.305,
-  "crest": 12.1,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/bloodsucker/distant_2",
-  "dur": 8.5,
-  "cen": 2752,
-  "flat": 0.232,
-  "crest": 5.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/bloodsucker/distant_3",
-  "dur": 6.3,
-  "cen": 3850,
-  "flat": 0.185,
-  "crest": 6.4,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/bloodsucker/distant_4",
-  "dur": 2.8,
-  "cen": 4107,
-  "flat": 0.374,
-  "crest": 9.3,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/bloodsucker/distant_5",
-  "dur": 4.2,
-  "cen": 7210,
-  "flat": 0.241,
-  "crest": 7.5,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/boar/distant_1",
-  "dur": 5.0,
-  "cen": 2047,
-  "flat": 0.249,
-  "crest": 7.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/boar/distant_2",
-  "dur": 5.0,
-  "cen": 1795,
-  "flat": 0.185,
-  "crest": 7.6,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/boar/distant_3",
-  "dur": 5.0,
-  "cen": 2492,
-  "flat": 0.251,
-  "crest": 7.6,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/boar/distant_4",
-  "dur": 5.0,
-  "cen": 2574,
-  "flat": 0.289,
-  "crest": 10.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/boar/distant_5",
-  "dur": 5.0,
-  "cen": 3144,
-  "flat": 0.346,
-  "crest": 9.4,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/burer/distant_1",
-  "dur": 23.4,
-  "cen": 285,
-  "flat": 0.037,
-  "crest": 6.6,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/burer/distant_2",
-  "dur": 7.9,
-  "cen": 502,
-  "flat": 0.04,
-  "crest": 5.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/burer/distant_3",
-  "dur": 6.2,
-  "cen": 612,
-  "flat": 0.044,
-  "crest": 6.7,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/burer/distant_4",
-  "dur": 6.4,
-  "cen": 601,
-  "flat": 0.053,
-  "crest": 5.0,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/burer/distant_5",
-  "dur": 16.0,
-  "cen": 353,
-  "flat": 0.045,
-  "crest": 9.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/burer/distant_6",
-  "dur": 6.9,
-  "cen": 278,
-  "flat": 0.043,
-  "crest": 5.2,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/burer/distant_7",
-  "dur": 6.3,
-  "cen": 621,
-  "flat": 0.108,
-  "crest": 4.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
   "stem": "ambient/soundscape/mutants/cat/distant_1",
   "dur": 2.2,
   "cen": 1221,
@@ -6249,363 +6051,11 @@
  },
  {
   "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/cat/distant_3",
-  "dur": 5.8,
-  "cen": 2278,
-  "flat": 0.048,
-  "crest": 7.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/chimera/distant_1",
-  "dur": 3.8,
-  "cen": 2666,
-  "flat": 0.182,
-  "crest": 5.5,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/chimera/distant_2",
-  "dur": 4.9,
-  "cen": 2613,
-  "flat": 0.123,
-  "crest": 6.6,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/chimera/distant_3",
-  "dur": 14.5,
-  "cen": 12372,
-  "flat": 0.551,
-  "crest": 54.0,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/chimera/distant_4",
-  "dur": 14.5,
-  "cen": 11816,
-  "flat": 0.53,
-  "crest": 39.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/chimera/distant_5",
-  "dur": 14.5,
-  "cen": 11479,
-  "flat": 0.517,
-  "crest": 64.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/chimera/distant_6",
-  "dur": 10.0,
-  "cen": 7912,
-  "flat": 0.362,
-  "crest": 10.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/chimera/distant_7",
-  "dur": 10.0,
-  "cen": 7658,
-  "flat": 0.351,
-  "crest": 14.4,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/chimera/distant_8",
-  "dur": 10.0,
-  "cen": 7328,
-  "flat": 0.334,
-  "crest": 12.5,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/controller/distant_2",
-  "dur": 16.0,
-  "cen": 1231,
-  "flat": 0.143,
-  "crest": 4.5,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/controller/distant_5",
-  "dur": 9.5,
-  "cen": 802,
-  "flat": 0.082,
-  "crest": 6.0,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/controller/distant_6",
-  "dur": 12.2,
-  "cen": 2521,
-  "flat": 0.027,
-  "crest": 4.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/controller/distant_7",
-  "dur": 10.8,
-  "cen": 2118,
-  "flat": 0.023,
-  "crest": 3.7,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/dog/distant_1",
-  "dur": 32.3,
-  "cen": 607,
-  "flat": 0.022,
-  "crest": 20.6,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/dog/distant_2",
-  "dur": 26.4,
-  "cen": 699,
-  "flat": 0.052,
-  "crest": 11.4,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/dog/distant_3",
-  "dur": 16.8,
-  "cen": 571,
-  "flat": 0.042,
-  "crest": 8.4,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/dog/distant_4",
-  "dur": 54.7,
-  "cen": 428,
-  "flat": 0.04,
-  "crest": 16.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/dog/distant_5",
-  "dur": 5.4,
-  "cen": 734,
-  "flat": 0.046,
-  "crest": 8.8,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/dog/distant_6",
-  "dur": 15.8,
-  "cen": 647,
-  "flat": 0.043,
-  "crest": 8.8,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/dog/distant_7",
-  "dur": 8.5,
-  "cen": 453,
-  "flat": 0.036,
-  "crest": 13.0,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/dog/distant_8",
-  "dur": 9.6,
-  "cen": 715,
-  "flat": 0.035,
-  "crest": 9.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
   "stem": "ambient/soundscape/mutants/flesh/distant_1",
   "dur": 1.9,
   "cen": 419,
   "flat": 0.011,
   "crest": 4.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/flesh/distant_2",
-  "dur": 4.3,
-  "cen": 5948,
-  "flat": 0.244,
-  "crest": 11.3,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/flesh/distant_3",
-  "dur": 4.3,
-  "cen": 9535,
-  "flat": 0.373,
-  "crest": 27.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/flesh/distant_4",
-  "dur": 4.3,
-  "cen": 6702,
-  "flat": 0.287,
-  "crest": 9.9,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/flesh/distant_5",
-  "dur": 5.8,
-  "cen": 870,
-  "flat": 0.044,
-  "crest": 9.0,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/fracture/distant_1",
-  "dur": 10.3,
-  "cen": 4078,
-  "flat": 0.185,
-  "crest": 13.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/fracture/distant_2",
-  "dur": 3.7,
-  "cen": 5931,
-  "flat": 0.257,
-  "crest": 8.9,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/fracture/distant_3",
-  "dur": 16.9,
-  "cen": 10804,
-  "flat": 0.388,
-  "crest": 9.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/fracture/distant_4",
-  "dur": 17.0,
-  "cen": 12377,
-  "flat": 0.567,
-  "crest": 16.8,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/fracture/distant_5",
-  "dur": 3.7,
-  "cen": 7148,
-  "flat": 0.304,
-  "crest": 9.3,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/fracture/distant_6",
-  "dur": 4.1,
-  "cen": 7329,
-  "flat": 0.298,
-  "crest": 10.9,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/giant/distant_1",
-  "dur": 5.8,
-  "cen": 834,
-  "flat": 0.11,
-  "crest": 3.9,
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
@@ -6623,116 +6073,6 @@
  },
  {
   "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/giant/distant_3",
-  "dur": 8.8,
-  "cen": 2415,
-  "flat": 0.133,
-  "crest": 5.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/giant/distant_4",
-  "dur": 15.2,
-  "cen": 1061,
-  "flat": 0.101,
-  "crest": 8.0,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/giant/distant_5",
-  "dur": 6.3,
-  "cen": 3783,
-  "flat": 0.213,
-  "crest": 8.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/lurker/distant_1",
-  "dur": 4.2,
-  "cen": 1444,
-  "flat": 0.132,
-  "crest": 8.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/lurker/distant_2",
-  "dur": 4.2,
-  "cen": 1100,
-  "flat": 0.115,
-  "crest": 8.7,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/lurker/distant_3",
-  "dur": 4.1,
-  "cen": 2486,
-  "flat": 0.128,
-  "crest": 8.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/lurker/distant_4",
-  "dur": 15.2,
-  "cen": 7661,
-  "flat": 0.284,
-  "crest": 9.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/poltergeist/distant_1",
-  "dur": 10.0,
-  "cen": 4224,
-  "flat": 0.137,
-  "crest": 5.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/poltergeist/distant_2",
-  "dur": 10.1,
-  "cen": 589,
-  "flat": 0.024,
-  "crest": 4.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/poltergeist/distant_3",
-  "dur": 12.0,
-  "cen": 5297,
-  "flat": 0.284,
-  "crest": 9.3,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
   "stem": "ambient/soundscape/mutants/poltergeist/distant_4",
   "dur": 1.3,
   "cen": 9182,
@@ -6744,39 +6084,6 @@
  },
  {
   "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/poltergeist/distant_5",
-  "dur": 13.2,
-  "cen": 5060,
-  "flat": 0.156,
-  "crest": 4.8,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/poltergeist/distant_6",
-  "dur": 7.0,
-  "cen": 608,
-  "flat": 0.041,
-  "crest": 5.5,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/poltergeist/distant_8",
-  "dur": 9.9,
-  "cen": 2434,
-  "flat": 0.129,
-  "crest": 6.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
   "stem": "ambient/soundscape/mutants/poltergeist/distant_9",
   "dur": 1.5,
   "cen": 357,
@@ -6785,292 +6092,6 @@
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/psysucker/distant_1",
-  "dur": 15.1,
-  "cen": 12630,
-  "flat": 0.422,
-  "crest": 19.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/psysucker/distant_2",
-  "dur": 11.7,
-  "cen": 4466,
-  "flat": 0.2,
-  "crest": 7.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/psysucker/distant_3",
-  "dur": 3.1,
-  "cen": 2091,
-  "flat": 0.101,
-  "crest": 8.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/psysucker/distant_5",
-  "dur": 10.1,
-  "cen": 7734,
-  "flat": 0.286,
-  "crest": 7.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/snork/distant_1",
-  "dur": 4.5,
-  "cen": 6564,
-  "flat": 0.279,
-  "crest": 6.4,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/snork/distant_2",
-  "dur": 3.1,
-  "cen": 5832,
-  "flat": 0.263,
-  "crest": 8.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/snork/distant_3",
-  "dur": 5.1,
-  "cen": 4898,
-  "flat": 0.194,
-  "crest": 6.4,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/snork/distant_4",
-  "dur": 4.6,
-  "cen": 7813,
-  "flat": 0.294,
-  "crest": 9.6,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/snork/distant_5",
-  "dur": 6.1,
-  "cen": 1938,
-  "flat": 0.091,
-  "crest": 7.4,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_1",
-  "dur": 6.4,
-  "cen": 2486,
-  "flat": 0.19,
-  "crest": 9.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_10",
-  "dur": 7.0,
-  "cen": 5396,
-  "flat": 0.231,
-  "crest": 6.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_2",
-  "dur": 7.5,
-  "cen": 2302,
-  "flat": 0.149,
-  "crest": 6.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_3",
-  "dur": 6.0,
-  "cen": 2282,
-  "flat": 0.166,
-  "crest": 4.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_4",
-  "dur": 5.6,
-  "cen": 2626,
-  "flat": 0.182,
-  "crest": 5.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_5",
-  "dur": 4.7,
-  "cen": 2711,
-  "flat": 0.234,
-  "crest": 5.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_6",
-  "dur": 6.3,
-  "cen": 2185,
-  "flat": 0.149,
-  "crest": 7.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_7",
-  "dur": 7.2,
-  "cen": 2175,
-  "flat": 0.154,
-  "crest": 5.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_8",
-  "dur": 6.5,
-  "cen": 2030,
-  "flat": 0.15,
-  "crest": 5.3,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/wolf/distant_9",
-  "dur": 6.9,
-  "cen": 3831,
-  "flat": 0.146,
-  "crest": 6.6,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/zombie/distant_1",
-  "dur": 9.2,
-  "cen": 1931,
-  "flat": 0.072,
-  "crest": 7.6,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/zombie/distant_2",
-  "dur": 8.5,
-  "cen": 1427,
-  "flat": 0.066,
-  "crest": 6.6,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/zombie/distant_3",
-  "dur": 12.9,
-  "cen": 5774,
-  "flat": 0.209,
-  "crest": 9.3,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/zombie/distant_4",
-  "dur": 15.4,
-  "cen": 11293,
-  "flat": 0.425,
-  "crest": 18.3,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/zombie/distant_5",
-  "dur": 18.6,
-  "cen": 14110,
-  "flat": 0.568,
-  "crest": 26.3,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/zombie/distant_6",
-  "dur": 13.1,
-  "cen": 7846,
-  "flat": 0.279,
-  "crest": 8.5,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "out_mutants",
-  "stem": "ambient/soundscape/mutants/zombie/distant_7",
-  "dur": 12.9,
-  "cen": 7023,
-  "flat": 0.272,
-  "crest": 12.4,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
  },
  {
   "ch": "out_night_amb",
@@ -7184,6 +6205,39 @@
  },
  {
   "ch": "out_night_spoops",
+  "stem": "ambient/Soundscape/Spoops/night_spoops/sound12",
+  "dur": 18.1,
+  "cen": 12948,
+  "flat": 0.681,
+  "crest": 20.8,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_night_spoops",
+  "stem": "ambient/Soundscape/Spoops/night_spoops/sound14",
+  "dur": 18.1,
+  "cen": 11816,
+  "flat": 0.627,
+  "crest": 14.9,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_night_spoops",
+  "stem": "ambient/Soundscape/Spoops/night_spoops/sound16",
+  "dur": 17.5,
+  "cen": 12936,
+  "flat": 0.671,
+  "crest": 22.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_night_spoops",
   "stem": "ambient/Soundscape/Spoops/night_spoops/sound8",
   "dur": 17.5,
   "cen": 10155,
@@ -7217,25 +6271,14 @@
  },
  {
   "ch": "out_night_spoops",
-  "stem": "ambient/Soundscape/Spoops/night_spoops/sound12",
-  "dur": 18.1,
-  "cen": 12948,
-  "flat": 0.681,
-  "crest": 20.8,
+  "stem": "ambient/Soundscape/Spoops/night_spoops/sound13",
+  "dur": 4.6,
+  "cen": 2393,
+  "flat": 0.097,
+  "crest": 5.7,
   "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_night_spoops",
-  "stem": "ambient/Soundscape/Spoops/night_spoops/sound14",
-  "dur": 18.1,
-  "cen": 11816,
-  "flat": 0.627,
-  "crest": 14.9,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
+  "bright": "mid",
+  "tone": "tonal"
  },
  {
   "ch": "out_night_spoops",
@@ -7244,17 +6287,6 @@
   "cen": 12335,
   "flat": 0.507,
   "crest": 16.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "out_night_spoops",
-  "stem": "ambient/Soundscape/Spoops/night_spoops/sound16",
-  "dur": 17.5,
-  "cen": 12936,
-  "flat": 0.671,
-  "crest": 22.0,
   "role": "accent",
   "bright": "bright",
   "tone": "noisy"
@@ -7679,11 +6711,253 @@
  },
  {
   "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_07",
+  "dur": 13.5,
+  "cen": 800,
+  "flat": 0.492,
+  "crest": 2.1,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound20",
+  "dur": 14.5,
+  "cen": 15639,
+  "flat": 0.605,
+  "crest": 43.5,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound21",
+  "dur": 14.5,
+  "cen": 15355,
+  "flat": 0.606,
+  "crest": 36.6,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound22",
+  "dur": 14.5,
+  "cen": 14896,
+  "flat": 0.617,
+  "crest": 53.9,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound23",
+  "dur": 14.5,
+  "cen": 14647,
+  "flat": 0.612,
+  "crest": 39.4,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound24",
+  "dur": 14.5,
+  "cen": 13673,
+  "flat": 0.617,
+  "crest": 62.9,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_08",
+  "dur": 12.7,
+  "cen": 373,
+  "flat": 0.512,
+  "crest": 5.5,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_09",
+  "dur": 8.2,
+  "cen": 334,
+  "flat": 0.756,
+  "crest": 7.1,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_17",
+  "dur": 10.9,
+  "cen": 936,
+  "flat": 0.637,
+  "crest": 9.4,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_13",
+  "dur": 9.4,
+  "cen": 806,
+  "flat": 0.659,
+  "crest": 10.3,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_14",
+  "dur": 4.7,
+  "cen": 1310,
+  "flat": 0.642,
+  "crest": 9.0,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_26",
+  "dur": 4.5,
+  "cen": 1486,
+  "flat": 0.787,
+  "crest": 11.6,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_27",
+  "dur": 3.9,
+  "cen": 1270,
+  "flat": 0.717,
+  "crest": 6.4,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_32",
+  "dur": 5.5,
+  "cen": 171,
+  "flat": 0.409,
+  "crest": 4.0,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_36",
+  "dur": 4.4,
+  "cen": 75,
+  "flat": 0.367,
+  "crest": 5.8,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_01",
+  "dur": 3.8,
+  "cen": 581,
+  "flat": 0.393,
+  "crest": 8.7,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
   "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_02",
   "dur": 4.2,
   "cen": 929,
   "flat": 0.573,
   "crest": 10.8,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_03",
+  "dur": 8.9,
+  "cen": 189,
+  "flat": 0.351,
+  "crest": 4.4,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_04",
+  "dur": 8.5,
+  "cen": 193,
+  "flat": 0.306,
+  "crest": 4.5,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_05",
+  "dur": 11.1,
+  "cen": 174,
+  "flat": 0.27,
+  "crest": 4.1,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_06",
+  "dur": 9.2,
+  "cen": 169,
+  "flat": 0.312,
+  "crest": 4.2,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_10",
+  "dur": 7.3,
+  "cen": 869,
+  "flat": 0.492,
+  "crest": 4.2,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_11",
+  "dur": 7.9,
+  "cen": 456,
+  "flat": 0.464,
+  "crest": 6.2,
   "role": "accent",
   "bright": "dark",
   "tone": "noisy"
@@ -7701,11 +6975,77 @@
  },
  {
   "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_15",
+  "dur": 9.4,
+  "cen": 879,
+  "flat": 0.513,
+  "crest": 4.4,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_16",
+  "dur": 2.8,
+  "cen": 511,
+  "flat": 0.391,
+  "crest": 7.1,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_18",
+  "dur": 22.6,
+  "cen": 1142,
+  "flat": 0.503,
+  "crest": 5.1,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_19",
+  "dur": 10.8,
+  "cen": 829,
+  "flat": 0.452,
+  "crest": 7.4,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_20",
+  "dur": 11.9,
+  "cen": 675,
+  "flat": 0.42,
+  "crest": 6.9,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "noisy"
+ },
+ {
+  "ch": "out_spooks",
   "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_21",
   "dur": 1.6,
   "cen": 1461,
   "flat": 0.317,
   "crest": 6.6,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/spooks/sound_22",
+  "dur": 3.9,
+  "cen": 1559,
+  "flat": 0.266,
+  "crest": 10.3,
   "role": "accent",
   "bright": "dark",
   "tone": "mixed"
@@ -7822,84 +7162,7 @@
  },
  {
   "ch": "out_spooks",
-  "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_09",
-  "dur": 4.1,
-  "cen": 1268,
-  "flat": 0.031,
-  "crest": 5.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
   "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_10",
-  "dur": 7.2,
-  "cen": 427,
-  "flat": 0.031,
-  "crest": 11.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_11",
-  "dur": 7.9,
-  "cen": 276,
-  "flat": 0.027,
-  "crest": 5.1,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_12",
-  "dur": 3.8,
-  "cen": 1474,
-  "flat": 0.085,
-  "crest": 6.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_13",
-  "dur": 8.7,
-  "cen": 1288,
-  "flat": 0.078,
-  "crest": 8.1,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_14",
-  "dur": 3.6,
-  "cen": 771,
-  "flat": 0.03,
-  "crest": 6.1,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_15",
-  "dur": 4.1,
-  "cen": 1268,
-  "flat": 0.031,
-  "crest": 5.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_16",
   "dur": 7.2,
   "cen": 427,
   "flat": 0.031,
@@ -7983,17 +7246,6 @@
   "crest": 4.5,
   "role": "accent",
   "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/underground/spooks_below/spooks/sound_27",
-  "dur": 3.8,
-  "cen": 2103,
-  "flat": 0.148,
-  "crest": 3.2,
-  "role": "accent",
-  "bright": "mid",
   "tone": "tonal"
  },
  {
@@ -8163,6 +7415,17 @@
  },
  {
   "ch": "out_spooks",
+  "stem": "ambient/soundscape/underground/spooks_above/under_34",
+  "dur": 6.0,
+  "cen": 2469,
+  "flat": 0.27,
+  "crest": 5.1,
+  "role": "accent",
+  "bright": "mid",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
   "stem": "ambient/soundscape/Spoops/Northern_spoops/sound1",
   "dur": 2.3,
   "cen": 7238,
@@ -8284,17 +7547,6 @@
  },
  {
   "ch": "out_spooks",
-  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound26",
-  "dur": 14.5,
-  "cen": 3944,
-  "flat": 0.182,
-  "crest": 6.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "out_spooks",
   "stem": "ambient/soundscape/Spoops/Northern_spoops/sound27",
   "dur": 13.2,
   "cen": 5436,
@@ -8317,17 +7569,6 @@
  },
  {
   "ch": "out_spooks",
-  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound29",
-  "dur": 11.7,
-  "cen": 1379,
-  "flat": 0.07,
-  "crest": 4.1,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
   "stem": "ambient/soundscape/Spoops/Northern_spoops/sound3",
   "dur": 0.8,
   "cen": 5029,
@@ -8336,28 +7577,6 @@
   "role": "accent",
   "bright": "bright",
   "tone": "mixed"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound30",
-  "dur": 10.6,
-  "cen": 1044,
-  "flat": 0.053,
-  "crest": 4.2,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound31",
-  "dur": 10.1,
-  "cen": 872,
-  "flat": 0.043,
-  "crest": 4.3,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
  },
  {
   "ch": "out_spooks",
@@ -8380,6 +7599,17 @@
   "role": "accent",
   "bright": "bright",
   "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
+  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound8",
+  "dur": 10.2,
+  "cen": 2688,
+  "flat": 0.109,
+  "crest": 4.4,
+  "role": "accent",
+  "bright": "mid",
+  "tone": "tonal"
  },
  {
   "ch": "out_spooks",
@@ -8537,6 +7767,17 @@
  },
  {
   "ch": "out_spooks",
+  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound47",
+  "dur": 16.0,
+  "cen": 5654,
+  "flat": 0.189,
+  "crest": 7.6,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "out_spooks",
   "stem": "ambient/soundscape/Spoops/Northern_spoops/sound48",
   "dur": 7.4,
   "cen": 5974,
@@ -8633,17 +7874,6 @@
   "role": "accent",
   "bright": "bright",
   "tone": "noisy"
- },
- {
-  "ch": "out_spooks",
-  "stem": "ambient/soundscape/Spoops/Northern_spoops/sound8",
-  "dur": 10.2,
-  "cen": 2688,
-  "flat": 0.109,
-  "crest": 4.4,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
  },
  {
   "ch": "out_spooks",
@@ -8833,160 +8063,6 @@
   "tone": "tonal"
  },
  {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark1",
-  "dur": 0.7,
-  "cen": 10194,
-  "flat": 0.647,
-  "crest": 38.4,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark2",
-  "dur": 0.7,
-  "cen": 9327,
-  "flat": 0.592,
-  "crest": 45.5,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark3",
-  "dur": 0.7,
-  "cen": 8845,
-  "flat": 0.566,
-  "crest": 47.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark4",
-  "dur": 0.7,
-  "cen": 9489,
-  "flat": 0.659,
-  "crest": 55.5,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark5",
-  "dur": 0.7,
-  "cen": 9720,
-  "flat": 0.654,
-  "crest": 24.4,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark6",
-  "dur": 0.7,
-  "cen": 9652,
-  "flat": 0.631,
-  "crest": 19.0,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark7",
-  "dur": 0.7,
-  "cen": 10589,
-  "flat": 0.633,
-  "crest": 21.7,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark8",
-  "dur": 0.7,
-  "cen": 10844,
-  "flat": 0.647,
-  "crest": 30.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark9",
-  "dur": 0.7,
-  "cen": 9976,
-  "flat": 0.633,
-  "crest": 30.5,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark10",
-  "dur": 0.7,
-  "cen": 10472,
-  "flat": 0.661,
-  "crest": 42.8,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark11",
-  "dur": 0.7,
-  "cen": 10266,
-  "flat": 0.646,
-  "crest": 35.0,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark12",
-  "dur": 0.7,
-  "cen": 6643,
-  "flat": 0.559,
-  "crest": 39.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark13",
-  "dur": 0.7,
-  "cen": 7473,
-  "flat": 0.622,
-  "crest": 35.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "psi_sparks",
-  "stem": "ambient/anomaly/psyspark14",
-  "dur": 0.7,
-  "cen": 8426,
-  "flat": 0.595,
-  "crest": 55.4,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
   "ch": "psistorm_background",
   "stem": "ambient/blowout/psistorm_wind",
   "dur": 21.3,
@@ -9100,56 +8176,12 @@
   "ch": "rain_gust",
   "stem": "ambient/rain",
   "dur": 6.0,
-  "cen": 4047,
-  "flat": 0.212,
-  "crest": 8.6,
+  "cen": 4118,
+  "flat": 0.247,
+  "crest": 8.7,
   "role": "texture",
   "bright": "bright",
   "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rainonroof",
-  "dur": 20.3,
-  "cen": 2325,
-  "flat": 0.072,
-  "crest": 10.2,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rain_helm",
-  "dur": 6.0,
-  "cen": 3305,
-  "flat": 0.179,
-  "crest": 14.4,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rain_indoors",
-  "dur": 8.1,
-  "cen": 2493,
-  "flat": 0.11,
-  "crest": 5.8,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rain_indoors2",
-  "dur": 21.1,
-  "cen": 2427,
-  "flat": 0.106,
-  "crest": 5.6,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "tonal"
  },
  {
   "ch": "rain_gust",
@@ -9171,6 +8203,61 @@
   "crest": 1.0,
   "role": "texture",
   "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/rain_l",
+  "dur": 6.0,
+  "cen": 4077,
+  "flat": 0.237,
+  "crest": 8.8,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/rainonroof",
+  "dur": 20.3,
+  "cen": 2325,
+  "flat": 0.072,
+  "crest": 10.2,
+  "role": "texture",
+  "bright": "mid",
+  "tone": "tonal"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/rain_helm",
+  "dur": 6.0,
+  "cen": 3329,
+  "flat": 0.232,
+  "crest": 14.1,
+  "role": "accent",
+  "bright": "mid",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/rain_indoors",
+  "dur": 8.1,
+  "cen": 2714,
+  "flat": 0.196,
+  "crest": 5.8,
+  "role": "texture",
+  "bright": "mid",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/rain_indoors2",
+  "dur": 21.1,
+  "cen": 2427,
+  "flat": 0.106,
+  "crest": 5.6,
+  "role": "texture",
+  "bright": "mid",
   "tone": "tonal"
  },
  {
@@ -9230,50 +8317,6 @@
  },
  {
   "ch": "rain_gust",
-  "stem": "ambient/rain",
-  "dur": 6.0,
-  "cen": 4118,
-  "flat": 0.247,
-  "crest": 8.7,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rainonroof",
-  "dur": 20.3,
-  "cen": 2325,
-  "flat": 0.072,
-  "crest": 10.2,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rain_helm",
-  "dur": 6.0,
-  "cen": 3329,
-  "flat": 0.232,
-  "crest": 14.1,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rain_indoors",
-  "dur": 8.1,
-  "cen": 2714,
-  "flat": 0.196,
-  "crest": 5.8,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
   "stem": "ambient/rain_indoors2",
   "dur": 14.5,
   "cen": 2753,
@@ -9282,28 +8325,6 @@
   "role": "texture",
   "bright": "mid",
   "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rain_l",
-  "dur": 6.0,
-  "cen": 4077,
-  "flat": 0.237,
-  "crest": 8.8,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/rain_r",
-  "dur": 6.0,
-  "cen": 15834,
-  "flat": 0.661,
-  "crest": 7.9,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
  },
  {
   "ch": "rain_gust",
@@ -9527,10 +8548,32 @@
  },
  {
   "ch": "rain_gust",
+  "stem": "ambient/soundscape/rain/Urbanrainlite1",
+  "dur": 12.1,
+  "cen": 7901,
+  "flat": 0.357,
+  "crest": 8.8,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
   "stem": "ambient/soundscape/rain/Urbanrain2",
   "dur": 12.1,
   "cen": 9193,
   "flat": 0.376,
+  "crest": 9.0,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/soundscape/rain/Urbanrainlite2",
+  "dur": 12.1,
+  "cen": 9489,
+  "flat": 0.394,
   "crest": 9.0,
   "role": "texture",
   "bright": "bright",
@@ -9549,11 +8592,33 @@
  },
  {
   "ch": "rain_gust",
+  "stem": "ambient/soundscape/rain/Urbanrainlite3",
+  "dur": 12.1,
+  "cen": 8858,
+  "flat": 0.377,
+  "crest": 12.1,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
   "stem": "ambient/soundscape/rain/Urbanrain4",
   "dur": 12.1,
   "cen": 7100,
   "flat": 0.3,
   "crest": 7.2,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/soundscape/rain/Urbanrainlite4",
+  "dur": 12.1,
+  "cen": 7346,
+  "flat": 0.316,
+  "crest": 7.3,
   "role": "texture",
   "bright": "bright",
   "tone": "mixed"
@@ -9571,10 +8636,32 @@
  },
  {
   "ch": "rain_gust",
+  "stem": "ambient/soundscape/rain/Urbanrainlite5",
+  "dur": 12.1,
+  "cen": 9498,
+  "flat": 0.422,
+  "crest": 10.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "rain_gust",
   "stem": "ambient/soundscape/rain/Urbanrain6",
   "dur": 7.7,
   "cen": 5546,
   "flat": 0.229,
+  "crest": 10.6,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/soundscape/rain/Urbanrainlite6",
+  "dur": 7.7,
+  "cen": 5768,
+  "flat": 0.246,
   "crest": 10.6,
   "role": "texture",
   "bright": "bright",
@@ -9593,88 +8680,22 @@
  },
  {
   "ch": "rain_gust",
-  "stem": "ambient/soundscape/rain/Urbanrain8",
-  "dur": 12.1,
-  "cen": 5855,
-  "flat": 0.266,
-  "crest": 10.6,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/soundscape/rain/Urbanrainlite1",
-  "dur": 12.1,
-  "cen": 7901,
-  "flat": 0.357,
-  "crest": 8.8,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/soundscape/rain/Urbanrainlite2",
-  "dur": 12.1,
-  "cen": 9489,
-  "flat": 0.394,
-  "crest": 9.0,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/soundscape/rain/Urbanrainlite3",
-  "dur": 12.1,
-  "cen": 8858,
-  "flat": 0.377,
-  "crest": 12.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/soundscape/rain/Urbanrainlite4",
-  "dur": 12.1,
-  "cen": 7346,
-  "flat": 0.316,
-  "crest": 7.3,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/soundscape/rain/Urbanrainlite5",
-  "dur": 12.1,
-  "cen": 9498,
-  "flat": 0.422,
-  "crest": 10.0,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambient/soundscape/rain/Urbanrainlite6",
-  "dur": 7.7,
-  "cen": 5768,
-  "flat": 0.246,
-  "crest": 10.6,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "rain_gust",
   "stem": "ambient/soundscape/rain/Urbanrainlite7",
   "dur": 12.1,
   "cen": 5077,
   "flat": 0.272,
   "crest": 7.7,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambient/soundscape/rain/Urbanrain8",
+  "dur": 12.1,
+  "cen": 5855,
+  "flat": 0.266,
+  "crest": 10.6,
   "role": "texture",
   "bright": "bright",
   "tone": "mixed"
@@ -9697,6 +8718,17 @@
   "cen": 16930,
   "flat": 0.615,
   "crest": 5.1,
+  "role": "texture",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "rain_gust",
+  "stem": "ambience_exp/rain/rain6",
+  "dur": 51.5,
+  "cen": 16929,
+  "flat": 0.615,
+  "crest": 5.0,
   "role": "texture",
   "bright": "bright",
   "tone": "noisy"
@@ -9741,17 +8773,6 @@
   "cen": 16927,
   "flat": 0.615,
   "crest": 5.1,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "rain_gust",
-  "stem": "ambience_exp/rain/rain6",
-  "dur": 51.5,
-  "cen": 16929,
-  "flat": 0.615,
-  "crest": 5.0,
   "role": "texture",
   "bright": "bright",
   "tone": "noisy"
@@ -10022,6 +9043,28 @@
  },
  {
   "ch": "storm",
+  "stem": "ambient/soundscape/thunder/thunderfar_25",
+  "dur": 13.1,
+  "cen": 328,
+  "flat": 0.022,
+  "crest": 10.9,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
+  "stem": "ambient/soundscape/thunder/thunder_4",
+  "dur": 9.4,
+  "cen": 442,
+  "flat": 0.046,
+  "crest": 9.5,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
   "stem": "ambient/anomaly/psi_storm_01",
   "dur": 23.9,
   "cen": 1193,
@@ -10172,6 +9215,17 @@
   "crest": 12.7,
   "role": "accent",
   "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
+  "stem": "nature/storm_4",
+  "dur": 10.5,
+  "cen": 2196,
+  "flat": 0.127,
+  "crest": 12.9,
+  "role": "accent",
+  "bright": "mid",
   "tone": "tonal"
  },
  {
@@ -10374,6 +9428,17 @@
  },
  {
   "ch": "storm",
+  "stem": "nature/new_thunder3_hec",
+  "dur": 9.6,
+  "cen": 835,
+  "flat": 0.038,
+  "crest": 8.4,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
   "stem": "ambient/soundscape/thunder/thunder_12",
   "dur": 20.3,
   "cen": 1055,
@@ -10381,6 +9446,17 @@
   "crest": 11.6,
   "role": "texture",
   "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "storm",
+  "stem": "nature/thundernew3",
+  "dur": 20.3,
+  "cen": 4376,
+  "flat": 0.329,
+  "crest": 11.6,
+  "role": "texture",
+  "bright": "bright",
   "tone": "mixed"
  },
  {
@@ -10396,6 +9472,17 @@
  },
  {
   "ch": "storm",
+  "stem": "nature/thundernew2",
+  "dur": 20.3,
+  "cen": 4545,
+  "flat": 0.346,
+  "crest": 16.2,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "storm",
   "stem": "ambient/soundscape/thunder/thunder_14",
   "dur": 20.3,
   "cen": 1044,
@@ -10407,13 +9494,13 @@
  },
  {
   "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_15",
+  "stem": "nature/thunder-2",
   "dur": 20.3,
-  "cen": 1058,
-  "flat": 0.337,
-  "crest": 10.4,
+  "cen": 4434,
+  "flat": 0.348,
+  "crest": 10.5,
   "role": "texture",
-  "bright": "dark",
+  "bright": "bright",
   "tone": "mixed"
  },
  {
@@ -10440,10 +9527,21 @@
  },
  {
   "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_18",
+  "stem": "ambient/soundscape/thunder/thunder_17",
+  "dur": 13.9,
+  "cen": 1049,
+  "flat": 0.05,
+  "crest": 7.3,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
+  "stem": "nature/thunder-1",
   "dur": 12.0,
-  "cen": 1006,
-  "flat": 0.039,
+  "cen": 1147,
+  "flat": 0.043,
   "crest": 8.1,
   "role": "texture",
   "bright": "dark",
@@ -10462,11 +9560,33 @@
  },
  {
   "ch": "storm",
+  "stem": "ambient/soundscape/thunder/thunder_19",
+  "dur": 14.0,
+  "cen": 1169,
+  "flat": 0.077,
+  "crest": 10.5,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
   "stem": "ambient/soundscape/thunder/thunder_2",
   "dur": 15.0,
   "cen": 1209,
   "flat": 0.106,
   "crest": 20.2,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
+  "stem": "ambient/soundscape/thunder/thunder_2",
+  "dur": 15.0,
+  "cen": 1135,
+  "flat": 0.083,
+  "crest": 19.9,
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
@@ -10484,13 +9604,24 @@
  },
  {
   "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_21",
-  "dur": 20.3,
-  "cen": 1016,
-  "flat": 0.177,
-  "crest": 11.0,
-  "role": "texture",
+  "stem": "ambient/soundscape/thunder/thunder_20",
+  "dur": 4.5,
+  "cen": 1434,
+  "flat": 0.09,
+  "crest": 13.2,
+  "role": "accent",
   "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
+  "stem": "nature/thunder-0",
+  "dur": 20.3,
+  "cen": 3560,
+  "flat": 0.202,
+  "crest": 11.6,
+  "role": "texture",
+  "bright": "mid",
   "tone": "mixed"
  },
  {
@@ -10499,6 +9630,17 @@
   "dur": 9.0,
   "cen": 1152,
   "flat": 0.064,
+  "crest": 7.3,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
+  "stem": "nature/storm_3",
+  "dur": 9.0,
+  "cen": 1315,
+  "flat": 0.066,
   "crest": 7.3,
   "role": "texture",
   "bright": "dark",
@@ -10517,6 +9659,17 @@
  },
  {
   "ch": "storm",
+  "stem": "nature/new_thunder4_hec",
+  "dur": 9.4,
+  "cen": 764,
+  "flat": 0.021,
+  "crest": 5.6,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "storm",
   "stem": "ambient/soundscape/thunder/thunder_24",
   "dur": 24.2,
   "cen": 788,
@@ -10528,11 +9681,11 @@
  },
  {
   "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_25",
+  "stem": "nature/new_thunder1_hec",
   "dur": 32.9,
-  "cen": 2256,
-  "flat": 0.244,
-  "crest": 14.2,
+  "cen": 2634,
+  "flat": 0.231,
+  "crest": 14.7,
   "role": "texture",
   "bright": "mid",
   "tone": "mixed"
@@ -10561,10 +9714,10 @@
  },
  {
   "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_4",
+  "stem": "nature/thunder-4",
   "dur": 22.5,
-  "cen": 948,
-  "flat": 0.083,
+  "cen": 1050,
+  "flat": 0.078,
   "crest": 19.5,
   "role": "accent",
   "bright": "dark",
@@ -10590,6 +9743,17 @@
   "crest": 17.4,
   "role": "accent",
   "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "storm",
+  "stem": "nature/storm_5",
+  "dur": 20.3,
+  "cen": 6250,
+  "flat": 0.365,
+  "crest": 18.4,
+  "role": "accent",
+  "bright": "bright",
   "tone": "mixed"
  },
  {
@@ -10623,6 +9787,17 @@
   "crest": 14.7,
   "role": "accent",
   "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "storm",
+  "stem": "nature/thunder-3",
+  "dur": 20.3,
+  "cen": 3609,
+  "flat": 0.267,
+  "crest": 14.1,
+  "role": "accent",
+  "bright": "mid",
   "tone": "mixed"
  },
  {
@@ -10715,78 +9890,12 @@
  },
  {
   "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_17",
-  "dur": 13.9,
-  "cen": 1049,
-  "flat": 0.05,
-  "crest": 7.3,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_18",
-  "dur": 12.0,
-  "cen": 990,
-  "flat": 0.03,
-  "crest": 10.5,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_19",
-  "dur": 14.0,
-  "cen": 1169,
-  "flat": 0.077,
-  "crest": 10.5,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_2",
-  "dur": 15.0,
-  "cen": 1135,
-  "flat": 0.083,
-  "crest": 19.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_20",
-  "dur": 4.5,
-  "cen": 1434,
-  "flat": 0.09,
-  "crest": 13.2,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
   "stem": "ambient/soundscape/thunder/thunder_21",
   "dur": 20.0,
   "cen": 855,
   "flat": 0.08,
   "crest": 18.1,
   "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_22",
-  "dur": 9.0,
-  "cen": 1143,
-  "flat": 0.055,
-  "crest": 9.2,
-  "role": "texture",
   "bright": "dark",
   "tone": "tonal"
  },
@@ -10841,28 +9950,6 @@
   "cen": 961,
   "flat": 0.084,
   "crest": 14.9,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_4",
-  "dur": 22.5,
-  "cen": 946,
-  "flat": 0.071,
-  "crest": 26.8,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_5",
-  "dur": 9.3,
-  "cen": 1345,
-  "flat": 0.098,
-  "crest": 16.1,
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
@@ -11254,94 +10341,6 @@
  },
  {
   "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_18",
-  "dur": 9.0,
-  "cen": 810,
-  "flat": 0.032,
-  "crest": 11.7,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_19",
-  "dur": 7.9,
-  "cen": 710,
-  "flat": 0.033,
-  "crest": 11.5,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_20",
-  "dur": 6.7,
-  "cen": 1226,
-  "flat": 0.128,
-  "crest": 17.7,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_22",
-  "dur": 9.5,
-  "cen": 726,
-  "flat": 0.034,
-  "crest": 14.1,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_23",
-  "dur": 12.1,
-  "cen": 487,
-  "flat": 0.057,
-  "crest": 8.0,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_24",
-  "dur": 14.1,
-  "cen": 521,
-  "flat": 0.046,
-  "crest": 11.0,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_25",
-  "dur": 15.2,
-  "cen": 505,
-  "flat": 0.05,
-  "crest": 23.4,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "ambient/soundscape/thunder/thunder_26",
-  "dur": 12.0,
-  "cen": 552,
-  "flat": 0.025,
-  "crest": 13.7,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
   "stem": "ambient/soundscape/thunder/thunder_3",
   "dur": 11.8,
   "cen": 831,
@@ -11408,44 +10407,11 @@
  },
  {
   "ch": "storm",
-  "stem": "nature/new_thunder1_hec",
-  "dur": 32.9,
-  "cen": 2634,
-  "flat": 0.231,
-  "crest": 14.7,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "storm",
   "stem": "nature/new_thunder2_hec",
   "dur": 37.2,
   "cen": 374,
   "flat": 0.029,
   "crest": 14.1,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "nature/new_thunder3_hec",
-  "dur": 9.6,
-  "cen": 835,
-  "flat": 0.038,
-  "crest": 8.4,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "nature/new_thunder4_hec",
-  "dur": 9.4,
-  "cen": 764,
-  "flat": 0.021,
-  "crest": 5.6,
   "role": "texture",
   "bright": "dark",
   "tone": "tonal"
@@ -11474,39 +10440,6 @@
  },
  {
   "ch": "storm",
-  "stem": "nature/storm_3",
-  "dur": 9.0,
-  "cen": 1315,
-  "flat": 0.066,
-  "crest": 7.3,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "nature/storm_4",
-  "dur": 10.5,
-  "cen": 2196,
-  "flat": 0.127,
-  "crest": 12.9,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "nature/storm_5",
-  "dur": 20.3,
-  "cen": 6250,
-  "flat": 0.365,
-  "crest": 18.4,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "storm",
   "stem": "nature/thunder-0-hec",
   "dur": 22.2,
   "cen": 607,
@@ -11518,67 +10451,12 @@
  },
  {
   "ch": "storm",
-  "stem": "nature/thunder-0",
-  "dur": 20.3,
-  "cen": 3560,
-  "flat": 0.202,
-  "crest": 11.6,
-  "role": "texture",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "storm",
-  "stem": "nature/thunder-1",
-  "dur": 12.0,
-  "cen": 1147,
-  "flat": 0.043,
-  "crest": 8.1,
-  "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "nature/thunder-2",
-  "dur": 20.3,
-  "cen": 4434,
-  "flat": 0.348,
-  "crest": 10.5,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "storm",
   "stem": "nature/thunder-3-hec",
   "dur": 23.1,
   "cen": 375,
   "flat": 0.02,
   "crest": 7.5,
   "role": "texture",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "nature/thunder-3",
-  "dur": 20.3,
-  "cen": 3609,
-  "flat": 0.267,
-  "crest": 14.1,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "storm",
-  "stem": "nature/thunder-4",
-  "dur": 22.5,
-  "cen": 1050,
-  "flat": 0.078,
-  "crest": 19.5,
-  "role": "accent",
   "bright": "dark",
   "tone": "tonal"
  },
@@ -11636,28 +10514,6 @@
   "role": "texture",
   "bright": "dark",
   "tone": "tonal"
- },
- {
-  "ch": "storm",
-  "stem": "nature/thundernew2",
-  "dur": 20.3,
-  "cen": 4545,
-  "flat": 0.346,
-  "crest": 16.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "storm",
-  "stem": "nature/thundernew3",
-  "dur": 20.3,
-  "cen": 4376,
-  "flat": 0.329,
-  "crest": 11.6,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
  },
  {
   "ch": "storm",
@@ -12475,6 +11331,39 @@
  },
  {
   "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/spooks_below/ambient/sound_01",
+  "dur": 2.9,
+  "cen": 2991,
+  "flat": 0.263,
+  "crest": 8.4,
+  "role": "accent",
+  "bright": "mid",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/spooks_below/ambient/sound_03",
+  "dur": 8.6,
+  "cen": 1542,
+  "flat": 0.182,
+  "crest": 6.7,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/spooks_below/ambient/sound_12",
+  "dur": 4.6,
+  "cen": 1584,
+  "flat": 0.188,
+  "crest": 9.0,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_ambient",
   "stem": "ambient/underground/steam_1",
   "dur": 2.0,
   "cen": 6080,
@@ -12492,6 +11381,39 @@
   "flat": 0.157,
   "crest": 8.7,
   "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/under_68",
+  "dur": 6.1,
+  "cen": 646,
+  "flat": 0.032,
+  "crest": 3.6,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/background/Underground/underground_3",
+  "dur": 241.3,
+  "cen": 179,
+  "flat": 0.355,
+  "crest": 5.2,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/background/Underground/underground_3",
+  "dur": 241.3,
+  "cen": 179,
+  "flat": 0.355,
+  "crest": 5.2,
+  "role": "texture",
   "bright": "dark",
   "tone": "mixed"
  },
@@ -12524,6 +11446,17 @@
   "cen": 2112,
   "flat": 0.34,
   "crest": 10.6,
+  "role": "texture",
+  "bright": "mid",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/under_34",
+  "dur": 6.0,
+  "cen": 2469,
+  "flat": 0.27,
+  "crest": 5.1,
   "role": "texture",
   "bright": "mid",
   "tone": "mixed"
@@ -12582,6 +11515,50 @@
   "role": "texture",
   "bright": "dark",
   "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/under_100",
+  "dur": 24.4,
+  "cen": 16539,
+  "flat": 0.614,
+  "crest": 184.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/under_97",
+  "dur": 24.4,
+  "cen": 16591,
+  "flat": 0.611,
+  "crest": 129.2,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/under_98",
+  "dur": 24.4,
+  "cen": 16512,
+  "flat": 0.611,
+  "crest": 200.7,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "ugrnd_ambient",
+  "stem": "ambient/soundscape/underground/under_99",
+  "dur": 24.4,
+  "cen": 16563,
+  "flat": 0.608,
+  "crest": 177.1,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
  },
  {
   "ch": "ugrnd_ambient",
@@ -13817,6 +12794,17 @@
  },
  {
   "ch": "ugrnd_ambient_new",
+  "stem": "ambient/soundscape/underground/under_68",
+  "dur": 6.1,
+  "cen": 646,
+  "flat": 0.032,
+  "crest": 3.6,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_ambient_new",
   "stem": "ambient/soundscape/underground/under_69",
   "dur": 2.3,
   "cen": 3621,
@@ -14102,6 +13090,39 @@
   "tone": "mixed"
  },
  {
+  "ch": "ugrnd_ambient_new",
+  "stem": "ambient/soundscape/underground/under_97",
+  "dur": 24.4,
+  "cen": 16591,
+  "flat": 0.611,
+  "crest": 129.2,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "ugrnd_ambient_new",
+  "stem": "ambient/soundscape/underground/under_98",
+  "dur": 24.4,
+  "cen": 16512,
+  "flat": 0.611,
+  "crest": 200.7,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "ugrnd_ambient_new",
+  "stem": "ambient/soundscape/underground/under_99",
+  "dur": 24.4,
+  "cen": 16563,
+  "flat": 0.608,
+  "crest": 177.1,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
   "ch": "ugrnd_banging",
   "stem": "ambient/soundscape/underground/spooks_below/banging/sound_01",
   "dur": 7.3,
@@ -14190,6 +13211,17 @@
   "tone": "mixed"
  },
  {
+  "ch": "ugrnd_banging",
+  "stem": "ambient/soundscape/underground/spooks_below/banging/sound_10",
+  "dur": 2.9,
+  "cen": 4933,
+  "flat": 0.283,
+  "crest": 17.3,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
   "ch": "ugrnd_drip",
   "stem": "ambience_exp/drip/drip1",
   "dur": 2.1,
@@ -14235,11 +13267,66 @@
  },
  {
   "ch": "ugrnd_drone",
+  "stem": "ambient/soundscape/underground/spooks_below/drone/sound_03",
+  "dur": 5.6,
+  "cen": 997,
+  "flat": 0.052,
+  "crest": 4.4,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_drone",
+  "stem": "ambient/soundscape/underground/spooks_below/drone/sound_04",
+  "dur": 8.1,
+  "cen": 1016,
+  "flat": 0.045,
+  "crest": 4.7,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_drone",
+  "stem": "ambient/soundscape/underground/spooks_below/drone/sound_05",
+  "dur": 9.0,
+  "cen": 874,
+  "flat": 0.076,
+  "crest": 3.8,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_drone",
+  "stem": "ambient/soundscape/underground/spooks_below/drone/sound_10",
+  "dur": 2.9,
+  "cen": 4933,
+  "flat": 0.283,
+  "crest": 17.3,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_drone",
   "stem": "ambient/trx/spooks_below/drone/sound_11",
   "dur": 2.9,
   "cen": 964,
   "flat": 0.08,
   "crest": 6.9,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_drone",
+  "stem": "ambient/soundscape/underground/spooks_below/drone/sound_11",
+  "dur": 2.9,
+  "cen": 967,
+  "flat": 0.14,
+  "crest": 7.0,
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
@@ -14276,17 +13363,6 @@
   "role": "accent",
   "bright": "bright",
   "tone": "mixed"
- },
- {
-  "ch": "ugrnd_drone",
-  "stem": "ambient/soundscape/underground/spooks_below/drone/sound_11",
-  "dur": 2.9,
-  "cen": 967,
-  "flat": 0.14,
-  "crest": 7.0,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
  },
  {
   "ch": "ugrnd_lab",
@@ -14377,6 +13453,17 @@
   "tone": "mixed"
  },
  {
+  "ch": "ugrnd_metal",
+  "stem": "ambient/soundscape/underground/spooks_below/metal/sound_12",
+  "dur": 4.2,
+  "cen": 1010,
+  "flat": 0.132,
+  "crest": 10.7,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
   "ch": "ugrnd_noise",
   "stem": "ambient/soundscape/underground/spooks_below/noise/sound_01",
   "dur": 3.8,
@@ -14441,6 +13528,17 @@
   "role": "accent",
   "bright": "dark",
   "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_07",
+  "dur": 3.8,
+  "cen": 440,
+  "flat": 0.161,
+  "crest": 4.5,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
  },
  {
   "ch": "ugrnd_noise",
@@ -14543,6 +13641,39 @@
  },
  {
   "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_03",
+  "dur": 3.5,
+  "cen": 1070,
+  "flat": 0.192,
+  "crest": 7.9,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_04",
+  "dur": 4.2,
+  "cen": 1262,
+  "flat": 0.242,
+  "crest": 21.2,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_05",
+  "dur": 3.1,
+  "cen": 3142,
+  "flat": 0.529,
+  "crest": 8.5,
+  "role": "accent",
+  "bright": "mid",
+  "tone": "noisy"
+ },
+ {
+  "ch": "ugrnd_noise",
   "stem": "ambient/soundscape/underground/spooks_below/noise/sound_07",
   "dur": 2.4,
   "cen": 5312,
@@ -14587,6 +13718,39 @@
  },
  {
   "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_11",
+  "dur": 4.1,
+  "cen": 999,
+  "flat": 0.171,
+  "crest": 11.6,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_12",
+  "dur": 4.2,
+  "cen": 887,
+  "flat": 0.143,
+  "crest": 10.6,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "tonal"
+ },
+ {
+  "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_13",
+  "dur": 4.7,
+  "cen": 1084,
+  "flat": 0.181,
+  "crest": 14.1,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_noise",
   "stem": "ambient/soundscape/underground/spooks_below/noise/sound_20",
   "dur": 6.7,
   "cen": 480,
@@ -14608,6 +13772,28 @@
   "tone": "mixed"
  },
  {
+  "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_26",
+  "dur": 3.4,
+  "cen": 1404,
+  "flat": 0.227,
+  "crest": 11.8,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
+  "ch": "ugrnd_noise",
+  "stem": "ambient/soundscape/underground/spooks_below/noise/sound_28",
+  "dur": 4.7,
+  "cen": 1649,
+  "flat": 0.26,
+  "crest": 14.9,
+  "role": "accent",
+  "bright": "dark",
+  "tone": "mixed"
+ },
+ {
   "ch": "ugrnd_rats",
   "stem": "ambient/soundscape/underground/spooks_below/rats/sound_07",
   "dur": 9.0,
@@ -14617,6 +13803,17 @@
   "role": "accent",
   "bright": "bright",
   "tone": "tonal"
+ },
+ {
+  "ch": "underground_background_3",
+  "stem": "ambient/soundscape/background/underground/underground_3",
+  "dur": 241.3,
+  "cen": 179,
+  "flat": 0.355,
+  "crest": 5.2,
+  "role": "texture",
+  "bright": "dark",
+  "tone": "mixed"
  },
  {
   "ch": "underground_background_5",
@@ -15489,17 +14686,6 @@
  },
  {
   "ch": "urban_spoops_night",
-  "stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_15",
-  "dur": 5.9,
-  "cen": 411,
-  "flat": 0.023,
-  "crest": 2.5,
-  "role": "accent",
-  "bright": "dark",
-  "tone": "tonal"
- },
- {
-  "ch": "urban_spoops_night",
   "stem": "ambient/Soundscape/Spoops/urban_spoops_night/sound_16",
   "dur": 1.9,
   "cen": 4068,
@@ -16038,358 +15224,6 @@
   "tone": "noisy"
  },
  {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal1",
-  "dur": 2.0,
-  "cen": 2426,
-  "flat": 0.108,
-  "crest": 5.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal2",
-  "dur": 2.2,
-  "cen": 2565,
-  "flat": 0.108,
-  "crest": 6.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal3",
-  "dur": 2.5,
-  "cen": 2903,
-  "flat": 0.137,
-  "crest": 5.4,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal4",
-  "dur": 2.6,
-  "cen": 4624,
-  "flat": 0.22,
-  "crest": 5.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal5",
-  "dur": 3.4,
-  "cen": 3679,
-  "flat": 0.134,
-  "crest": 8.7,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal6",
-  "dur": 2.9,
-  "cen": 2374,
-  "flat": 0.083,
-  "crest": 6.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal7",
-  "dur": 3.9,
-  "cen": 3694,
-  "flat": 0.139,
-  "crest": 5.5,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal8",
-  "dur": 1.9,
-  "cen": 3521,
-  "flat": 0.183,
-  "crest": 15.4,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal9",
-  "dur": 2.6,
-  "cen": 2966,
-  "flat": 0.13,
-  "crest": 6.7,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal10",
-  "dur": 1.5,
-  "cen": 6494,
-  "flat": 0.326,
-  "crest": 11.5,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal11",
-  "dur": 4.1,
-  "cen": 4087,
-  "flat": 0.178,
-  "crest": 6.3,
-  "role": "texture",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal12",
-  "dur": 0.9,
-  "cen": 3591,
-  "flat": 0.258,
-  "crest": 14.9,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal13",
-  "dur": 0.7,
-  "cen": 3261,
-  "flat": 0.205,
-  "crest": 5.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal14",
-  "dur": 0.7,
-  "cen": 3303,
-  "flat": 0.174,
-  "crest": 7.5,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal15",
-  "dur": 0.9,
-  "cen": 2666,
-  "flat": 0.167,
-  "crest": 9.1,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal16",
-  "dur": 0.6,
-  "cen": 2760,
-  "flat": 0.17,
-  "crest": 16.5,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal17",
-  "dur": 0.9,
-  "cen": 6613,
-  "flat": 0.284,
-  "crest": 7.8,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal18",
-  "dur": 1.2,
-  "cen": 2530,
-  "flat": 0.136,
-  "crest": 6.2,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal19",
-  "dur": 0.7,
-  "cen": 6353,
-  "flat": 0.304,
-  "crest": 5.8,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal20",
-  "dur": 0.8,
-  "cen": 2304,
-  "flat": 0.114,
-  "crest": 5.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal21",
-  "dur": 1.0,
-  "cen": 2499,
-  "flat": 0.115,
-  "crest": 10.1,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal23",
-  "dur": 5.8,
-  "cen": 2884,
-  "flat": 0.128,
-  "crest": 20.9,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal22",
-  "dur": 3.6,
-  "cen": 2359,
-  "flat": 0.091,
-  "crest": 5.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal24",
-  "dur": 4.6,
-  "cen": 3199,
-  "flat": 0.162,
-  "crest": 12.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal25",
-  "dur": 3.8,
-  "cen": 5935,
-  "flat": 0.362,
-  "crest": 10.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal26",
-  "dur": 5.9,
-  "cen": 4969,
-  "flat": 0.252,
-  "crest": 12.8,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal27",
-  "dur": 3.2,
-  "cen": 4559,
-  "flat": 0.21,
-  "crest": 5.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal28",
-  "dur": 2.9,
-  "cen": 2377,
-  "flat": 0.084,
-  "crest": 6.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal29",
-  "dur": 3.6,
-  "cen": 2344,
-  "flat": 0.091,
-  "crest": 5.0,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal30",
-  "dur": 2.2,
-  "cen": 5060,
-  "flat": 0.244,
-  "crest": 5.1,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "mixed"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal31",
-  "dur": 3.1,
-  "cen": 3798,
-  "flat": 0.141,
-  "crest": 8.8,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
-  "ch": "vest_radio",
-  "stem": "ambient/Soundscape/dark_signal/radiosignal32",
-  "dur": 2.5,
-  "cen": 2920,
-  "flat": 0.14,
-  "crest": 5.4,
-  "role": "accent",
-  "bright": "mid",
-  "tone": "tonal"
- },
- {
   "ch": "wind_creep",
   "stem": "ambient/soundscape/wind/spookgust1",
   "dur": 18.4,
@@ -16440,6 +15274,17 @@
   "cen": 9509,
   "flat": 0.485,
   "crest": 11.7,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "wind_creep",
+  "stem": "ambient/soundscape/wind/spookgust19",
+  "dur": 24.1,
+  "cen": 9263,
+  "flat": 0.478,
+  "crest": 12.0,
   "role": "accent",
   "bright": "bright",
   "tone": "noisy"
@@ -16583,17 +15428,6 @@
   "cen": 8848,
   "flat": 0.472,
   "crest": 13.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "wind_creep",
-  "stem": "ambient/soundscape/wind/spookgust19",
-  "dur": 24.1,
-  "cen": 9263,
-  "flat": 0.478,
-  "crest": 12.0,
   "role": "accent",
   "bright": "bright",
   "tone": "noisy"
@@ -16886,6 +15720,17 @@
  },
  {
   "ch": "wind_creep_urban",
+  "stem": "ambient/soundscape/wind/spookgust19",
+  "dur": 24.1,
+  "cen": 9263,
+  "flat": 0.478,
+  "crest": 12.0,
+  "role": "accent",
+  "bright": "bright",
+  "tone": "noisy"
+ },
+ {
+  "ch": "wind_creep_urban",
   "stem": "ambient/soundscape/wind/spookgust6",
   "dur": 7.3,
   "cen": 3710,
@@ -17023,17 +15868,6 @@
   "cen": 8848,
   "flat": 0.472,
   "crest": 13.2,
-  "role": "accent",
-  "bright": "bright",
-  "tone": "noisy"
- },
- {
-  "ch": "wind_creep_urban",
-  "stem": "ambient/soundscape/wind/spookgust19",
-  "dur": 24.1,
-  "cen": 9263,
-  "flat": 0.478,
-  "crest": 12.0,
   "role": "accent",
   "bright": "bright",
   "tone": "noisy"

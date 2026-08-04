@@ -35,7 +35,7 @@ DARK_KEEP = {
     # dread cues
     "out_spooks", "out_day_spoops", "out_night_spoops", "northen_spoops", "urban_spoops_night",
     "out_screams", "out_mutants", "out_dark_amb", "out_night_amb", "dark_signal",
-    "foliage_spook", "crows_spook", "inside_noise", "psi_sparks", "psistorm_background",
+    "foliage_spook", "crows_spook", "inside_noise", "psistorm_background",
     "background_creepy_low_wind",
     "background_forest_whisper_day", "background_forest_whisper_evening",
     "background_forest_whisper_morning", "background_forest_whisper_night", "background_forest_whisper_tuman",
@@ -47,14 +47,14 @@ DARK_KEEP = {
     # tension
     "out_gunfire", "out_drone", "drones", "day_drones", "urban_drones",
     "wind_creep", "wind_creep_alt", "wind_creep_urban", "branch", "branch_big", "branch_med",
-    "vest_radio", "urban_debris",
+    "urban_debris",
     # eerie atmosphere (owls/dogs/crows/fog - confirmed in scope)
     "owls", "dogs", "crows", "crows_clear", "crows_forest", "crows_retune", "tree_sway_fog", "birds_night",
     "background_tuman_field_open", "background_tuman_field_openalt", "background_tuman_open",
     "background_tuman_open_alt", "background_tuman_open_alt2", "background_tuman_open_urban",
     # oppressive weather
     "storm", "storm_foliage", "storm_urban", "pre_storm", "background_storm_forest", "background_rain_forest",
-    "background_wind_storm", "wind_dark", "wind_gale", "wind_heavy", "wind_strong", "chimes",
+    "background_wind_storm", "wind_dark", "wind_gale", "wind_heavy", "wind_strong",
     "rain_gust", "rain_urban_gust",
 }
 
@@ -143,17 +143,117 @@ def file_hash(path):
 
 
 def dedup_pick(files):
-    """Dedup by EXACT file content, not acoustic similarity. Mods reship identical
-    files; identical bytes collapse to one, distinct sounds never merge. Among an
-    identical group keep the highest bitrate (they're the same anyway). Then drop
-    junk-bitrate files if the channel still has content."""
-    groups = {}
+    """Keep the best-quality copy of each DISTINCT sound in a channel; collapse only
+    true duplicates. Three-stage identity (architecture.md I3):
+      1. md5   - byte-identical reships across packs collapse to one.
+      2. fp    - Chromaprint proposes candidate same-sound groups (recall only; fp
+                 cannot decide - its same/distinct similarity ranges overlap, a distinct
+                 sound can score 1.0 and a re-encode 0.93).
+      3. xcorr - PCM cross-correlation decides: two files merge only when their waveforms
+                 correlate >= DEDUP_XCORR, under COMPLETE-LINKAGE (every pair in a merged
+                 group confirms), so distinct variety is never merged and a similarity
+                 chain cannot collapse transitively.
+    Best-quality within a confirmed group is the highest bitrate; junk-bitrate files are
+    dropped when the channel keeps better content."""
+    # 1. exact byte dedup
+    by_md5 = {}
     for f in files:
         f["hash"] = file_hash(f["abs"])
-        groups.setdefault(f["hash"], []).append(f)
-    chosen = [max(g, key=lambda f: f["bitrate"]) for g in groups.values()]
+        by_md5.setdefault(f["hash"], []).append(f)
+    reps = [max(g, key=lambda f: f["bitrate"]) for g in by_md5.values()]
+    if len(reps) <= 1:
+        chosen = reps
+    else:
+        # 2. Chromaprint candidate clusters (duration-bucketed so only plausibly-same
+        #    files ever get compared by the expensive step)
+        fps = sp.pmap(lambda r: sp.fingerprint(r["abs"], FP_LEN), reps, sp.DEF_JOBS)
+        durs = sp.pmap(lambda r: round(float((sp.probe(r["abs"]) or {}).get("duration") or 0)),
+                       reps, sp.DEF_JOBS)
+        for r, fp, du in zip(reps, fps, durs):
+            r["_fp"] = fp
+            r["_dur"] = du
+        clusters = []
+        for r in reps:
+            for cl in clusters:
+                h = cl[0]
+                if (r["_fp"] and h["_fp"] and abs(r["_dur"] - h["_dur"]) <= 1
+                        and sp.fp_similarity(r["_fp"], h["_fp"]) >= BASE_SIM):
+                    cl.append(r)
+                    break
+            else:
+                clusters.append([r])
+        # 3. PCM cross-correlation confirm inside each candidate cluster (complete-linkage)
+        chosen = []
+        for cl in clusters:
+            if len(cl) == 1:
+                chosen.append(cl[0])
+                continue
+            decoded = sp.pmap(lambda r: sp.decode_pcm(r["abs"]), cl, sp.DEF_JOBS)
+            pcm = {r["abs"]: d for r, d in zip(cl, decoded)}
+            groups = []
+            for r in cl:
+                for g in groups:
+                    if all(sp.pcm_correlation(pcm[r["abs"]], pcm[m["abs"]]) >= DEDUP_XCORR
+                           for m in g):
+                        g.append(r)
+                        break
+                else:
+                    groups.append([r])
+            for g in groups:
+                chosen.append(max(g, key=lambda f: f["bitrate"]))
     good = [c for c in chosen if c["bitrate"] >= LOWQ_BITRATE]
     return good if good else chosen
+
+
+def _dedup_entries(entries):
+    """Waveform-dedup a REGROUPED deployed unit, keeping the first of each confirmed group
+    (callers pre-sort by preference). dedup_pick works per SOURCE channel, but a texture bed
+    pools many source channels, so a re-encode captured into two of them reappears in the bed.
+    Same three-stage identity as dedup_pick (md5 -> fp -> PCM xcorr, complete-linkage) so the
+    bed never loops the same recording; distinct variety is preserved."""
+    if len(entries) <= 1:
+        return list(entries)
+    seen, reps = set(), []
+    for e in entries:                                  # md5, keep first occurrence
+        h = file_hash(e["abs"])
+        if h not in seen:
+            seen.add(h)
+            reps.append(e)
+    if len(reps) <= 1:
+        return reps
+    fpm = dict(zip((id(e) for e in reps),
+                   sp.pmap(lambda e: sp.fingerprint(e["abs"], FP_LEN), reps, sp.DEF_JOBS)))
+    durm = dict(zip((id(e) for e in reps),
+                    sp.pmap(lambda e: round(float((sp.probe(e["abs"]) or {}).get("duration") or 0)),
+                            reps, sp.DEF_JOBS)))
+    clusters = []
+    for e in reps:
+        for cl in clusters:
+            h = cl[0]
+            if (fpm[id(e)] and fpm[id(h)] and abs(durm[id(e)] - durm[id(h)]) <= 1
+                    and sp.fp_similarity(fpm[id(e)], fpm[id(h)]) >= BASE_SIM):
+                cl.append(e)
+                break
+        else:
+            clusters.append([e])
+    keep = set()
+    for cl in clusters:
+        if len(cl) == 1:
+            keep.add(id(cl[0]))
+            continue
+        pcmm = dict(zip((id(e) for e in cl),
+                        sp.pmap(lambda e: sp.decode_pcm(e["abs"]), cl, sp.DEF_JOBS)))
+        groups = []
+        for e in cl:
+            for g in groups:
+                if all(sp.pcm_correlation(pcmm[id(e)], pcmm[id(m)]) >= DEDUP_XCORR for m in g):
+                    g.append(e)
+                    break
+            else:
+                groups.append([e])
+        for g in groups:
+            keep.add(id(g[0]))
+    return [e for e in reps if id(e) in keep]
 
 
 # --- base-dedup: never ship a sound the install already PLAYS ----------------
@@ -172,7 +272,10 @@ GAMMA_DEFINERS = [GAMMA_WINNER,
     "D:/Games/GAMMA/GAMMA/mods/3- Soundscape Overhaul - Solarint/gamedata",
     "D:/Games/GAMMA/GAMMA/mods/457- RETUNE Ambiant Sounds - Aphrodite_child/gamedata"]
 FP_LEN = 30
-BASE_SIM = 0.88     # soundpool dup_similarity_threshold; >= this to a base sound = drop
+BASE_SIM = 0.88     # Chromaprint recall threshold: >= this makes a pair a same-sound CANDIDATE
+DEDUP_XCORR = 0.90  # PCM cross-correlation DECIDER: >= this confirms a candidate is the same
+                    # recording (a re-encode). Below it the pair is kept as distinct variety.
+                    # Frozen as validated (MANGLE=0); see architecture.md I3.
 
 
 def _active_channels(gd):
@@ -228,7 +331,7 @@ def cmd_basedex(_a):
         h, f = hp
         info = sp.probe(str(f)) or {}
         return {"md5": h, "fp": sp.fingerprint(str(f), FP_LEN),
-                "dur": round(float(info.get("duration") or 0))}
+                "dur": round(float(info.get("duration") or 0)), "path": str(f)}
     rows = sp.pmap(one, list(files.items()), sp.DEF_JOBS)
     (HERE / "base_index.json").write_text(json.dumps(rows), encoding="utf-8")
     print(f"base index: {len(rows)} played sounds (vanilla + GAMMA winner) -> base_index.json")
@@ -243,7 +346,7 @@ def _load_base_index():
     by_dur = collections.defaultdict(list)
     for r in rows:
         if r["fp"]:
-            by_dur[r["dur"]].append(r["fp"])
+            by_dur[r["dur"]].append((r["fp"], r.get("path")))
     return md5, by_dur
 
 
@@ -265,12 +368,20 @@ def _base_dedup(merged):
         fp, dur = fpres.get(a, (None, 0))
         if not fp:
             return None
+        pa = None
         for d in (dur - 1, dur, dur + 1):
-            for bfp in by_dur.get(d, ()):
+            for bfp, bpath in by_dur.get(d, ()):
                 if sp.fp_similarity(fp, bfp) >= BASE_SIM:
-                    return "fp"
+                    # Chromaprint only proposes; confirm with PCM cross-correlation so a
+                    # sound the fingerprint wrongly matches to a base sound is not dropped.
+                    if not bpath:
+                        return "fp"                       # legacy index (no path): trust fp
+                    if pa is None:
+                        pa = sp.decode_pcm(a)
+                    if sp.pcm_correlation(pa, sp.decode_pcm(bpath)) >= DEDUP_XCORR:
+                        return "fp"
         return None
-    hit = {a: base_hit(a) for a in uniq}
+    hit = dict(zip(uniq, sp.pmap(base_hit, list(uniq), sp.DEF_JOBS)))
     n_md5 = sum(1 for v in hit.values() if v == "md5")
     n_fp = sum(1 for v in hit.values() if v == "fp")
     for chan in merged:
@@ -350,10 +461,12 @@ def cmd_plan(_):
     #    packed-only) keep their original stems so they resolve from the base VFS.
     merged = {}
     tot_in = tot_kept = tot_dropped = inherited = 0
+    kept_hashes = set()
     for chan in sorted(set(orig_def) | set(pool)):
         files = pool.get(chan, [])
         tot_in += len(files)
         chosen = dedup_pick(files) if files else []
+        kept_hashes |= {c["hash"] for c in chosen}
         tot_dropped += len(files) - len(chosen)
         tot_kept += len(chosen)
         od = orig_def.get(chan, {"mod": "?", "settings": [], "stems": []})
@@ -365,6 +478,12 @@ def cmd_plan(_):
             "chosen": [{"abs": c["abs"], "stem": c["stem"], "pool": c["pool"],
                         "bitrate": c["bitrate"], "channels": c["channels"]} for c in chosen],
         }
+    # Intra-corpus re-encodes the PCM dedup dropped (distinct bytes, cross-correlation-confirmed
+    # the same recording as a KEPT sound): record their hashes so the ledger books them as
+    # captured-then-deduped, not as a coverage miss. md5-losers share a hash with the kept
+    # winner (so their hash is in kept_hashes); only the acoustic drops remain in this set.
+    pool_hashes = {f["hash"] for fs in pool.values() for f in fs if "hash" in f}
+    (HERE / "intra_dups.json").write_text(json.dumps(sorted(pool_hashes - kept_hashes)), encoding="utf-8")
     # base-dedup: never ship a sound vanilla or the GAMMA winner already plays (md5 +
     # acoustic). Runs on the chosen set before it is frozen into merged_channels.json.
     _base_dedup(merged)
@@ -574,24 +693,31 @@ def cmd_loudness(a):
 
 def _build_layers(mc, cls, ch_to_group, group_key):
     """Group the classified sounds into the deployed structure, deterministically.
-    accents[group] = [entry,...] in canonical order (group = <mood>_<n>, one per exact
-    settings-tuple); textures[bed] = top-TEX_CAP by duration. The source abs is resolved
-    by (ch,stem) via a dict: on a duplicate (ch,stem) - same channel+stem captured from
-    two pools - the last occurrence wins, matching the shipped bytes."""
-    src = {(ch, c["stem"]): c for ch, c in _iter_chosen(mc)}
+    accents[group] = [entry,...] in canonical order; textures[bed] = top-TEX_CAP by
+    duration. classification.json is produced by classifying _iter_chosen(mc) in order,
+    so cls[i] IS the classification of the i-th chosen entry - align POSITIONALLY, not by
+    (ch,stem). Two chosen entries can share a stem (distinct sounds a pack shipped under
+    one filename that PCM proved different); a (ch,stem) lookup collapsed them, dropping
+    one and double-shipping the other. Positional alignment ships each exactly once."""
+    chosen_seq = list(_iter_chosen(mc))
+    assert len(cls) == len(chosen_seq), (
+        f"classification.json ({len(cls)}) out of sync with merged_channels.json "
+        f"({len(chosen_seq)}); rerun classify after plan")
     accents = {g: [] for g in group_key}
     tex_all = {b: [] for b in BEDS}
-    for idx, r in enumerate(cls):
-        c = src.get((r["ch"], r["stem"]))
-        if not c:
-            continue
-        e = {"ch": r["ch"], "stem": r["stem"], "abs": c["abs"], "pool": c["pool"],
+    for idx, (r, (ch, c)) in enumerate(zip(cls, chosen_seq)):
+        assert r["ch"] == ch and r["stem"] == c["stem"], (
+            f"classification out of sync with merged_channels at row {idx}; rerun classify")
+        e = {"ch": ch, "stem": c["stem"], "abs": c["abs"], "pool": c["pool"],
              "dur": r["dur"], "idx": idx}
         if r["role"] == "texture":
-            tex_all[tex_pool(r["ch"])].append(e)
-        elif r["ch"] in ch_to_group:          # skip accent sounds of bed channels (not routed)
-            accents[ch_to_group[r["ch"]]].append(e)
-    textures = {b: sorted(v, key=lambda e: (-e["dur"], e["idx"]))[:TEX_CAP] for b, v in tex_all.items()}
+            tex_all[tex_pool(ch)].append(e)
+        elif ch in ch_to_group:          # skip accent sounds of bed channels (not routed)
+            accents[ch_to_group[ch]].append(e)
+    # dedup each bed across its pooled source channels, THEN cap - so the cap keeps TEX_CAP
+    # distinct loops, not TEX_CAP slots some of which repeat.
+    textures = {b: _dedup_entries(sorted(v, key=lambda e: (-e["dur"], e["idx"])))[:TEX_CAP]
+                for b, v in tex_all.items()}
     return accents, textures
 
 
@@ -852,6 +978,19 @@ def cmd_deploy(a):
 
     deploy_texture(root, textures, gain)
     write_presets(env, routing)
+    # placement guard: every restore/define channel must be placed in >=1 preset, else it
+    # ships content that never plays (enrich channels are intentionally not placed - they
+    # play via the base). Surfaced as a warning so a routing/evidence gap is not silent.
+    placed = set()
+    for f in (env / "ambients/presets").glob("*.ltx"):
+        for line in f.read_text(encoding="utf-8", errors="replace").splitlines():
+            m = re.match(r"\s*>sound_channels_dynamic\s*=\s*(\S+)", line)
+            if m:
+                placed.add(m.group(1))
+    dead = sorted(d for d in accents
+                  if accents[d] and dep_mode.get(d) in ("restore", "define") and d not in placed)
+    if dead:
+        print(f"  WARNING unplaced restore/define channels (ship sounds that never play): {dead}")
     counts = collections.Counter(dep_mode[d] for d in accents if accents[d])
     print(f"deployed to {root}")
     print(f"  accent channels: enrich {counts['enrich']}, restore {counts['restore']}, "
@@ -891,6 +1030,15 @@ def _section_channels(fname, sec, place, routing):
     srcs = set()
     for pm in _PER_PACK.values():
         srcs |= set(pm.get(fname, {}).get(sec, {}).get("dynamic", []))
+    # RESTORE channels (a strip-4 channel the winner strips but still defines) are placed
+    # in a dynamic list only by VANILLA's own presets, which _PER_PACK excludes; add
+    # vanilla evidence for restore channels only, so the restore actually happens (e.g.
+    # out_screams / wind_dark in forest/swamp/whisper). Scoped to restore so define
+    # placement is unchanged.
+    restore_src = {ch for ch, (dep, mode, _l) in routing.items() if mode == "restore"}
+    if restore_src:
+        van_dyn = _VANILLA_PRESETS.get(fname, {}).get(sec, {}).get("dynamic", [])
+        srcs |= {c for c in van_dyn if c in restore_src}
     deps = {place[c] for c in srcs if c in place}
     if stem == WHISPER_LEVEL:                         # haunted: no wildlife, no people
         deps = {d for d in deps if lay[d] not in ("wildlife", "machines")}
@@ -904,6 +1052,7 @@ def _section_channels(fname, sec, place, routing):
 PRESET_ALIASES = {"environment_forest_more": "environment_forest",
                   "environment_swamp_coast": "environment_swamp"}
 _PER_PACK = {}
+_VANILLA_PRESETS = {}
 
 
 def write_presets(env, routing):
@@ -912,8 +1061,9 @@ def write_presets(env, routing):
     channel count + our additions stays <= SECTION_MAX (vanilla's ceiling); over budget,
     drop by LAYER_ORDER (dread-core kept, wildlife/rain first out). Enrich channels are not
     placed - they already play wherever the base plays them."""
-    global _PER_PACK
+    global _PER_PACK, _VANILLA_PRESETS
     _PER_PACK = {name: parse_presets(gd) for name, gd in MODS if name != "vanilla"}
+    _VANILLA_PRESETS = parse_presets(VAN_CFG)
     base = parse_presets(GAMMA_WINNER)
     place = _place_map(routing)
     lay = {dep: layer_of(dep) for dep in place.values()}
@@ -981,6 +1131,8 @@ def cmd_ledger(a):
     for f in zs.rglob("*.ogg"):
         deployed.add(file_hash(f))
     base_md5, base_by_dur = _load_base_index()         # sounds the install already PLAYS
+    ip = HERE / "intra_dups.json"                       # our own re-encodes the PCM dedup dropped
+    intra_dropped = set(json.loads(ip.read_text())) if ip.exists() else set()
     rows, counts, pending = [], collections.Counter(), []
     for name, gd in MODS:
         if name == "vanilla":
@@ -1005,6 +1157,8 @@ def cmd_ledger(a):
                 st = "EMISSION-excluded"
             elif h in base_md5:                         # the install plays it (exact) -> not ours
                 st = "BASE-DUP-excluded"
+            elif h in intra_dropped:                    # our own re-encode, deduped by cross-correlation
+                st = "INTRA-DUP-excluded"
             elif dark and under_root:
                 info = sp.probe(str(f)) or {}
                 if info.get("sample_rate") != 44100:
@@ -1018,18 +1172,29 @@ def cmd_ledger(a):
                 st = "SKIP-nonambient"
             rows.append(f"{name}\t{rel}\t{st}")
             counts[st] += 1
-    # a dark file the install doesn't byte-match may still be a re-encoded copy it plays;
-    # fingerprint the residue against the base index so UNUSED-DARK is only true misses.
+    # a dark file the install doesn't byte-match may still be a re-encoded copy - either of a
+    # sound the install plays (BASE-DUP) or of one WE ship that the PCM dedup dropped (INTRA-DUP,
+    # captured-then-deduped, not missed). Fingerprint the residue against both indexes so
+    # UNUSED-DARK counts only TRUE misses (a net-new dark sound left uncaptured).
+    chosen_fp = sp.pmap(lambda a: (sp.fingerprint(a, FP_LEN),
+                                   round(float((sp.probe(a) or {}).get("duration") or 0))),
+                        [c["abs"] for _ch, c in _iter_chosen(mc)], sp.DEF_JOBS)
+    chosen_by_dur = collections.defaultdict(list)
+    for fp, dur in chosen_fp:
+        if fp:
+            chosen_by_dur[dur].append(fp)
+
     def _fp(t):
         _n, _r, f = t
         return (sp.fingerprint(str(f), FP_LEN), round(float((sp.probe(str(f)) or {}).get("duration") or 0)))
     for (name, rel, _f), (fp, dur) in zip(pending, sp.pmap(_fp, pending, sp.DEF_JOBS)):
         st = "UNUSED-DARK"
         if fp:
-            for d in (dur - 1, dur, dur + 1):
-                if any(sp.fp_similarity(fp, b) >= BASE_SIM for b in base_by_dur.get(d, ())):
-                    st = "BASE-DUP-excluded"
-                    break
+            ds = (dur - 1, dur, dur + 1)
+            if any(sp.fp_similarity(fp, b) >= BASE_SIM for d in ds for b, _bp in base_by_dur.get(d, ())):
+                st = "BASE-DUP-excluded"
+            elif any(sp.fp_similarity(fp, b) >= BASE_SIM for d in ds for b in chosen_by_dur.get(d, ())):
+                st = "INTRA-DUP-excluded"
         rows.append(f"{name}\t{rel}\t{st}")
         counts[st] += 1
     (HERE / "ledger.tsv").write_text("pack\tfile\tstatus\n" + "\n".join(rows) + "\n", encoding="utf-8")
