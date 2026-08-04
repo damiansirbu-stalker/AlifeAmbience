@@ -143,7 +143,7 @@ local function development_page()
             { id = "div_logging", type = "line" },
             { id = "hdr_logging", type = "desc", text = "ui_mcm_aa_hdr_logging", clr = GREY },
             { id = "log_level", type = "list", val = 0, def = "WARN", hint = "aa_log_level", content = {
-                {"WARN", "off"}, {"INFO", "info"}, {"DEBUG", "debug"}, {"TRACE", "trace"},
+                {"ERROR", "error"}, {"WARN", "warn"}, {"INFO", "info"}, {"DEBUG", "debug"},
               } },
             { id = "log_flush", type = "check", val = 1, def = false, hint = "aa_log_flush" },
 

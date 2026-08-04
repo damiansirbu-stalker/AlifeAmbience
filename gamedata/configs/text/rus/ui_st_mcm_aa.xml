@@ -120,17 +120,17 @@
   <string id="ui_mcm_aa_log_level_desc">
     <text>Записывает каждое воспроизведение эмбиента в alifeambience.log: канал, настроение, файл, расстояние, громкость и контекст. Для диагностики саундскейпа.</text>
   </string>
-  <string id="aa_development_log_level_lst_off">
-    <text>Выкл.</text>
+  <string id="aa_development_log_level_lst_error">
+    <text>Ошибки</text>
+  </string>
+  <string id="aa_development_log_level_lst_warn">
+    <text>Предупреждения</text>
   </string>
   <string id="aa_development_log_level_lst_info">
     <text>Инфо</text>
   </string>
   <string id="aa_development_log_level_lst_debug">
-    <text>Трасса каждого воспроизведения</text>
-  </string>
-  <string id="aa_development_log_level_lst_trace">
-    <text>Трасса (подробно)</text>
+    <text>Отладка</text>
   </string>
   <string id="ui_mcm_aa_log_flush">
     <text>Сброс лога построчно</text>

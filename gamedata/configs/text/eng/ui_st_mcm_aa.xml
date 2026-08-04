@@ -132,17 +132,17 @@
   <string id="ui_mcm_aa_log_level_desc">
     <text>Records each ambient play to alifeambience.log with channel, mood, file, distance, volume and context. Use to diagnose the soundscape.</text>
   </string>
-  <string id="aa_development_log_level_lst_off">
-    <text>Off</text>
+  <string id="aa_development_log_level_lst_error">
+    <text>Error</text>
+  </string>
+  <string id="aa_development_log_level_lst_warn">
+    <text>Warn</text>
   </string>
   <string id="aa_development_log_level_lst_info">
     <text>Info</text>
   </string>
   <string id="aa_development_log_level_lst_debug">
-    <text>Trace every ambient play</text>
-  </string>
-  <string id="aa_development_log_level_lst_trace">
-    <text>Trace (verbose)</text>
+    <text>Debug</text>
   </string>
   <string id="ui_mcm_aa_log_flush">
     <text>Flush log each line</text>
