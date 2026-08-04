@@ -737,11 +737,30 @@ ACC_PERIOD_FLOOR = 20000   # a period of 0 makes a one-shot fire every tick (spa
                            # The source's 0 is recorded verbatim in provenance; only the deploy floors it.
 
 
-def _acc_settings(key):
+# Play tuning - the EVOLVE step on the crystallized verbatim. The source period is kept
+# verbatim in provenance.tsv; the DEPLOYED period is tuned so accents stay DISCRETE and
+# thin channels do not repeat:
+#   - discrete: period >= sound duration + a gap, so a long sound never overlaps itself
+#     (a 12s storm on a 5s period is a wall of noise, not an accent).
+#   - variety-weighted: a channel with few sounds fires proportionally less, so its handful
+#     is spread out instead of spammed. A rich channel keeps the discrete rate.
+DISCRETE_GAP = 8000        # ms guaranteed after a sound before the channel may re-fire
+VARIETY_TARGET = 20        # a channel needs about this many sounds to fire at the discrete rate
+VARIETY_MAX_STRETCH = 6    # cap the thin-channel slow-down so it is rare, not silent
+
+
+def _tune_period(p, dur_ms, size):
+    base = max(p, dur_ms + DISCRETE_GAP)
+    if size and size < VARIETY_TARGET:
+        base = int(base * min(VARIETY_MAX_STRETCH, VARIETY_TARGET / size))
+    return base
+
+
+def _acc_settings(key, dur_ms=0, size=0):
     mn, mx, p, indoor, height = key
     lines = [f"min_distance = {mn}", f"max_distance = {mx}"]
     for i, pv in enumerate(p):
-        lines.append(f"period{i} = {pv if pv > 0 else ACC_PERIOD_FLOOR}")
+        lines.append(f"period{i} = {_tune_period(pv if pv > 0 else ACC_PERIOD_FLOOR, dur_ms, size)}")
     lines.append(f"height = {height}")
     if indoor:
         lines.append("indoor = true")
@@ -806,7 +825,9 @@ def cmd_deploy(a):
             _emit_audio(e, snd / dep / f"{i}.ogg", gain)
         chan_lines.append(f"@[{dep}]")
         if dep_mode[dep] == "define":
-            chan_lines.extend(_acc_settings(group_key[dep]))
+            durs = sorted(e["dur"] for e in entries)
+            dur_ms = int(durs[len(durs) // 2] * 1000) if durs else 0
+            chan_lines.extend(_acc_settings(group_key[dep], dur_ms, len(entries)))
             chan_lines.append(f"sounds = zs\\{dep}\\1")
             start = 2
         else:                       # enrich / restore: append only, inherit the base settings
@@ -914,9 +935,17 @@ def write_presets(env, routing):
         for sec in secs:
             deps = budget_cap(_section_channels(src_fname, sec, place, routing),
                               len(secs[sec].get("dynamic", [])))
-            if not deps:
-                continue
+            # D1 - NORMALIZE THE FLOOR. Strip the fake-horror channels we are NOT placing
+            # here (out_screams/mutants/gunfire/wind_dark). On VANILLA this removes the
+            # low-quality horror GAMMA already dropped, so both installs share one floor and
+            # the density budget (computed vs the GAMMA winner) holds on vanilla too - measured
+            # avg 9.1, max 13, 0 over vs 20 over without it. On GAMMA every strip is a no-op
+            # (already absent). A channel we DO restore here is excluded from the strip, so it
+            # is never removed and re-added in the same section (which would be order-dependent).
+            strip = sorted(STRIP4 - set(deps))
             lines.append(f"![{sec}]")
+            for ch in strip:
+                lines.append(f"<sound_channels_dynamic = {ch}")
             for d in deps:
                 lines.append(f">sound_channels_dynamic = {d}")
             lines.append("")

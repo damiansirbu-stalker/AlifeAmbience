@@ -28,7 +28,7 @@ local defaults = {
     vol_spooks = 1.0, vol_screams = 1.0, vol_mutants = 1.0, vol_ambience = 1.0,
     vol_machines = 1.0, vol_forest = 1.0, vol_storm = 1.0, vol_wind = 1.0,
     vol_rain = 1.0, vol_wildlife = 1.0, vol_underground = 1.0,
-    rarity = 1.0, distance = 1.0, texture_volume = 0.55,
+    rarity = 1.0, distance = 1.0, texture_volume = 0.55, variety = true,
     log_level = "WARN", log_flush = false,
     -- Diegetic
     dia_master = 1.0,
@@ -44,7 +44,7 @@ local _key_to_tab = {
     vol_forest = "atmosphere", vol_storm = "atmosphere", vol_wind = "atmosphere",
     vol_rain = "atmosphere", vol_wildlife = "atmosphere", vol_underground = "atmosphere",
     rarity = "atmosphere", distance = "atmosphere", texture_volume = "atmosphere",
-    log_level = "atmosphere", log_flush = "atmosphere",
+    variety = "atmosphere", log_level = "atmosphere", log_flush = "atmosphere",
     dia_master = "diegetic",
     dia_radio_enabled = "diegetic", dia_radio_vol = "diegetic", dia_radio_freq = "diegetic",
     dia_megaphone_enabled = "diegetic", dia_megaphone_vol = "diegetic", dia_megaphone_freq = "diegetic",
@@ -99,6 +99,7 @@ local function atmosphere_page()
             { id = "rarity",   type = "track", val = 2, min = 0.5, max = 3.0, step = 0.05, def = 1.0, hint = "aa_rarity" },
             { id = "distance", type = "track", val = 2, min = 0.5, max = 2.0, step = 0.05, def = 1.0, hint = "aa_distance" },
             { id = "texture_volume", type = "track", val = 2, min = 0.0, max = 2.0, step = 0.05, def = 0.55, hint = "aa_texture_volume" },
+            { id = "variety", type = "check", val = 1, def = true, hint = "aa_variety" },
 
             { id = "div_dev", type = "line" },
             { id = "hdr_dev", type = "desc", text = "ui_mcm_aa_hdr_dev", clr = GREY },

@@ -102,6 +102,12 @@
   <string id="ui_mcm_aa_texture_volume_desc">
     <text>Громкость непрерывного зацикленного фона под всем остальным.</text>
   </string>
+  <string id="ui_mcm_aa_variety">
+    <text>Без повторов</text>
+  </string>
+  <string id="ui_mcm_aa_variety_desc">
+    <text>Никогда не проигрывать недавний звук канала, чтобы слышать всё его разнообразие, а не одни и те же немногие по кругу. Выкл. — базовый случайный выбор.</text>
+  </string>
   <string id="ui_mcm_aa_hdr_dev">
     <text>Разработка</text>
   </string>

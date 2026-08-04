@@ -110,6 +110,12 @@
   <string id="ui_mcm_aa_texture_volume_desc">
     <text>Loudness of the continuous looped bed under everything.</text>
   </string>
+  <string id="ui_mcm_aa_variety">
+    <text>No-repeat variety</text>
+  </string>
+  <string id="ui_mcm_aa_variety_desc">
+    <text>Never replay a channel's recent sound, so its full variety is heard instead of the same few on repeat. Off falls back to the base random pick.</text>
+  </string>
 
   <string id="ui_mcm_aa_hdr_dev">
     <text>Development</text>
