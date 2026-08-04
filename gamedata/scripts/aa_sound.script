@@ -160,9 +160,11 @@ local function play_channel(ch, tg)
     ch.next = tg + (ch.periods[math_random(4)]) * rarity
 
     if aa_debug.on() then
-        aa_debug.dbg("accent lvl=%s amb=%s ch=%s layer=%s file=%s dist=%.1f vol=%.2f ug=%s inside=%s",
-            aa_debug.show(level.name()), aa_debug.show(last_ambient),
-            ch.name, aa_debug.show(ch.layer), file, dist, level_vol,
+        -- log WHERE the player is (level, position, hour, weather/section) so a played sound
+        -- can be assessed against the actor's actual location, plus how far it spawned.
+        aa_debug.dbg("accent lvl=%s pos=%.0f,%.0f,%.0f hour=%s amb=%s ch=%s layer=%s file=%s dist=%.1f vol=%.2f ug=%s inside=%s",
+            aa_debug.show(level.name()), pos.x, pos.y, pos.z, aa_debug.show(last_hour),
+            aa_debug.show(last_ambient), ch.name, aa_debug.show(ch.layer), file, dist, level_vol,
             aa_debug.show(underground), aa_debug.show(inside))
     end
 end
