@@ -63,6 +63,13 @@ How it is built:
   their difference. A ledger proves no net-new dark sound is missed, and a provenance record
   maps every included sound back to its origin. The whole overlay rebuilds from the packs in
   one run.
+  The pipeline, one command end to end:
+    index what your install plays  ->  pool the packs' dark sounds  ->  drop every
+    duplicate (hash AND acoustic fingerprint)  ->  measure and classify each  ->  level
+    loudness  ->  compose the DLTX overlay  ->  prove coverage and origin.
+  On the current build that meant 2695 candidate sounds pulled, 970 dropped because the
+  game already plays them - including 350 re-encoded copies plain hashing would have
+  missed - and 1593 genuinely new dark sounds shipped: zero duplicates, every one traced.
 
 Installation:
   A DLTX overlay plus a few scripts. Loads at any position, changes nothing in the engine

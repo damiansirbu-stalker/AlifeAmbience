@@ -815,6 +815,17 @@ def cmd_deploy(a):
             chan_lines.append(f">sounds = zs\\{dep}\\{i}")
         chan_lines.append("")
         layer_lines.append(f"{dep} = {dep_layer[dep]}")
+    # Also map the base's OWN dark channels (the install plays them, we ship no content for
+    # them), so the per-layer volume governs the WHOLE dark soundscape, not just our additions.
+    # aa_sound applies the layer to every dynamic channel it plays, ours or the base's; a base
+    # channel absent from the map would only obey the global knob. Beds are skipped (never a
+    # dynamic accent). Non-accent nature stays out (DARK_KEEP is dark-scoped).
+    mapped = {ln.split(" = ", 1)[0] for ln in layer_lines[2:]}
+    base_active = (_active_channels(VAN_CFG) | _active_channels(GAMMA_WINNER)) & DARK_KEEP
+    for ch in sorted(base_active):
+        if ch in mapped or "background" in ch or ch.endswith("_bkg_1"):
+            continue
+        layer_lines.append(f"{ch} = {layer_of(ch)}")
     (env / "mod_sound_channels_alifeambience.ltx").write_text("\n".join(chan_lines), encoding="utf-8")
     (env / "aa_channel_layers.ltx").write_text("\n".join(layer_lines) + "\n", encoding="utf-8")
 
