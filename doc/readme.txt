@@ -18,6 +18,9 @@ Why it is different:
 - Measured, not dumped. Every sound goes through signal analysis for spectral shape,
   loudness, and length, then content-hash dedup and per-group loudness leveling. No junk,
   no duplicates, no guesswork.
+- Never repetitive. Play rates are tuned so a long storm never overlaps into a wall and a
+  channel with few sounds is not spammed, and a runtime no-repeat memory means you never
+  hear the same call twice - the whole library is heard, not the same 10% on a loop.
 - Composes, never duplicates. It adds its sounds INTO the game's own channels with DLTX,
   and never ships a sound your install already plays - filtered by content hash AND by
   acoustic fingerprint, so even a re-encoded copy of a base sound is caught. No collisions,
