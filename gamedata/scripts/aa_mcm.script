@@ -44,7 +44,8 @@ local _key_to_tab = {
     vol_forest = "atmosphere", vol_storm = "atmosphere", vol_wind = "atmosphere",
     vol_rain = "atmosphere", vol_wildlife = "atmosphere", vol_underground = "atmosphere",
     rarity = "atmosphere", distance = "atmosphere", texture_volume = "atmosphere",
-    variety = "atmosphere", log_level = "atmosphere", log_flush = "atmosphere",
+    variety = "atmosphere", log_level = "development", log_flush = "development",
+    btn_reset_all = "development",
     dia_master = "diegetic",
     dia_radio_enabled = "diegetic", dia_radio_vol = "diegetic", dia_radio_freq = "diegetic",
     dia_megaphone_enabled = "diegetic", dia_megaphone_vol = "diegetic", dia_megaphone_freq = "diegetic",
@@ -58,6 +59,30 @@ end
 
 cfg, get_config, load_config = xmcm.create_config("aa", defaults, path_builder)
 aa_mcm.get_config = get_config
+
+-- Full reset: write every default to its saved path, save, reload, notify consumers, then
+-- close the menu via On_Cancel (On_Discard destroys the button mid-click on some exe builds).
+-- functor_ui receives the UI_MCM instance so it works on a fresh open. Mirrors at_mcm.
+local function _apply_defaults(gui, msg)
+    local config = axr_main.config
+    for k, v in pairs(defaults) do
+        config:w_value("mcm", path_builder(k), v)
+    end
+    config:save()
+    load_config()
+    SendScriptCallback("mcm_option_restore_default")
+    if gui then
+        if gui.owner and gui.owner.SetMsg then gui.owner:SetMsg(msg, 5) end
+        if gui.On_Cancel then gui:On_Cancel() end
+    end
+    if db.actor then
+        news_manager.send_tip(db.actor, msg, nil, nil, 5000)
+    end
+end
+
+function btn_reset_all(gui)
+    _apply_defaults(gui, game.translate_string("st_aa_reset_all_done"))
+end
 
 local GREY = {255, 200, 200, 200}
 local function vol_track(id)
@@ -77,6 +102,8 @@ local function atmosphere_page()
     return {
         id = "atmosphere", sh = true,
         gr = {
+            { id = "title", type = "slide", link = "aa_mcm_banner",
+                text = "ui_mcm_aa_title", size = {512, 50}, spacing = 20 },
             { id = "desc", type = "desc", text = "ui_mcm_aa_desc" },
             { id = "vol_global", type = "track", val = 2, min = 0.0, max = 5.0, step = 0.05, def = 1.0, hint = "aa_vol_global" },
 
@@ -100,13 +127,29 @@ local function atmosphere_page()
             { id = "distance", type = "track", val = 2, min = 0.5, max = 2.0, step = 0.05, def = 1.0, hint = "aa_distance" },
             { id = "texture_volume", type = "track", val = 2, min = 0.0, max = 2.0, step = 0.05, def = 0.55, hint = "aa_texture_volume" },
             { id = "variety", type = "check", val = 1, def = true, hint = "aa_variety" },
+        },
+    }
+end
 
-            { id = "div_dev", type = "line" },
-            { id = "hdr_dev", type = "desc", text = "ui_mcm_aa_hdr_dev", clr = GREY },
+-- Development page: the trace controls, on their own tab to match the alife-family MCM
+-- (AlifeTactics/at_mcm development page). Logging never affects gameplay.
+local function development_page()
+    return {
+        id = "development", sh = true,
+        gr = {
+            { id = "title", type = "slide", link = "aa_mcm_banner",
+                text = "ui_mcm_aa_title", size = {512, 50}, spacing = 20 },
+            { id = "dev_desc", type = "desc", text = "ui_mcm_aa_development_desc" },
+            { id = "div_logging", type = "line" },
+            { id = "hdr_logging", type = "desc", text = "ui_mcm_aa_hdr_logging", clr = GREY },
             { id = "log_level", type = "list", val = 0, def = "WARN", hint = "aa_log_level", content = {
                 {"WARN", "off"}, {"INFO", "info"}, {"DEBUG", "debug"}, {"TRACE", "trace"},
               } },
             { id = "log_flush", type = "check", val = 1, def = false, hint = "aa_log_flush" },
+
+            { id = "div_reset", type = "line" },
+            { id = "warn_reset", type = "desc", text = "ui_mcm_aa_development_reset_warning", clr = {255, 240, 200, 80} },
+            { id = "btn_reset_all", type = "button", functor_ui = { btn_reset_all } },
         },
     }
 end
@@ -115,6 +158,8 @@ local function diegetic_page()
     return {
         id = "diegetic", sh = true,
         gr = {
+            { id = "title", type = "slide", link = "aa_mcm_banner",
+                text = "ui_mcm_aa_title", size = {512, 50}, spacing = 20 },
             { id = "dia_desc", type = "desc", text = "ui_mcm_aa_dia_desc" },
             { id = "dia_master", type = "track", val = 2, min = 0.0, max = 3.0, step = 0.05, def = 1.0, hint = "aa_dia_master" },
 
@@ -149,6 +194,7 @@ function on_mcm_load()
         gr = {
             atmosphere_page(),
             diegetic_page(),
+            development_page(),
         },
     }
 end

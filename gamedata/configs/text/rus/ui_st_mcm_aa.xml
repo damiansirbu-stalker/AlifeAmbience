@@ -108,8 +108,11 @@
   <string id="ui_mcm_aa_variety_desc">
     <text>Никогда не проигрывать недавний звук канала, чтобы слышать всё его разнообразие, а не одни и те же немногие по кругу. Выкл. — базовый случайный выбор.</text>
   </string>
-  <string id="ui_mcm_aa_hdr_dev">
-    <text>Разработка</text>
+  <string id="ui_mcm_aa_development_desc">
+    <text>Трассировка для диагностики звукового ландшафта. Не влияет на игровой процесс.</text>
+  </string>
+  <string id="ui_mcm_aa_hdr_logging">
+    <text>Логирование</text>
   </string>
   <string id="ui_mcm_aa_log_level">
     <text>Трассировка эмбиента</text>
@@ -117,16 +120,16 @@
   <string id="ui_mcm_aa_log_level_desc">
     <text>Записывает каждое воспроизведение эмбиента в alifeambience.log: канал, настроение, файл, расстояние, громкость и контекст. Для диагностики саундскейпа.</text>
   </string>
-  <string id="aa_atmosphere_log_level_lst_off">
+  <string id="aa_development_log_level_lst_off">
     <text>Выкл.</text>
   </string>
-  <string id="aa_atmosphere_log_level_lst_info">
+  <string id="aa_development_log_level_lst_info">
     <text>Инфо</text>
   </string>
-  <string id="aa_atmosphere_log_level_lst_debug">
+  <string id="aa_development_log_level_lst_debug">
     <text>Трасса каждого воспроизведения</text>
   </string>
-  <string id="aa_atmosphere_log_level_lst_trace">
+  <string id="aa_development_log_level_lst_trace">
     <text>Трасса (подробно)</text>
   </string>
   <string id="ui_mcm_aa_log_flush">
@@ -140,6 +143,9 @@
   </string>
   <string id="ui_mcm_menu_diegetic">
     <text>Звуки мира</text>
+  </string>
+  <string id="ui_mcm_menu_development">
+    <text>Разработка</text>
   </string>
   <string id="ui_mcm_aa_dia_desc">
     <text>Звуки, которые персонажи слышат в мире: радио на базах, мегафоны, инструменты у костра. Любой регулятор на 1.0 оставляет источник таким, как в базовой игре.</text>
@@ -221,5 +227,20 @@
   </string>
   <string id="ui_mcm_aa_dia_harmonica_vol_desc">
     <text>Громкость губной гармошки у костра.</text>
+  </string>
+  <string id="ui_mcm_aa_development_btn_reset_all">
+    <text>Сбросить настройки</text>
+  </string>
+  <string id="ui_mcm_aa_development_btn_reset_all_desc">
+    <text>Восстановить все настройки MCM AlifeAmbience по умолчанию. Используйте после обновления с версии с другой структурой MCM.</text>
+  </string>
+  <string id="ui_mcm_aa_development_reset_warning">
+    <text>Внимание: сначала сохраните или отмените несохранённые изменения MCM, иначе они переопределят сброс при следующем применении.</text>
+  </string>
+  <string id="st_aa_reset_all_done">
+    <text>AlifeAmbience: все настройки сброшены к значениям по умолчанию.</text>
+  </string>
+  <string id="ui_mcm_aa_title">
+    <text>AlifeAmbience</text>
   </string>
 </string_table>

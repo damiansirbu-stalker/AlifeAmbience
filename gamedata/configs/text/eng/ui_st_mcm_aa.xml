@@ -9,6 +9,9 @@
   <string id="ui_mcm_menu_diegetic">
     <text>Diegetic</text>
   </string>
+  <string id="ui_mcm_menu_development">
+    <text>Development</text>
+  </string>
   <string id="ui_mcm_aa_desc">
     <text>Dark ambient overlay. Every control at 1.0 means no change from the base soundscape; move one and the runtime layer takes over the dynamic ambient to apply it.</text>
   </string>
@@ -117,8 +120,11 @@
     <text>Never replay a channel's recent sound, so its full variety is heard instead of the same few on repeat. Off falls back to the base random pick.</text>
   </string>
 
-  <string id="ui_mcm_aa_hdr_dev">
-    <text>Development</text>
+  <string id="ui_mcm_aa_development_desc">
+    <text>Tracing for diagnosing the soundscape. No effect on gameplay.</text>
+  </string>
+  <string id="ui_mcm_aa_hdr_logging">
+    <text>Logging</text>
   </string>
   <string id="ui_mcm_aa_log_level">
     <text>Ambient trace</text>
@@ -126,16 +132,16 @@
   <string id="ui_mcm_aa_log_level_desc">
     <text>Records each ambient play to alifeambience.log with channel, mood, file, distance, volume and context. Use to diagnose the soundscape.</text>
   </string>
-  <string id="aa_atmosphere_log_level_lst_off">
+  <string id="aa_development_log_level_lst_off">
     <text>Off</text>
   </string>
-  <string id="aa_atmosphere_log_level_lst_info">
+  <string id="aa_development_log_level_lst_info">
     <text>Info</text>
   </string>
-  <string id="aa_atmosphere_log_level_lst_debug">
+  <string id="aa_development_log_level_lst_debug">
     <text>Trace every ambient play</text>
   </string>
-  <string id="aa_atmosphere_log_level_lst_trace">
+  <string id="aa_development_log_level_lst_trace">
     <text>Trace (verbose)</text>
   </string>
   <string id="ui_mcm_aa_log_flush">
@@ -229,5 +235,20 @@
   </string>
   <string id="ui_mcm_aa_dia_harmonica_vol_desc">
     <text>Volume of campfire harmonica.</text>
+  </string>
+  <string id="ui_mcm_aa_development_btn_reset_all">
+    <text>Reset to defaults</text>
+  </string>
+  <string id="ui_mcm_aa_development_btn_reset_all_desc">
+    <text>Restore all AlifeAmbience MCM settings to defaults. Use after upgrading from a version with a different MCM structure.</text>
+  </string>
+  <string id="ui_mcm_aa_development_reset_warning">
+    <text>Warning: save or discard pending MCM changes first, otherwise they override the reset on the next Accept.</text>
+  </string>
+  <string id="st_aa_reset_all_done">
+    <text>AlifeAmbience: all settings restored to defaults.</text>
+  </string>
+  <string id="ui_mcm_aa_title">
+    <text>AlifeAmbience</text>
   </string>
 </string_table>

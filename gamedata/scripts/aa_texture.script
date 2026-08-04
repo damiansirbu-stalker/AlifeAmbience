@@ -92,6 +92,16 @@ end
 
 local function actor_id() return db.actor and db.actor:id() or 0 end
 
+-- Trace a bed change with the player location. Kept out of update_bed so its
+-- complexity stays low; the aa_debug.on() guard makes the off-path free.
+local function trace_bed(bed, theme)
+    if not (aa_debug and aa_debug.on and aa_debug.on()) then return end
+    local pos = db.actor and db.actor:position()
+    aa_debug.dbg("texture bed=%s theme=%s lvl=%s pos=%.0f,%.0f,%.0f", bed, theme,
+        (level.name and level.name()) or "?",
+        pos and pos.x or 0, pos and pos.y or 0, pos and pos.z or 0)
+end
+
 -- Fade the current bed toward its target volume; when a new bed is requested,
 -- fade the old one out first, then swap and fade the new one in.
 local function update_bed()
@@ -116,10 +126,7 @@ local function update_bed()
         if not theme then return end
         xr_sound.play_sound_looped(actor, theme)
         _cur = { bed = _target, theme = theme, vol = 0 }
-        if aa_debug and aa_debug.on and aa_debug.on() then
-            aa_debug.dbg("texture bed=%s theme=%s lvl=%s", _target, theme,
-                (level.name and level.name()) or "?")
-        end
+        trace_bed(_target, theme)
     end
 
     -- fade the current bed in toward its ceiling

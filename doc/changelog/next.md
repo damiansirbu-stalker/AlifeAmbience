@@ -19,8 +19,9 @@ periods are tuned so a long sound never overlaps into a wall of noise and a thin
 never spams its handful, and a runtime no-repeat memory means you do not hear the same
 call twice. It overrides no ambient files, composing through DLTX, so it layers onto
 GAMMA, vanilla, or any soundscape; every included sound traces back to its origin mod,
-path, channel and settings, and an in-game trace logs each play. Two MCM tabs: Atmosphere
-(the dark layer, per-layer volume plus no-repeat variety) and Diegetic (volume and control
-for in-world radios, megaphones, and campfire instruments).
+path, channel and settings, and an in-game trace logs each play with the player's location.
+Three MCM tabs: Atmosphere (the dark layer, per-layer volume plus no-repeat variety),
+Diegetic (volume and control for in-world radios, megaphones, and campfire instruments), and
+Development (trace level, log flush, and a reset-to-defaults button).
 
 See doc/readme.txt for what it adds and doc/architecture.md for how it is built.

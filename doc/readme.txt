@@ -35,7 +35,8 @@ Why it is different:
 - Growing. Original sounds recorded for this mod, and a scripted system that triggers
   dread inside buildings and lairs, are in progress.
 
-Two systems, two MCM tabs.
+Two systems in three MCM tabs - Atmosphere, Diegetic, and a Development tab that holds the
+trace controls and a reset-to-defaults button.
 
 Atmosphere:
   A dark ambient layer over your untouched engine bed, in two parts.

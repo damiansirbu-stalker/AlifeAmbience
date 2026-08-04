@@ -94,6 +94,7 @@ local function hooked_snd_update(self, delta)
     if cat == nil then
         cat = classify(st.theme)
         st._dia_cat = cat
+        if aa_debug.on() then aa_debug.dbg("dia source theme=%s cat=%s", tostring(st.theme), cat) end
     end
     local vol_mult, freq_mult = settings_for(cat)
 
