@@ -24,8 +24,10 @@ end
 
 local defaults = {
     -- Atmosphere
-    vol_global = 1.0, vol_dread = 1.0, vol_underground = 1.0, vol_weather = 1.0,
-    vol_human = 1.0, vol_animal = 1.0,
+    vol_global = 1.0,
+    vol_spooks = 1.0, vol_screams = 1.0, vol_mutants = 1.0, vol_ambience = 1.0,
+    vol_machines = 1.0, vol_forest = 1.0, vol_storm = 1.0, vol_wind = 1.0,
+    vol_rain = 1.0, vol_wildlife = 1.0, vol_underground = 1.0,
     rarity = 1.0, distance = 1.0, texture_volume = 0.55,
     log_level = "WARN", log_flush = false,
     -- Diegetic
@@ -37,8 +39,10 @@ local defaults = {
 }
 
 local _key_to_tab = {
-    vol_global = "atmosphere", vol_dread = "atmosphere", vol_underground = "atmosphere",
-    vol_weather = "atmosphere", vol_human = "atmosphere", vol_animal = "atmosphere",
+    vol_global = "atmosphere", vol_spooks = "atmosphere", vol_screams = "atmosphere",
+    vol_mutants = "atmosphere", vol_ambience = "atmosphere", vol_machines = "atmosphere",
+    vol_forest = "atmosphere", vol_storm = "atmosphere", vol_wind = "atmosphere",
+    vol_rain = "atmosphere", vol_wildlife = "atmosphere", vol_underground = "atmosphere",
     rarity = "atmosphere", distance = "atmosphere", texture_volume = "atmosphere",
     log_level = "atmosphere", log_flush = "atmosphere",
     dia_master = "diegetic",
@@ -76,13 +80,19 @@ local function atmosphere_page()
             { id = "desc", type = "desc", text = "ui_mcm_aa_desc" },
             { id = "vol_global", type = "track", val = 2, min = 0.0, max = 5.0, step = 0.05, def = 1.0, hint = "aa_vol_global" },
 
-            { id = "div_moods", type = "line" },
-            { id = "hdr_moods", type = "desc", text = "ui_mcm_aa_hdr_moods", clr = GREY },
-            vol_track("vol_dread"),
+            { id = "div_layers", type = "line" },
+            { id = "hdr_layers", type = "desc", text = "ui_mcm_aa_hdr_layers", clr = GREY },
+            vol_track("vol_spooks"),
+            vol_track("vol_screams"),
+            vol_track("vol_mutants"),
+            vol_track("vol_ambience"),
+            vol_track("vol_machines"),
+            vol_track("vol_forest"),
+            vol_track("vol_storm"),
+            vol_track("vol_wind"),
+            vol_track("vol_rain"),
+            vol_track("vol_wildlife"),
             vol_track("vol_underground"),
-            vol_track("vol_weather"),
-            vol_track("vol_human"),
-            vol_track("vol_animal"),
 
             { id = "div_feel", type = "line" },
             { id = "hdr_feel", type = "desc", text = "ui_mcm_aa_hdr_feel", clr = GREY },

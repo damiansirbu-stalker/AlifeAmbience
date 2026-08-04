@@ -1,7 +1,7 @@
 --- aa_debug: the code-tracing primitives for AlifeAmbience. ONE logger, one gate.
 --- The control layer (aa_sound) wires into this to record every ambient sound it plays -
---- channel, mood, file, distance, volume, context - so the soundscape is checked by
---- observation, not guessed by ear. Mirrors AlifeTactics at_debug exactly: one logger,
+--- level, section, channel, layer, file, distance, volume - so the soundscape is checked
+--- by observation, not guessed by ear. Mirrors AlifeTactics at_debug exactly: one logger,
 --- one integer gate, refresh from MCM on first update and every option change.
 ---
 --- Cost: dbg() and on() gate on one integer compare. Below DEBUG the off path writes

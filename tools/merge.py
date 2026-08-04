@@ -89,6 +89,9 @@ MODS = [
     ("Soundscape",     "D:/Games/GAMMA/GAMMA/mods/3- Soundscape Overhaul - Solarint/gamedata"),
     ("RETUNE",         "D:/Games/GAMMA/GAMMA/mods/457- RETUNE Ambiant Sounds - Aphrodite_child/gamedata"),
     ("Amplified",      "C:/Users/damian/Downloads/extra_mods_analysys/Dark Signal Amplified Soundscape/gamedata"),
+    # net-new distant-creature calls (99 files, 0 content-hash overlap with Amplified's
+    # mutant pool). No sound_channels.ltx of its own - captured via DARK_FILL /mutants/.
+    ("RealDistantMutants", "C:/Users/damian/Downloads/anomaly_audio_mods/Real Distant Mutants Sounds/gamedata"),
     ("vanilla",        "D:/Games/GAMMA/Anomaly/tools/_unpacked"),   # last: only for channels no pack defines (portability coverage)
 ]
 
@@ -151,6 +154,129 @@ def dedup_pick(files):
     chosen = [max(g, key=lambda f: f["bitrate"]) for g in groups.values()]
     good = [c for c in chosen if c["bitrate"] >= LOWQ_BITRATE]
     return good if good else chosen
+
+
+# --- base-dedup: never ship a sound the install already PLAYS ----------------
+# The install plays a fixed set, winner-resolved: vanilla's own ambient channels
+# (unpacked sounds_ambient.db0) + the GAMMA winner (DSW) active channels. Our content
+# must exclude those by md5 AND by acoustic fingerprint - the packs re-encode the same
+# sound to new bytes, so md5 alone misses the re-encoded copies (measured: ~250 of the
+# "net-new" set were acoustic duplicates of a base-played sound). fpcalc + fp_similarity
+# is the same same-sound test soundpool uses; BASE_SIM matches its dup_similarity_threshold.
+VAN_CFG = "D:/Games/GAMMA/Anomaly/tools/_unpacked"
+VAN_SND = Path("D:/Games/GAMMA/Anomaly/tmp_van_ambient/sounds")     # unpacked sounds_ambient.db0
+CONVERTER = "D:/Games/GAMMA/Anomaly/tools/converter.exe"
+VAN_DB = "D:/Games/GAMMA/Anomaly/db/sounds/sounds_ambient.db0"
+GAMMA_WINNER = "D:/Games/GAMMA/GAMMA/mods/304- Dark Signal Weather and Ambiance Audio - Shrike/gamedata"
+GAMMA_DEFINERS = [GAMMA_WINNER,
+    "D:/Games/GAMMA/GAMMA/mods/3- Soundscape Overhaul - Solarint/gamedata",
+    "D:/Games/GAMMA/GAMMA/mods/457- RETUNE Ambiant Sounds - Aphrodite_child/gamedata"]
+FP_LEN = 30
+BASE_SIM = 0.88     # soundpool dup_similarity_threshold; >= this to a base sound = drop
+
+
+def _active_channels(gd):
+    """channels PLAYED in a preset (static sound_channels + dynamic) on this install."""
+    a = set()
+    for _f, secs in parse_presets(gd).items():
+        for _s, d in secs.items():
+            a |= {c.lower() for c in d.get("base", [])} | {c.lower() for c in d.get("dynamic", [])}
+    return a
+
+
+def _base_played_files():
+    """{md5: path} for every sound the install PLAYS. GAMMA winner = DSW's active
+    channels (so its stripped channels are NOT counted - those are ours to restore);
+    vanilla = its active channels resolved from the unpacked ambient tree."""
+    files = {}
+    dsw_act = _active_channels(GAMMA_WINNER)
+    for gd in GAMMA_DEFINERS:
+        root = Path(gd) / "sounds"
+        for ch, d in parse_channels(gd).items():
+            if ch.lower() in dsw_act:
+                for st in d["stems"]:
+                    f = resolve(st, root)
+                    if f:
+                        files.setdefault(file_hash(f), f)
+    van_act = _active_channels(VAN_CFG)
+    for ch, d in parse_channels(VAN_CFG).items():
+        if ch.lower() in van_act:
+            for st in d["stems"]:
+                f = resolve(st, VAN_SND)
+                if f:
+                    files.setdefault(file_hash(f), f)
+    return files
+
+
+def _ensure_vanilla_unpacked():
+    if VAN_SND.is_dir() and next(VAN_SND.rglob("*.ogg"), None):
+        return
+    import subprocess
+    VAN_SND.parent.mkdir(parents=True, exist_ok=True)
+    print(f"unpacking vanilla ambient sounds -> {VAN_SND.parent}")
+    subprocess.run([CONVERTER, "-unpack", "-xdb", "-dir", str(VAN_SND.parent), VAN_DB], check=True)
+
+
+def cmd_basedex(_a):
+    """Build the base-played index (md5 + fingerprint + duration) -> base_index.json.
+    Run once; plan reads it to drop duplicates. Rebuild when the install's ambient
+    mods change (winner, DSW/Soundscape/RETUNE, or the vanilla pack)."""
+    _ensure_vanilla_unpacked()
+    files = _base_played_files()
+
+    def one(hp):
+        h, f = hp
+        info = sp.probe(str(f)) or {}
+        return {"md5": h, "fp": sp.fingerprint(str(f), FP_LEN),
+                "dur": round(float(info.get("duration") or 0))}
+    rows = sp.pmap(one, list(files.items()), sp.DEF_JOBS)
+    (HERE / "base_index.json").write_text(json.dumps(rows), encoding="utf-8")
+    print(f"base index: {len(rows)} played sounds (vanilla + GAMMA winner) -> base_index.json")
+
+
+def _load_base_index():
+    p = HERE / "base_index.json"
+    if not p.exists():
+        cmd_basedex(None)
+    rows = json.loads(p.read_text())
+    md5 = {r["md5"] for r in rows}
+    by_dur = collections.defaultdict(list)
+    for r in rows:
+        if r["fp"]:
+            by_dur[r["dur"]].append(r["fp"])
+    return md5, by_dur
+
+
+def _base_dedup(merged):
+    """Drop every chosen sound the install already plays: md5 hit, or acoustic
+    fingerprint >= BASE_SIM to a base sound of the same duration (a re-encode)."""
+    md5set, by_dur = _load_base_index()
+    uniq = {c["abs"]: None for chan in merged for c in merged[chan]["chosen"]}
+    for a in uniq:
+        uniq[a] = file_hash(a)
+    need = [a for a, h in uniq.items() if h not in md5set]
+    fpres = dict(zip(need, sp.pmap(
+        lambda a: (sp.fingerprint(a, FP_LEN), round(float((sp.probe(a) or {}).get("duration") or 0))),
+        need, sp.DEF_JOBS)))
+
+    def base_hit(a):
+        if uniq[a] in md5set:
+            return "md5"
+        fp, dur = fpres.get(a, (None, 0))
+        if not fp:
+            return None
+        for d in (dur - 1, dur, dur + 1):
+            for bfp in by_dur.get(d, ()):
+                if sp.fp_similarity(fp, bfp) >= BASE_SIM:
+                    return "fp"
+        return None
+    hit = {a: base_hit(a) for a in uniq}
+    n_md5 = sum(1 for v in hit.values() if v == "md5")
+    n_fp = sum(1 for v in hit.values() if v == "fp")
+    for chan in merged:
+        merged[chan]["chosen"] = [c for c in merged[chan]["chosen"] if hit[c["abs"]] is None]
+    print(f"base-dedup: dropped {n_md5} md5 + {n_fp} acoustic re-encodes the install already plays "
+          f"(of {len(uniq)} chosen)")
 
 
 def cmd_plan(_):
@@ -239,12 +365,16 @@ def cmd_plan(_):
             "chosen": [{"abs": c["abs"], "stem": c["stem"], "pool": c["pool"],
                         "bitrate": c["bitrate"], "channels": c["channels"]} for c in chosen],
         }
+    # base-dedup: never ship a sound vanilla or the GAMMA winner already plays (md5 +
+    # acoustic). Runs on the chosen set before it is frozen into merged_channels.json.
+    _base_dedup(merged)
     (HERE / "merged_channels.json").write_text(json.dumps(merged, indent=1), encoding="utf-8")
 
     # 3. report
     print(f"mods merged: {[m[0] for m in MODS]}")
+    net_new = sum(len(v["chosen"]) for v in merged.values())
     print(f"channels (union): {len(merged)}   filled: {sum(1 for v in merged.values() if v['chosen'])}   inherited (blowout/packed): {inherited}")
-    print(f"sounds pooled: {tot_in}  ->  kept {tot_kept}  (dropped {tot_dropped}: exact dups + junk bitrate; {offrate} off-44100 skipped)")
+    print(f"sounds pooled: {tot_in}  ->  deduped {tot_kept}  ->  net-new after base-dedup: {net_new}  (dropped {tot_dropped}: exact dups + junk bitrate; {offrate} off-44100 skipped)")
     if missing:
         print(f"unresolved sound refs (packed/missing files): {dict(missing)}")
 
@@ -291,9 +421,10 @@ def _clean(d):
 
 # ----------------------------------------------------------------------------
 # The shipped model: two layers over the untouched engine bed.
-#   TEXTURE - looped continuous beds, 5 CONTEXTS, one at a time by aa_texture.script.
-#   ACCENT  - dynamic one-shots, 5 MOODS, DLTX sound_channels_dynamic per preset.
-# Role is MEASURED per file (classify); mood/context is the source channel name.
+#   TEXTURE - looped continuous beds, one at a time by context (aa_texture.script).
+#   ACCENT  - dynamic one-shots on the engine's own channels, enrich/restore/define
+#             (see _channel_routing); grouped into 11 LAYERS for volume + density.
+# Role is MEASURED per file (classify); the layer comes from layer_of.
 # ----------------------------------------------------------------------------
 
 # Vocal source channels: a wail/scream/spook is an EVENT, never a bed. Forced
@@ -301,11 +432,7 @@ def _clean(d):
 VOCAL = {"out_screams", "out_spooks", "out_mutants", "out_day_spoops", "out_night_spoops",
          "urban_spoops_night", "northen_spoops", "foliage_spook", "crows_spook"}
 
-# The five moods (accent) and five contexts (texture bed). Both are keyed off the
-# source channel name (the pack author's taxonomy) - the second signal after the
-# measured role. Kept as functions, not a dict, so a new source channel routes by
-# substring without a table edit.
-MOODS = ["dread", "underground", "weather", "human", "animal"]
+# The texture contexts (bed pool per source channel), separate from the accent layers.
 # Texture pools = the looped beds the player hears one at a time. Underground is
 # SPLIT by source-channel character into a LAB pool (machine/metal/voices/banging/
 # lab hum - the X-Lab levels: X18, brain lab, war lab, X8) and a SEWER pool (drip/
@@ -317,19 +444,6 @@ BEDS = ["wind", "dread", "fog", "stormrain", "underground_lab", "underground_sew
 TEX_CAP = 40                          # loop variations per pool; draws the held surplus
 UG_LAB_CH = {"ugrnd_lab", "ugrnd_ambient_machine", "ugrnd_metal", "ugrnd_voices",
              "ugrnd_banging", "x18"}
-
-
-def mood_of(ch):
-    c = ch.lower()
-    if c.startswith("ugrnd_") or c == "x18" or "underground_background" in c:
-        return "underground"
-    if (c.startswith("crows") and "spook" not in c) or c == "owls" or c == "dogs" or c == "birds_night":
-        return "animal"          # crows_spook is a scare, not wildlife -> falls through to dread
-    if c in ("out_gunfire", "out_drone", "drones", "day_drones", "urban_drones", "urban_debris", "vest_radio"):
-        return "human"
-    if "storm" in c or "rain" in c or "wind" in c or c == "chimes" or "tuman" in c or c == "pre_storm":
-        return "weather"
-    return "dread"
 
 
 def ctx_of(ch):
@@ -475,7 +589,7 @@ def _build_layers(mc, cls, ch_to_group, group_key):
              "dur": r["dur"], "idx": idx}
         if r["role"] == "texture":
             tex_all[tex_pool(r["ch"])].append(e)
-        else:
+        elif r["ch"] in ch_to_group:          # skip accent sounds of bed channels (not routed)
             accents[ch_to_group[r["ch"]]].append(e)
     textures = {b: sorted(v, key=lambda e: (-e["dur"], e["idx"]))[:TEX_CAP] for b, v in tex_all.items()}
     return accents, textures
@@ -531,27 +645,92 @@ def _settings_key(ch):
     return (s["min"], s["max"], s["p"], s["indoor"], s["height"])
 
 
-def accent_group_map(cls):
-    """(ch -> group name, group name -> settings key). One group per (mood, exact-settings),
-    named <mood>_<n>, n stable by sorted settings tuple. Deterministic, so provenance re-derives."""
-    by_mood = {}
-    for r in cls:
-        if r["role"] == "texture":
+# --- layers + channel routing (the shipped model) ---------------------------
+# A LAYER is a pure-purpose group of channels. Each deployed channel belongs to
+# exactly one; the layer drives its MCM volume slider and the per-section density
+# budget. Named for what the sound IS. layer_of is the single source of truth; the
+# deploy materialises it to aa_channel_layers.ltx so aa_sound reads it, never a name.
+LAYERS = ["spooks", "screams", "mutants", "ambience", "machines", "forest",
+          "storm", "wind", "rain", "wildlife", "underground"]
+# emission priority when a section is over the density budget: dread-core first,
+# wildlife/rain last (accent colour). Layers not listed rank after these.
+LAYER_ORDER = ["spooks", "screams", "mutants", "ambience", "underground", "forest",
+               "storm", "wind", "machines", "rain", "wildlife"]
+
+
+def layer_of(ch):
+    c = ch.lower()
+    if c.startswith("aa_"):        # deployed define channels are aa_<source>; layer by the source
+        c = c[3:]
+    if c.startswith("ugrnd_") or c == "x18" or c == "inside_noise" or "underground_background" in c:
+        return "underground"
+    if "rain" in c:
+        return "rain"
+    if "storm" in c or c == "pre_storm" or c == "chimes":
+        return "storm"
+    if "wind" in c:
+        return "wind"
+    if c in ("branch", "branch_med", "branch_big", "foliage_spook", "tree_sway_fog", "crows_spook"):
+        return "forest"
+    if c == "out_screams":
+        return "screams"
+    if c == "out_mutants":
+        return "mutants"
+    if c in ("out_dark_amb", "out_night_amb", "psi_sparks", "psistorm_background", "dark_signal"):
+        return "ambience"
+    if c in ("out_gunfire", "out_drone", "drones", "day_drones", "urban_drones", "vest_radio", "urban_debris"):
+        return "machines"
+    if c in ("crows", "crows_clear", "crows_forest", "crows_retune", "owls", "dogs", "birds_night"):
+        return "wildlife"
+    return "spooks"   # out_spooks, *_spoops: dark presence (default)
+
+
+# strip-4: channels vanilla plays but the GAMMA winner (DSW) strips. We restore them
+# on both installs (define fully + re-add to presets), filled with our net-new content.
+STRIP4 = {"out_screams", "out_mutants", "out_gunfire", "wind_dark"}
+
+
+def _channel_routing(mc, cls):
+    """source channel -> (deployed, mode, layer) for every channel with ACCENT content.
+      enrich  - a channel BOTH installs play: append our net-new sounds to it (deployed =
+                the base name), NO preset change (it already plays where the base plays it).
+      restore - a strip-4 channel: define fully + re-add to presets (deployed = base name).
+      define  - a purpose no live base channel provides: our own aa_<ch> (deployed = aa_ch).
+    Beds (texture role) are not routed here - the deploy sends them to the bed pools."""
+    have_accent = {r["ch"] for r in cls if r["role"] != "texture"}
+    both = _active_channels(VAN_CFG) & _active_channels(GAMMA_WINNER)
+    gam_defined = set(parse_channels(GAMMA_WINNER).keys())   # channels DSW defines (played or not)
+    routing = {}
+    for ch in sorted(mc):
+        if ch not in have_accent or not mc[ch]["chosen"]:
             continue
-        ch = r["ch"]
-        by_mood.setdefault(mood_of(ch), {}).setdefault(_settings_key(ch), set()).add(ch)
+        if all(v == 0 for v in _chan_settings(mc[ch].get("settings"))["p"]):
+            continue    # a bed (all periods 0) is a continuous loop -> the texture layer, never an accent
+        lay = layer_of(ch)
+        if ch in STRIP4 and ch in gam_defined:
+            # stripped from the winner's presets but still DEFINED -> re-activate + enrich it
+            routing[ch] = (ch, "restore", lay)
+        elif ch in both:
+            # a channel both installs actively play -> append our net-new sounds in place
+            routing[ch] = (ch, "enrich", lay)
+        else:
+            # no channel both installs run (wind_dark absent on GAMMA, or a pack refinement
+            # like out_day_spoops) -> our own self-contained channel, defined + placed
+            routing[ch] = (f"aa_{ch}", "define", lay)
+    return routing
+
+
+def accent_group_map(cls):
+    """(ch -> deployed channel, deployed channel -> settings key), derived from the
+    routing. Deployed name = the base channel (enrich/restore) or aa_<ch> (define).
+    Kept as the shared entry point for _build_layers, deploy and provenance."""
+    mc = json.loads((HERE / "merged_channels.json").read_text())
+    routing = _channel_routing(mc, cls)
     ch_to_group, group_key = {}, {}
-    for mood in MOODS:
-        for n, key in enumerate(sorted(by_mood.get(mood, {})), 1):
-            g = f"{mood}_{n}"
-            group_key[g] = key
-            for ch in by_mood[mood][key]:
-                ch_to_group[ch] = g
+    for ch, (dep, _mode, _lay) in routing.items():
+        ch_to_group[ch] = dep
+        group_key[dep] = _settings_key(ch)
     return ch_to_group, group_key
-
-
-def _group_mood(g):
-    return g.rsplit("_", 1)[0]
 
 
 ACC_PERIOD_FLOOR = 20000   # a period of 0 makes a one-shot fire every tick (spam); floor it.
@@ -600,7 +779,11 @@ def cmd_deploy(a):
     mc = json.loads((HERE / "merged_channels.json").read_text())
     cls = json.loads((HERE / "classification.json").read_text())
     gain = _gain_map()
-    ch_to_group, group_key = accent_group_map(cls)
+    routing = _channel_routing(mc, cls)
+    ch_to_group = {ch: dep for ch, (dep, _m, _l) in routing.items()}
+    group_key = {dep: _settings_key(ch) for ch, (dep, _m, _l) in routing.items()}
+    dep_mode = {dep: mode for _ch, (dep, mode, _l) in routing.items()}
+    dep_layer = {dep: lay for _ch, (dep, _m, lay) in routing.items()}
     accents, textures = _build_layers(mc, cls, ch_to_group, group_key)
 
     _clean(snd); _clean(env / "ambients")
@@ -608,69 +791,78 @@ def cmd_deploy(a):
     (root / "configs/misc/sound").mkdir(parents=True, exist_ok=True)
     (env / "ambients/presets").mkdir(parents=True, exist_ok=True)
 
-    # accents: acc\<mood>_<n>\N.ogg + @[aa_acc_<mood>_<n>], one channel per exact-settings group
-    chan_lines = [HDR]
-    for g in sorted(group_key):
-        entries = accents[g]
+    # Deployed accent channels. @[C] is the DLTX safe create-or-override: it MERGES our
+    # sounds into an existing channel (enrich/restore) or CREATES it (define). Sounds are
+    # always appended with >sounds so a base channel's own sounds are never replaced; a
+    # define channel additionally carries its settings and a seeding `sounds =` line.
+    # ONE sound per line - a single long `sounds = a,b,c,...` overflows the engine's fixed
+    # LTX read buffer (IReader::r_string, FS.cpp) and CTDs at load.
+    chan_lines, layer_lines = [HDR], [HDR, "[aa_channel_layers]"]
+    for dep in sorted(accents):
+        entries = accents[dep]
+        if not entries:
+            continue
         for i, e in enumerate(entries, 1):
-            _emit_audio(e, snd / "acc" / g / f"{i}.ogg", gain)
-        chan_lines.append(f"@[aa_acc_{g}]")
-        chan_lines.extend(_acc_settings(group_key[g]))
-        # ONE sound per line. A single `sounds = a, b, c, ...` line with hundreds of
-        # entries overflows the engine's fixed LTX read buffer (IReader::r_string,
-        # FS.cpp) and CTDs at load ("Dest string less than needed"). DLTX >append
-        # keeps every input line short; the merged value is stored as an unbounded
-        # shared_str, so the engine reads the full list back with no limit.
-        if entries:
-            chan_lines.append(f"sounds = zs\\acc\\{g}\\1")
-            for i in range(2, len(entries) + 1):
-                chan_lines.append(f">sounds = zs\\acc\\{g}\\{i}")
-        else:
-            chan_lines.append("sounds = ambient\\no_sound")
+            _emit_audio(e, snd / dep / f"{i}.ogg", gain)
+        chan_lines.append(f"@[{dep}]")
+        if dep_mode[dep] == "define":
+            chan_lines.extend(_acc_settings(group_key[dep]))
+            chan_lines.append(f"sounds = zs\\{dep}\\1")
+            start = 2
+        else:                       # enrich / restore: append only, inherit the base settings
+            start = 1
+        for i in range(start, len(entries) + 1):
+            chan_lines.append(f">sounds = zs\\{dep}\\{i}")
         chan_lines.append("")
+        layer_lines.append(f"{dep} = {dep_layer[dep]}")
     (env / "mod_sound_channels_alifeambience.ltx").write_text("\n".join(chan_lines), encoding="utf-8")
+    (env / "aa_channel_layers.ltx").write_text("\n".join(layer_lines) + "\n", encoding="utf-8")
 
     deploy_texture(root, textures, gain)
-
-    write_presets(env, ch_to_group)
+    write_presets(env, routing)
+    counts = collections.Counter(dep_mode[d] for d in accents if accents[d])
     print(f"deployed to {root}")
-    print(f"  accents: {len(group_key)} channels, {sum(len(v) for v in accents.values())} sounds")
+    print(f"  accent channels: enrich {counts['enrich']}, restore {counts['restore']}, "
+          f"define {counts['define']}; {sum(len(v) for v in accents.values())} sounds")
     print(f"  textures: " + ", ".join(f"{b} {len(textures[b])}" for b in BEDS))
 
 
-# --- distribution: which mood plays in which (level, time, weather) section ---
-# n071. EVIDENCE-DRIVEN, not a hand table: a mood plays in (level, section) iff a
-# source pack placed one of OUR channels of that mood in that exact level+section.
-# The section name carries time (day/evening/morning/night) and weather (rain*/
-# storm*/tuman*/pre_storm), so this inherits night-heavier-dread, animals-by-time,
-# and weather-gating straight from how the pack authors placed the sounds. Two lore
-# overrides where the generic packs were lazy: underground labs (structural - the
-# source only wires them in indoor* sections) and the haunted whisper level.
-
-# emission order: dread first (dominant), animal last (accent colour)
-MOOD_ORDER = ["dread", "underground", "weather", "human", "animal"]
+# --- distribution: which channel plays in which (level, time, weather) section -----
+# EVIDENCE + LORE + BUDGET. A restore/define channel plays where a source pack placed
+# its source channel (the section name carries time + weather, so night-heavier dread,
+# animals-by-time and weather-gating fall out of the placement), refined by two lore
+# rules (underground labs, the haunted whisper level), then capped so base + our added
+# channels never exceed vanilla's per-section maximum. ENRICH channels are NOT placed
+# here - they already play wherever the base plays them; we only added sounds to them.
+SECTION_MAX = 13    # vanilla's observed per-section channel ceiling; keep total <= this
 UNDERGROUND_LEVELS = {"environment_underground", "environment_underground_more",
                       "environment_underground_x18"}
 WHISPER_LEVEL = "environment_whisper"
 
 
-def _section_groups(fname, sec, per_pack, ch_to_group):
-    """The accent GROUPS evidenced at (level fname, section sec) across all packs (our
-    channels only), lore-refined for the underground and whisper specials. A group plays
-    where one of its source channels was placed - so each channel lands with its own exact
-    settings, at the section the pack authors used it."""
+def _place_map(routing):
+    """source channel -> deployed name, for the channels we PLACE (restore + define).
+    Enrich channels are excluded: they already play wherever the base plays them."""
+    return {ch: dep for ch, (dep, mode, _l) in routing.items() if mode in ("restore", "define")}
+
+
+def _section_channels(fname, sec, place, routing):
+    """Deployed restore/define channels to place at (level fname, section sec):
+    evidenced (a source pack placed the source channel there), lore-refined for the
+    underground labs and the haunted whisper level. Returns deployed channel names."""
     stem = fname[:-4]
-    if stem in UNDERGROUND_LEVELS:                    # labs: underground groups, indoor only
+    lay = {dep: layer_of(dep) for dep in place.values()}
+    if stem in UNDERGROUND_LEVELS:                    # labs: underground channels, indoor only
         if not sec.lower().startswith("indoor"):
             return []
-        return sorted({g for g in set(ch_to_group.values()) if _group_mood(g) == "underground"})
-    chans = set()
-    for pm in per_pack.values():
-        chans |= set(pm.get(fname, {}).get(sec, {}).get("dynamic", []))
-    groups = {ch_to_group[c] for c in chans if c in ch_to_group}
-    if stem == WHISPER_LEVEL:                         # haunted: dread + weather, no wildlife/people
-        groups = {g for g in groups if _group_mood(g) in ("dread", "weather")}
-    return sorted(groups)
+        return sorted({dep for dep in place.values() if lay[dep] == "underground"})
+    srcs = set()
+    for pm in _PER_PACK.values():
+        srcs |= set(pm.get(fname, {}).get(sec, {}).get("dynamic", []))
+    deps = {place[c] for c in srcs if c in place}
+    if stem == WHISPER_LEVEL:                         # haunted: no wildlife, no people
+        deps = {d for d in deps if lay[d] not in ("wildlife", "machines")}
+    return sorted(deps)
 
 
 # Vanilla presets no pack rebinds away. Portability: on bare vanilla (no soundscape
@@ -679,25 +871,43 @@ def _section_groups(fname, sec, per_pack, ch_to_group):
 # vanilla preset is overlaid too. On GAMMA these are moot (the packs rebind to the 21).
 PRESET_ALIASES = {"environment_forest_more": "environment_forest",
                   "environment_swamp_coast": "environment_swamp"}
+_PER_PACK = {}
 
 
-def write_presets(env, ch_to_group):
-    """Emit mod_<preset>_alifeambience.ltx: for each (level, section) append our
-    evidence-placed accent groups via >sound_channels_dynamic. Sections the source
-    left empty for that level (e.g. an underground level's surface hours) get no
-    append, so nothing plays where nothing was meant to."""
-    per_pack = {name: parse_presets(gd) for name, gd in MODS if name != "vanilla"}
-    base = parse_presets("D:/Games/GAMMA/GAMMA/mods/304- Dark Signal Weather and Ambiance Audio - Shrike/gamedata")
+def write_presets(env, routing):
+    """Emit mod_<preset>_alifeambience.ltx. Per (level, section), place our restore/define
+    channels via >sound_channels_dynamic (evidence + lore), then cap so the winner's base
+    channel count + our additions stays <= SECTION_MAX (vanilla's ceiling); over budget,
+    drop by LAYER_ORDER (dread-core kept, wildlife/rain first out). Enrich channels are not
+    placed - they already play wherever the base plays them."""
+    global _PER_PACK
+    _PER_PACK = {name: parse_presets(gd) for name, gd in MODS if name != "vanilla"}
+    base = parse_presets(GAMMA_WINNER)
+    place = _place_map(routing)
+    lay = {dep: layer_of(dep) for dep in place.values()}
+
+    def budget_cap(deps, base_count):
+        room = SECTION_MAX - base_count
+        if room <= 0:
+            return []
+        if len(deps) <= room:
+            return deps
+
+        def rank(d):
+            l = lay.get(d, "spooks")
+            return (LAYER_ORDER.index(l) if l in LAYER_ORDER else len(LAYER_ORDER), d)
+        return sorted(sorted(deps, key=rank)[:room])
 
     def emit(out_stem, src_fname, secs):
         lines = [HDR, ""]
         for sec in secs:
-            groups = _section_groups(src_fname, sec, per_pack, ch_to_group)
-            if not groups:
+            deps = budget_cap(_section_channels(src_fname, sec, place, routing),
+                              len(secs[sec].get("dynamic", [])))
+            if not deps:
                 continue
             lines.append(f"![{sec}]")
-            for g in groups:
-                lines.append(f">sound_channels_dynamic = aa_acc_{g}")
+            for d in deps:
+                lines.append(f">sound_channels_dynamic = {d}")
             lines.append("")
         (env / "ambients/presets" / f"mod_{out_stem}_alifeambience.ltx").write_text("\n".join(lines), encoding="utf-8")
 
@@ -730,7 +940,8 @@ def cmd_ledger(a):
     zs = GDATA / "sounds/zs"
     for f in zs.rglob("*.ogg"):
         deployed.add(file_hash(f))
-    rows, counts = [], collections.Counter()
+    base_md5, base_by_dur = _load_base_index()         # sounds the install already PLAYS
+    rows, counts, pending = [], collections.Counter(), []
     for name, gd in MODS:
         if name == "vanilla":
             continue
@@ -752,15 +963,35 @@ def cmd_ledger(a):
                 st = "HELD-texture-surplus"
             elif emission:
                 st = "EMISSION-excluded"
+            elif h in base_md5:                         # the install plays it (exact) -> not ours
+                st = "BASE-DUP-excluded"
             elif dark and under_root:
                 info = sp.probe(str(f)) or {}
-                st = "OFFSPEC-48k-excluded" if info.get("sample_rate") != 44100 else "UNUSED-DARK"
+                if info.get("sample_rate") != 44100:
+                    st = "OFFSPEC-48k-excluded"
+                else:
+                    pending.append((name, rel, f))      # decide UNUSED-DARK vs BASE-DUP acoustically
+                    continue
             elif under_root:
                 st = "off-scope-or-dup"
             else:
                 st = "SKIP-nonambient"
             rows.append(f"{name}\t{rel}\t{st}")
             counts[st] += 1
+    # a dark file the install doesn't byte-match may still be a re-encoded copy it plays;
+    # fingerprint the residue against the base index so UNUSED-DARK is only true misses.
+    def _fp(t):
+        _n, _r, f = t
+        return (sp.fingerprint(str(f), FP_LEN), round(float((sp.probe(str(f)) or {}).get("duration") or 0)))
+    for (name, rel, _f), (fp, dur) in zip(pending, sp.pmap(_fp, pending, sp.DEF_JOBS)):
+        st = "UNUSED-DARK"
+        if fp:
+            for d in (dur - 1, dur, dur + 1):
+                if any(sp.fp_similarity(fp, b) >= BASE_SIM for b in base_by_dur.get(d, ())):
+                    st = "BASE-DUP-excluded"
+                    break
+        rows.append(f"{name}\t{rel}\t{st}")
+        counts[st] += 1
     (HERE / "ledger.tsv").write_text("pack\tfile\tstatus\n" + "\n".join(rows) + "\n", encoding="utf-8")
     for st, n in counts.most_common():
         print(f"{n:6d}  {st}")
@@ -803,10 +1034,10 @@ def cmd_provenance(a):
             "min_distance", "max_distance", "period0", "period1", "period2", "period3",
             "indoor", "height", "gain_db", "orig_sections"]
     rows, verify_ok, verify_bad = [], 0, 0
-    def add(entries, layer, group, subdir):
+    def add(entries, layer, group, reldir):
         nonlocal verify_ok, verify_bad
         for i, e in enumerate(entries, 1):
-            dep = f"zs\\{subdir}\\{group}\\{i}"
+            dep = f"zs\\{reldir}\\{i}"
             s = settings.get(e["ch"], {})
             g = gain.get((e["ch"], e["stem"]))
             stem = e["stem"]
@@ -818,15 +1049,15 @@ def cmd_provenance(a):
                          "" if g is None else str(g), "; ".join(ch_sec.get(e["ch"], []))])
             # self-verify: a verbatim (ungained) shipped file must hash-equal its source
             if g is None:
-                dfile = zs / subdir / group / f"{i}.ogg"
+                dfile = zs / Path(reldir.replace("\\", "/")) / f"{i}.ogg"
                 if dfile.exists() and file_hash(dfile) == file_hash(e["abs"]):
                     verify_ok += 1
                 else:
                     verify_bad += 1
-    for g in sorted(group_key):
-        add(accents[g], "accent", g, "acc")
-    for bed in BEDS:
-        add(textures[bed], "texture", bed, "tex")
+    for g in sorted(group_key):                       # accents deploy to zs\<channel>\N
+        add(accents[g], layer_of(g), g, g)
+    for bed in BEDS:                                  # texture beds to zs\tex\<bed>\N
+        add(textures[bed], "texture", bed, f"tex\\{bed}")
     lines = ["\t".join(cols)] + ["\t".join(r) for r in rows]
     (HERE / "provenance.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"provenance: {len(rows)} shipped sounds -> provenance.tsv")
@@ -840,6 +1071,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("plan").set_defaults(func=cmd_plan)
+    sub.add_parser("basedex").set_defaults(func=cmd_basedex)
     p = sub.add_parser("classify"); p.add_argument("--out"); p.set_defaults(func=cmd_classify)
     p = sub.add_parser("loudness"); p.add_argument("--out"); p.set_defaults(func=cmd_loudness)
     p = sub.add_parser("deploy"); p.add_argument("--root"); p.set_defaults(func=cmd_deploy)

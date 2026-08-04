@@ -18,13 +18,16 @@ Why it is different:
 - Measured, not dumped. Every sound goes through signal analysis for spectral shape,
   loudness, and length, then content-hash dedup and per-group loudness leveling. No junk,
   no duplicates, no guesswork.
-- Composes, never overrides. Most packs carry thousands of files that all rewrite the same
-  base channels, so half never fire and the rest collide. This one appends with DLTX and
-  places every sound on purpose, over GAMMA, vanilla, or any soundscape.
-- Provable. An in-game trace logs every sound as it plays. Every file traces back to its
-  origin mod, folder, filename, channel, and exact settings.
-- Configurable. MCM control of the atmosphere per mood and of the in-world radios,
-  megaphones, and instruments.
+- Composes, never duplicates. It adds its sounds INTO the game's own channels with DLTX,
+  and never ships a sound your install already plays - filtered by content hash AND by
+  acoustic fingerprint, so even a re-encoded copy of a base sound is caught. No collisions,
+  no doubling, no extra density, over GAMMA, vanilla, or any soundscape.
+- Provable. An in-game trace logs every sound as it plays, so an Anomaly run and a GAMMA
+  run diff cleanly. Every file traces back to its origin mod, folder, filename, channel,
+  and exact settings.
+- Configurable. MCM volume control of the atmosphere per layer - spooks, screams, mutants,
+  storm, wind, rain, underground, and more - and of the in-world radios, megaphones, and
+  instruments.
 - Growing. Original sounds recorded for this mod, and a scripted system that triggers
   dread inside buildings and lairs, are in progress.
 
@@ -54,10 +57,11 @@ How it is built:
   Every sound is put through signal analysis before it goes in, and the result is proven.
   Whether it becomes a looped bed or a one-shot scare is decided from measured length,
   steadiness (crest factor), and loudness (EBU R128), not from its filename.
-  Identical files across packs collapse to one by content hash. Loudness is leveled per
-  group, outliers only, so a whisper and a scream keep their difference. A content-hash
-  ledger proves no dark sound in a source pack is missed, and a provenance record maps
-  every included sound back to its origin. The whole overlay rebuilds from the packs in
+  Identical files across packs collapse to one by content hash, and anything your install
+  already plays is dropped - by hash and by acoustic fingerprint, so re-encoded copies are
+  caught too. Loudness is leveled per group, outliers only, so a whisper and a scream keep
+  their difference. A ledger proves no net-new dark sound is missed, and a provenance record
+  maps every included sound back to its origin. The whole overlay rebuilds from the packs in
   one run.
 
 Installation:
@@ -72,5 +76,6 @@ Credits:
     Dark Signal Amplified Soundscape   - Shrike
     Soundscape Overhaul                - Solarint
     RETUNE Ambient Sounds              - Aphrodite_child
+    Real Distant Mutants Sounds        - moddb (distant creature calls)
   Used under the terms on each source page. Only the selected audio is redistributed, with
   attribution. If an author requests removal, their pack is dropped from the build.

@@ -6,8 +6,8 @@
   <string id="ui_mcm_aa_desc">
     <text>Тёмный эмбиент поверх базового саундскейпа. Все параметры на 1.0 — без изменений; сдвиньте любой, и рантайм-слой перехватит динамический эмбиент, чтобы применить настройку.</text>
   </string>
-  <string id="ui_mcm_aa_hdr_moods">
-    <text>Громкость акцентов по настроению</text>
+  <string id="ui_mcm_aa_hdr_layers">
+    <text>Громкость акцентов по слою</text>
   </string>
   <string id="ui_mcm_aa_vol_global">
     <text>Громкость акцентов (все)</text>
@@ -15,35 +15,71 @@
   <string id="ui_mcm_aa_vol_global_desc">
     <text>Множитель громкости для каждого одиночного динамического звука.</text>
   </string>
-  <string id="ui_mcm_aa_vol_dread">
-    <text>Громкость ужаса</text>
+  <string id="ui_mcm_aa_vol_spooks">
+    <text>Громкость призраков</text>
   </string>
-  <string id="ui_mcm_aa_vol_dread_desc">
-    <text>Громкость акцентов ужаса: крики, шорохи, рёв мутантов, тёмный эмбиент.</text>
+  <string id="ui_mcm_aa_vol_spooks_desc">
+    <text>Громкость акцентов призраков: шёпот, присутствие, шаги.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_screams">
+    <text>Громкость криков</text>
+  </string>
+  <string id="ui_mcm_aa_vol_screams_desc">
+    <text>Громкость далёких человеческих и звериных криков.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_mutants">
+    <text>Громкость мутантов</text>
+  </string>
+  <string id="ui_mcm_aa_vol_mutants_desc">
+    <text>Громкость далёких зовов и рыков мутантов.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_ambience">
+    <text>Громкость тёмного эмбиента</text>
+  </string>
+  <string id="ui_mcm_aa_vol_ambience_desc">
+    <text>Громкость низких гнетущих подложек и гулов.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_machines">
+    <text>Громкость машин</text>
+  </string>
+  <string id="ui_mcm_aa_vol_machines_desc">
+    <text>Громкость далёкой стрельбы, дронов, промышленности и радио.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_forest">
+    <text>Громкость леса</text>
+  </string>
+  <string id="ui_mcm_aa_vol_forest_desc">
+    <text>Громкость треска веток, шелеста листвы и лесных вздрагиваний.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_storm">
+    <text>Громкость грозы</text>
+  </string>
+  <string id="ui_mcm_aa_vol_storm_desc">
+    <text>Громкость грома и грозовых акцентов.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_wind">
+    <text>Громкость ветра</text>
+  </string>
+  <string id="ui_mcm_aa_vol_wind_desc">
+    <text>Громкость ветра и крадущихся порывов.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_rain">
+    <text>Громкость дождя</text>
+  </string>
+  <string id="ui_mcm_aa_vol_rain_desc">
+    <text>Громкость дождевых акцентов.</text>
+  </string>
+  <string id="ui_mcm_aa_vol_wildlife">
+    <text>Громкость живности</text>
+  </string>
+  <string id="ui_mcm_aa_vol_wildlife_desc">
+    <text>Громкость акцентов ворон, собак и сов.</text>
   </string>
   <string id="ui_mcm_aa_vol_underground">
     <text>Громкость подземелья</text>
   </string>
   <string id="ui_mcm_aa_vol_underground_desc">
     <text>Громкость акцентов туннелей и лабораторий: крысы, металл, капли, механизмы.</text>
-  </string>
-  <string id="ui_mcm_aa_vol_weather">
-    <text>Громкость погоды</text>
-  </string>
-  <string id="ui_mcm_aa_vol_weather_desc">
-    <text>Громкость акцентов грозы, дождя и ветра.</text>
-  </string>
-  <string id="ui_mcm_aa_vol_human">
-    <text>Громкость людей</text>
-  </string>
-  <string id="ui_mcm_aa_vol_human_desc">
-    <text>Громкость далёких выстрелов и дронов.</text>
-  </string>
-  <string id="ui_mcm_aa_vol_animal">
-    <text>Громкость животных</text>
-  </string>
-  <string id="ui_mcm_aa_vol_animal_desc">
-    <text>Громкость ворон, собак и сов.</text>
   </string>
   <string id="ui_mcm_aa_hdr_feel">
     <text>Частота и расстояние</text>
@@ -75,16 +111,16 @@
   <string id="ui_mcm_aa_log_level_desc">
     <text>Записывает каждое воспроизведение эмбиента в alifeambience.log: канал, настроение, файл, расстояние, громкость и контекст. Для диагностики саундскейпа.</text>
   </string>
-  <string id="aa_log_level_lst_off">
+  <string id="aa_atmosphere_log_level_lst_off">
     <text>Выкл.</text>
   </string>
-  <string id="aa_log_level_lst_info">
+  <string id="aa_atmosphere_log_level_lst_info">
     <text>Инфо</text>
   </string>
-  <string id="aa_log_level_lst_debug">
+  <string id="aa_atmosphere_log_level_lst_debug">
     <text>Трасса каждого воспроизведения</text>
   </string>
-  <string id="aa_log_level_lst_trace">
+  <string id="aa_atmosphere_log_level_lst_trace">
     <text>Трасса (подробно)</text>
   </string>
   <string id="ui_mcm_aa_log_flush">

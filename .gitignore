@@ -12,3 +12,4 @@ tools/__pycache__/
 tools/manifest.json
 tools/merged_channels.json
 tools/merged_presets.json
+tools/base_index.json
