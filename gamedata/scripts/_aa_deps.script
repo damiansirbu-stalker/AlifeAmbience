@@ -1,5 +1,5 @@
---- _aa_deps: AlifeAmbience dependency note. xlibs is OPTIONAL. The content (accents,
---- texture beds) runs on any Anomaly; xlibs (xlog, xmcm) only adds the MCM page and the
+--- _aa_deps: AlifeAmbience dependency note. xlibs is OPTIONAL. The content (effects,
+--- loop beds) runs on any Anomaly; xlibs (xlog, xmcm) only adds the MCM page and the
 --- ambient trace. So this is a SOFT check: if xlibs is present but too old for the control
 --- layer, warn once; never abort, so a stock install still runs content-only.
 

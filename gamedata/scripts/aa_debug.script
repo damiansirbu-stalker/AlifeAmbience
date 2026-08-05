@@ -1,17 +1,7 @@
---- aa_debug: the code-tracing primitives for AlifeAmbience. ONE logger, one gate.
---- The control layer (aa_sound) wires into this to record every ambient sound it plays -
---- level, section, channel, layer, file, distance, volume - so the soundscape is checked
---- by observation, not guessed by ear. Mirrors AlifeTactics at_debug exactly: one logger,
---- one integer gate, refresh from MCM on first update and every option change.
----
---- Cost: dbg() and on() gate on one integer compare. Below DEBUG the off path writes
---- nothing; an expensive trace site guards itself with `if aa_debug.on()` so the off path
---- also marshals nothing and crosses no luabind bridge.
+--- aa_debug: trace primitives for AlifeAmbience. One logger, one gate, refreshed from MCM.
 
 aa_debug = aa_debug or {}
 
--- Portability: the trace needs xlibs (xlog). Without it, install no-op stubs so the
--- rest of the mod (content + aa_sound at neutral) still loads and runs on any Anomaly.
 if not xlog then
     function aa_debug.refresh() end
     function aa_debug.on() return false end
@@ -29,19 +19,19 @@ local DEBUG_LEVEL = 5
 local _lvl = 0
 local _levels = xlog.get_levels()
 
---- Re-read the log level from MCM. One gate the control layer's tracing reads.
+--- Re-read the log level and flush setting from MCM
 function aa_debug.refresh()
     log.set_level(aa_mcm.get_config("log_level") or "WARN")
     _lvl = log.get_level() or 0
     log._logger.flush_on_level = aa_mcm.get_config("log_flush") and _levels.TRACE or _levels.ERROR
 end
 
---- True when DEBUG tracing is live - the guard a caller puts in front of a trace line.
+--- True when DEBUG tracing is live
 function aa_debug.on()
     return _lvl >= DEBUG_LEVEL
 end
 
---- A DEBUG line: what the code did. Noops below DEBUG.
+--- Log a DEBUG line; noop below DEBUG
 function aa_debug.dbg(fmt, ...)
     if _lvl >= DEBUG_LEVEL then log.debug(fmt, ...) end
 end
@@ -58,7 +48,7 @@ function aa_debug.flush()
     log.flush()
 end
 
---- A value, or "?" when nil - never a bare nil in a line.
+--- A value, or "?" when nil
 function aa_debug.show(v)
     return v ~= nil and tostring(v) or "?"
 end

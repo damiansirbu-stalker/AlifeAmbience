@@ -96,10 +96,10 @@
   <string id="ui_mcm_aa_distance_desc">
     <text>Как далеко возникают акценты. Выше — дальше и тише.</text>
   </string>
-  <string id="ui_mcm_aa_texture_volume">
+  <string id="ui_mcm_aa_loop_volume">
     <text>Громкость фоновой текстуры</text>
   </string>
-  <string id="ui_mcm_aa_texture_volume_desc">
+  <string id="ui_mcm_aa_loop_volume_desc">
     <text>Громкость непрерывного зацикленного фона под всем остальным.</text>
   </string>
   <string id="ui_mcm_aa_variety">
@@ -141,92 +141,8 @@
   <string id="ui_mcm_menu_atmosphere">
     <text>Атмосфера</text>
   </string>
-  <string id="ui_mcm_menu_diegetic">
-    <text>Звуки мира</text>
-  </string>
   <string id="ui_mcm_menu_development">
     <text>Разработка</text>
-  </string>
-  <string id="ui_mcm_aa_dia_desc">
-    <text>Звуки, которые персонажи слышат в мире: радио на базах, мегафоны, инструменты у костра. Любой регулятор на 1.0 оставляет источник таким, как в базовой игре.</text>
-  </string>
-  <string id="ui_mcm_aa_dia_master">
-    <text>Общая громкость</text>
-  </string>
-  <string id="ui_mcm_aa_dia_master_desc">
-    <text>Множитель громкости для всех источников в мире ниже.</text>
-  </string>
-  <string id="ui_mcm_aa_hdr_dia_radio">
-    <text>Радио</text>
-  </string>
-  <string id="ui_mcm_aa_dia_radio_enabled">
-    <text>Включить радио</text>
-  </string>
-  <string id="ui_mcm_aa_dia_radio_enabled_desc">
-    <text>Радио на базах и у костров. Выкл. заглушает их.</text>
-  </string>
-  <string id="ui_mcm_aa_dia_radio_vol">
-    <text>Громкость радио</text>
-  </string>
-  <string id="ui_mcm_aa_dia_radio_vol_desc">
-    <text>Громкость радио в мире.</text>
-  </string>
-  <string id="ui_mcm_aa_dia_radio_freq">
-    <text>Пауза радио</text>
-  </string>
-  <string id="ui_mcm_aa_dia_radio_freq_desc">
-    <text>Ожидание между треками радио. Больше — дольше тишина.</text>
-  </string>
-  <string id="ui_mcm_aa_hdr_dia_megaphone">
-    <text>Мегафоны</text>
-  </string>
-  <string id="ui_mcm_aa_dia_megaphone_enabled">
-    <text>Включить мегафоны</text>
-  </string>
-  <string id="ui_mcm_aa_dia_megaphone_enabled_desc">
-    <text>Громкоговорители. Выкл. заглушает их.</text>
-  </string>
-  <string id="ui_mcm_aa_dia_megaphone_vol">
-    <text>Громкость мегафона</text>
-  </string>
-  <string id="ui_mcm_aa_dia_megaphone_vol_desc">
-    <text>Громкость объявлений через мегафон.</text>
-  </string>
-  <string id="ui_mcm_aa_dia_megaphone_freq">
-    <text>Пауза мегафона</text>
-  </string>
-  <string id="ui_mcm_aa_dia_megaphone_freq_desc">
-    <text>Ожидание между объявлениями. Больше — дольше тишина.</text>
-  </string>
-  <string id="ui_mcm_aa_hdr_dia_guitar">
-    <text>Гитара</text>
-  </string>
-  <string id="ui_mcm_aa_dia_guitar_enabled">
-    <text>Включить гитару</text>
-  </string>
-  <string id="ui_mcm_aa_dia_guitar_enabled_desc">
-    <text>Гитара у костра. Нужен мод анимации гитары; без него не работает.</text>
-  </string>
-  <string id="ui_mcm_aa_dia_guitar_vol">
-    <text>Громкость гитары</text>
-  </string>
-  <string id="ui_mcm_aa_dia_guitar_vol_desc">
-    <text>Громкость гитары у костра.</text>
-  </string>
-  <string id="ui_mcm_aa_hdr_dia_harmonica">
-    <text>Губная гармошка</text>
-  </string>
-  <string id="ui_mcm_aa_dia_harmonica_enabled">
-    <text>Включить гармошку</text>
-  </string>
-  <string id="ui_mcm_aa_dia_harmonica_enabled_desc">
-    <text>Губная гармошка у костра. Нужен мод анимации; без него не работает.</text>
-  </string>
-  <string id="ui_mcm_aa_dia_harmonica_vol">
-    <text>Громкость гармошки</text>
-  </string>
-  <string id="ui_mcm_aa_dia_harmonica_vol_desc">
-    <text>Громкость губной гармошки у костра.</text>
   </string>
   <string id="ui_mcm_aa_development_btn_reset_all">
     <text>Сбросить настройки</text>

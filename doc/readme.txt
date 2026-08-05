@@ -6,6 +6,14 @@ Architecture: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc
 Russian / Na russkom: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/readme_ru.txt
 Bugs, suggestions: https://github.com/damiansirbu-stalker/AlifeAmbience/issues
 
+Alife Collection:
+AlifePlus: https://www.moddb.com/mods/stalker-anomaly/addons/alifeplus-v1-0-01
+AlifeBalance: https://www.moddb.com/mods/stalker-anomaly/addons/alifebalance
+AlifeGuard: https://www.moddb.com/mods/stalker-anomaly/addons/alifeguard-1001
+AlifeTactics: https://www.moddb.com/mods/stalker-anomaly/addons/alifetactics
+AlifeDiegetic: https://www.moddb.com/mods/stalker-anomaly/addons/diegetic-audio-control-100
+AlifeSpooks: https://github.com/damiansirbu-stalker/AlifeSpooks
+
 ! Reset MCM settings to defaults after updating !
 
 The Zone used to be frightening. Modern soundscape mods sharpened its realism and, in
@@ -30,20 +38,19 @@ Why it is different:
   run diff cleanly. Every file traces back to its origin mod, folder, filename, channel,
   and exact settings.
 - Configurable. MCM volume control of the atmosphere per layer - spooks, screams, mutants,
-  storm, wind, rain, underground, and more - and of the in-world radios, megaphones, and
-  instruments.
+  storm, wind, rain, underground, and more.
 - Growing. Original sounds recorded for this mod, and a scripted system that triggers
   dread inside buildings and lairs, are in progress.
 
-Two systems in three MCM tabs - Atmosphere, Diegetic, and a Development tab that holds the
-trace controls and a reset-to-defaults button.
+One system in two MCM tabs - Atmosphere, and a Development tab that holds the trace controls
+and a reset-to-defaults button.
 
 Atmosphere:
   A dark ambient layer over your untouched engine bed, in two parts.
-  Texture is one continuous low bed matched to where you stand: machine and metal in the
+  Loop is one continuous low bed matched to where you stand: machine and metal in the
   X-Labs, dripping stone in the sewers, storm and rain in bad weather, fog on foggy days,
   a dark drone after dusk, a lighter wind by day.
-  Accent is rare one-shot scares placed around you: distant growls and screams, metal
+  Effect is rare one-shot scares placed around you: distant growls and screams, metal
   groans and drips underground, far gunfire and drones in the ruins, owls and dogs and
   crows in the wild, storm and wind.
   Placement is traced from where the source packs used each sound, per level, per hour,
@@ -52,12 +59,6 @@ Atmosphere:
   swamps lean wildlife and fog.
   Fear comes from distance, rarity, and surprise, not volume.
 
-Diegetic:
-  Volume, enable, and frequency control for the in-world sound the characters hear: base
-  and campfire radios, megaphone announcers, campfire guitar and harmonica. At default it
-  changes nothing. Turn a base radio down without touching the rest, or silence the
-  megaphones and keep the guitar. The instruments need a campfire-instrument mod present.
-
 How it is built:
   Every sound is put through signal analysis before it goes in, and the result is proven.
   Whether it becomes a looped bed or a one-shot scare is decided from measured length,
@@ -65,7 +66,7 @@ How it is built:
   Duplicates collapse to one by a three-stage test: exact hash, then acoustic fingerprint to
   propose re-encoded copies, then a waveform cross-correlation to confirm two files really are
   the same recording before merging - so genuinely different sounds are never merged away.
-  Anything your install already plays is excluded the same way, and each texture bed is
+  Anything your install already plays is excluded the same way, and each loop bed is
   deduped across the channels that feed it, so a continuous bed never loops the same recording.
   Loudness is leveled per group, outliers only, so a whisper and a scream keep their
   difference. A ledger proves no net-new dark sound is missed, and a provenance record maps
@@ -73,7 +74,7 @@ How it is built:
   The pipeline, one command end to end:
     index what your install plays  ->  pool the packs' dark sounds  ->  dedup each channel to
     one copy per recording (hash, fingerprint, waveform)  ->  measure and classify each  ->
-    level loudness  ->  compose the DLTX overlay  ->  prove coverage and origin.
+    level loudness  ->  compose the overlay (channels + placement)  ->  prove coverage and origin.
   On the current build that meant 5487 candidate sounds pulled and reduced to 1487 genuinely
   new dark sounds: the waveform test caught 177 re-encoded copies plain hashing kept, every
   sound the game already plays was excluded, and every included sound traces to its origin.
@@ -84,8 +85,7 @@ Installation:
   need xlibs. Without xlibs the mod still runs, content only.
 
 Credits:
-  The Diegetic tab plays the game's own in-world sound and adds no audio. The Atmosphere
-  content is drawn from these community packs, with thanks to their authors:
+  The content is drawn from these community packs, with thanks to their authors:
     Dark Signal Weather and Ambiance   - Shrike
     Dark Signal Amplified Soundscape   - Shrike
     Soundscape Overhaul                - Solarint

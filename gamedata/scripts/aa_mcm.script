@@ -1,41 +1,19 @@
---- aa_mcm: MCM config for AlifeAmbience. Mirrors AlifeTactics at_mcm: a defaults table that
---- MIRRORS the on_mcm_load tree, a _key_to_tab map, a path_builder, and xmcm.create_config.
---- get_config(key) reads ui_mcm live with the defaults as fallback (the consumers snapshot on
---- option change, so this is not a hot path).
----
---- Two tabs. Atmosphere: per-mood volume, rarity, distance for the accent layer (aa_sound), the
---- texture-bed volume (aa_texture), and the shared trace log level. Diegetic: volume/enable/
---- frequency for in-world emitters - base radios, megaphones, campfire instruments (aa_diegetic).
---- Every control is 1.0 = pass-through, so a fresh install is identical to vanilla until a knob
---- moves. Labels/hints live in configs/text/<lang>/ui_st_mcm_aa.xml (id ui_mcm_aa_<key> + _desc).
----
---- The saved path is path_builder(key) = aa/<tab>/<key> and MUST match the tree (ui_mcm validates
---- the path before reading storage). Each option keeps hint = "aa_<key>" so its label resolves to
---- ui_mcm_aa_<key> regardless of the tab it sits in.
+--- aa_mcm: MCM config for AlifeAmbience. Two tabs (Atmosphere, Development), mirrors at_mcm.
 
 aa_mcm = aa_mcm or {}
 
--- Portability: the MCM page needs xlibs (xmcm). Without it, get_config returns nil so every
--- consumer falls back to its own neutral default - the mod runs content-only on any Anomaly.
 if not xmcm then
     aa_mcm.get_config = function() return nil end
     return
 end
 
 local defaults = {
-    -- Atmosphere
     vol_global = 1.0,
     vol_spooks = 1.0, vol_screams = 1.0, vol_mutants = 1.0, vol_ambience = 1.0,
     vol_machines = 1.0, vol_forest = 1.0, vol_storm = 1.0, vol_wind = 1.0,
     vol_rain = 1.0, vol_wildlife = 1.0, vol_underground = 1.0,
-    rarity = 1.0, distance = 1.0, texture_volume = 0.55, variety = true,
+    rarity = 1.0, distance = 1.0, loop_volume = 0.55, variety = true,
     log_level = "WARN", log_flush = false,
-    -- Diegetic
-    dia_master = 1.0,
-    dia_radio_enabled = true, dia_radio_vol = 1.0, dia_radio_freq = 1.0,
-    dia_megaphone_enabled = true, dia_megaphone_vol = 1.0, dia_megaphone_freq = 1.0,
-    dia_guitar_enabled = true, dia_guitar_vol = 1.0,
-    dia_harmonica_enabled = true, dia_harmonica_vol = 1.0,
 }
 
 local _key_to_tab = {
@@ -43,14 +21,9 @@ local _key_to_tab = {
     vol_mutants = "atmosphere", vol_ambience = "atmosphere", vol_machines = "atmosphere",
     vol_forest = "atmosphere", vol_storm = "atmosphere", vol_wind = "atmosphere",
     vol_rain = "atmosphere", vol_wildlife = "atmosphere", vol_underground = "atmosphere",
-    rarity = "atmosphere", distance = "atmosphere", texture_volume = "atmosphere",
+    rarity = "atmosphere", distance = "atmosphere", loop_volume = "atmosphere",
     variety = "atmosphere", log_level = "development", log_flush = "development",
     btn_reset_all = "development",
-    dia_master = "diegetic",
-    dia_radio_enabled = "diegetic", dia_radio_vol = "diegetic", dia_radio_freq = "diegetic",
-    dia_megaphone_enabled = "diegetic", dia_megaphone_vol = "diegetic", dia_megaphone_freq = "diegetic",
-    dia_guitar_enabled = "diegetic", dia_guitar_vol = "diegetic",
-    dia_harmonica_enabled = "diegetic", dia_harmonica_vol = "diegetic",
 }
 
 local function path_builder(key)
@@ -60,9 +33,7 @@ end
 cfg, get_config, load_config = xmcm.create_config("aa", defaults, path_builder)
 aa_mcm.get_config = get_config
 
--- Full reset: write every default to its saved path, save, reload, notify consumers, then
--- close the menu via On_Cancel (On_Discard destroys the button mid-click on some exe builds).
--- functor_ui receives the UI_MCM instance so it works on a fresh open. Mirrors at_mcm.
+--- Write every default to storage, save, reload, notify consumers, close the menu
 local function _apply_defaults(gui, msg)
     local config = axr_main.config
     for k, v in pairs(defaults) do
@@ -88,16 +59,8 @@ local GREY = {255, 200, 200, 200}
 local function vol_track(id)
     return { id = id, type = "track", val = 2, min = 0.0, max = 5.0, step = 0.05, def = 1.0, hint = "aa_" .. id }
 end
-local function inst_track(id)
-    return { id = id, type = "track", val = 2, min = 0.0, max = 3.0, step = 0.05, def = 1.0, hint = "aa_" .. id }
-end
-local function freq_track(id)
-    return { id = id, type = "track", val = 2, min = 0.25, max = 4.0, step = 0.25, def = 1.0, hint = "aa_" .. id }
-end
-local function enable_check(id)
-    return { id = id, type = "check", val = 1, def = true, hint = "aa_" .. id }
-end
 
+--- Atmosphere tab: per-layer volume, rarity, distance, loop volume, variety
 local function atmosphere_page()
     return {
         id = "atmosphere", sh = true,
@@ -125,14 +88,13 @@ local function atmosphere_page()
             { id = "hdr_feel", type = "desc", text = "ui_mcm_aa_hdr_feel", clr = GREY },
             { id = "rarity",   type = "track", val = 2, min = 0.5, max = 3.0, step = 0.05, def = 1.0, hint = "aa_rarity" },
             { id = "distance", type = "track", val = 2, min = 0.5, max = 2.0, step = 0.05, def = 1.0, hint = "aa_distance" },
-            { id = "texture_volume", type = "track", val = 2, min = 0.0, max = 2.0, step = 0.05, def = 0.55, hint = "aa_texture_volume" },
+            { id = "loop_volume", type = "track", val = 2, min = 0.0, max = 2.0, step = 0.05, def = 0.55, hint = "aa_loop_volume" },
             { id = "variety", type = "check", val = 1, def = true, hint = "aa_variety" },
         },
     }
 end
 
--- Development page: the trace controls, on their own tab to match the alife-family MCM
--- (AlifeTactics/at_mcm development page). Logging never affects gameplay.
+--- Development tab: trace log level, flush, reset-to-defaults
 local function development_page()
     return {
         id = "development", sh = true,
@@ -154,46 +116,11 @@ local function development_page()
     }
 end
 
-local function diegetic_page()
-    return {
-        id = "diegetic", sh = true,
-        gr = {
-            { id = "title", type = "slide", link = "aa_mcm_banner",
-                text = "ui_mcm_aa_title", size = {512, 50}, spacing = 20 },
-            { id = "dia_desc", type = "desc", text = "ui_mcm_aa_dia_desc" },
-            { id = "dia_master", type = "track", val = 2, min = 0.0, max = 3.0, step = 0.05, def = 1.0, hint = "aa_dia_master" },
-
-            { id = "div_dia_radio", type = "line" },
-            { id = "hdr_dia_radio", type = "desc", text = "ui_mcm_aa_hdr_dia_radio", clr = GREY },
-            enable_check("dia_radio_enabled"),
-            vol_track("dia_radio_vol"),
-            freq_track("dia_radio_freq"),
-
-            { id = "div_dia_megaphone", type = "line" },
-            { id = "hdr_dia_megaphone", type = "desc", text = "ui_mcm_aa_hdr_dia_megaphone", clr = GREY },
-            enable_check("dia_megaphone_enabled"),
-            vol_track("dia_megaphone_vol"),
-            freq_track("dia_megaphone_freq"),
-
-            { id = "div_dia_guitar", type = "line" },
-            { id = "hdr_dia_guitar", type = "desc", text = "ui_mcm_aa_hdr_dia_guitar", clr = GREY },
-            enable_check("dia_guitar_enabled"),
-            inst_track("dia_guitar_vol"),
-
-            { id = "div_dia_harmonica", type = "line" },
-            { id = "hdr_dia_harmonica", type = "desc", text = "ui_mcm_aa_hdr_dia_harmonica", clr = GREY },
-            enable_check("dia_harmonica_enabled"),
-            inst_track("dia_harmonica_vol"),
-        },
-    }
-end
-
 function on_mcm_load()
     return {
         id = "aa",
         gr = {
             atmosphere_page(),
-            diegetic_page(),
             development_page(),
         },
     }

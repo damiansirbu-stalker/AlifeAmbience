@@ -1,0 +1,262 @@
+--- aa_effect: dynamic effect layer. Clones sound_ambient.update_ambient and owns the slot while a knob or trace is active.
+
+local math_random, math_rad, math_cos, math_sin = math.random, math.rad, math.cos, math.sin
+local table_remove, table_concat = table.remove, table.concat
+local ini_file, parse_list, time_global = ini_file, parse_list, time_global
+local GetEvent, sound_object, vector = GetEvent, sound_object, vector
+local RegisterScriptCallback = RegisterScriptCallback
+
+local LAYERS = { "spooks", "screams", "mutants", "ambience", "machines",
+                 "forest", "storm", "wind", "rain", "wildlife", "underground" }
+
+local snd_chanels = {}
+local tot_size = 0
+local next_idx = 0
+local last_hour = nil
+local last_ambient = nil
+local last_level = nil
+local opt_ambient_volume = 1
+
+local vol = { global = 1, spooks = 1, screams = 1, mutants = 1, ambience = 1, machines = 1,
+              forest = 1, storm = 1, wind = 1, rain = 1, wildlife = 1, underground = 1 }
+local rarity = 1
+local distance = 1
+local variety = true
+
+--- Floor a nil/zero period so ch.next never fires every tick
+local function _period(v)
+    return (v and v > 0) and v or 20000
+end
+
+local _place_ini, _place_loaded = nil, false
+--- Load the per-level placement map (aa_placement.ltx), once
+local function _placement()
+    if not _place_loaded then
+        _place_loaded = true
+        _place_ini = ini_file("scripts\\aa_placement.ltx")
+        aa_debug.dbg("placement file %s", _place_ini
+            and "loaded (scripts\\aa_placement.ltx)"
+            or "MISSING (scripts\\aa_placement.ltx) - no aa_ channels will be injected")
+    end
+    return _place_ini
+end
+
+--- Why a channel did not build: nodef (no def) or empty (no sounds)
+local function _drop_reason(ini_snd, ch)
+    return ini_snd:section_exist(ch) and (ch .. "(empty)") or (ch .. "(nodef)")
+end
+
+--- Channels in the list that did not build, with reasons (trace only)
+local function _dropped(channels, cached, ini_snd)
+    local out = {}
+    for i = 1, #channels do
+        local ch = channels[i]
+        local built = cached[ch]
+        if not built then out[#out + 1] = _drop_reason(ini_snd, ch) end
+    end
+    return out
+end
+
+--- Clone of sound_ambient.reset_settings: build snd_chanels for (level, section) and inject placement
+local function reset_settings(level_name, ambient)
+    snd_chanels = {}
+    if not (level_name and ambient and ambient ~= "") then
+        aa_debug.dbg("reset SKIP: no level/ambient (lvl=%s amb=%s)",
+            aa_debug.show(level_name), aa_debug.show(ambient))
+        return false
+    end
+    local ini_lvl = ini_file("environment\\ambients\\" .. level_name .. ".ltx")
+    if not ini_lvl then
+        aa_debug.dbg("reset SKIP lvl=%s: no environment\\ambients\\%s.ltx", level_name, level_name)
+        return false
+    end
+    local channels = parse_list(ini_lvl, ambient, "sound_channels_dynamic")
+    local base_n = #channels
+    local place = _placement()
+    local n_ours, placed_str = 0, ""
+    if place and place:section_exist(level_name) and place:line_exist(level_name, ambient) then
+        local ours = parse_list(place, level_name, ambient)
+        n_ours = #ours
+        placed_str = table_concat(ours, ",")
+        for i = 1, #ours do channels[#channels + 1] = ours[i] end
+    end
+    if #channels == 0 then
+        aa_debug.dbg("reset lvl=%s amb=%s: no channels (base=0, no placement)", level_name, ambient)
+        return false
+    end
+    local cached = {}
+    local ini_snd = ini_file("environment\\sound_channels.ltx")
+    local ini_lay = ini_file("environment\\aa_channel_layers.ltx")
+    for i = 1, #channels do
+        local ch = channels[i]
+        local sounds = (not cached[ch]) and ini_snd:section_exist(ch) and parse_list(ini_snd, ch, "sounds")
+        if sounds and #sounds > 0 then
+            cached[ch] = true
+            local entry = {}
+            entry.name = ch
+            entry.max_dist = ini_snd:r_float_ex(ch, "max_distance") or 80
+            entry.min_dist = ini_snd:r_float_ex(ch, "min_distance") or 45
+            entry.height = ini_snd:r_float_ex(ch, "height") or 0
+            entry.indoor = ini_snd:r_bool_ex(ch, "indoor") or false
+            entry.periods = { _period(ini_snd:r_float_ex(ch, "period0")), _period(ini_snd:r_float_ex(ch, "period1")),
+                              _period(ini_snd:r_float_ex(ch, "period2")), _period(ini_snd:r_float_ex(ch, "period3")) }
+            entry.sounds = sounds
+            entry.layer = ini_lay and ini_lay:r_string_ex("aa_channel_layers", ch)
+            snd_chanels[#snd_chanels + 1] = entry
+        end
+    end
+    tot_size = #snd_chanels
+    if aa_debug.on() then
+        local dropped = _dropped(channels, cached, ini_snd)
+        aa_debug.dbg("reset lvl=%s amb=%s base=%d placed[%d]=%s built=%d drop[%d]=%s",
+            level_name, ambient, base_n, n_ours, placed_str, tot_size, #dropped, table_concat(dropped, ","))
+    end
+    return true
+end
+
+local NO_REPEAT = 8
+--- Pick a sound, avoiding recent repeats when variety is on
+local function pick_sound(ch)
+    local count = #ch.sounds
+    if count <= 1 then return ch.sounds[1] end
+    if not variety then return ch.sounds[math_random(count)] end
+    local avoid = (NO_REPEAT < count) and NO_REPEAT or (count - 1)
+    local seen, ring = ch.seen, ch.ring
+    if not seen then seen = {}; ring = {}; ch.seen = seen; ch.ring = ring end
+    local idx
+    repeat idx = math_random(count) until not seen[idx]
+    seen[idx] = true
+    ring[#ring + 1] = idx
+    if #ring > avoid then
+        seen[table_remove(ring, 1)] = nil
+    end
+    return ch.sounds[idx]
+end
+
+--- Spawn one channel's sound around the actor with the volume/distance/rarity knobs
+local function play_channel(ch, tg)
+    local actor = db.actor
+    if not actor then return end
+    local inside = GetEvent("current_safe_cover")
+    local underground = GetEvent("underground")
+    local pos = actor:position()
+    local max_dist = ch.max_dist
+    local min_dist = underground and ch.min_dist or ((max_dist + ch.min_dist) / 2)
+    if min_dist > max_dist then min_dist = max_dist end
+    local dist = (math_random(min_dist, max_dist) / 2) * distance
+    local angle_rad = math_rad(math_random(0, 359))
+    local vec = vector():set(pos.x + math_cos(angle_rad) * dist, pos.y + ch.height,
+                             pos.z + math_sin(angle_rad) * dist)
+
+    local file = pick_sound(ch)
+    ch.snd = sound_object(file)
+    ch.snd:play_at_pos(actor, vec)
+
+    local level_vol
+    if underground or inside then
+        level_vol = ch.indoor and 1 or 0.3
+    else
+        level_vol = ch.indoor and 0 or 1
+    end
+    level_vol = level_vol * opt_ambient_volume * (ch.layer and vol[ch.layer] or vol.global)
+    ch.snd.volume = level_vol
+
+    local period = ch.periods[math_random(4)] * rarity
+    ch.next = tg + period
+
+    if aa_debug.on() then
+        aa_debug.dbg("effect lvl=%s pos=%.0f,%.0f,%.0f hour=%s amb=%s ch=%s layer=%s file=%s dist=%.1f max=%.0f per=%.0f vol=%.2f ug=%s inside=%s",
+            aa_debug.show(level.name()), pos.x, pos.y, pos.z, aa_debug.show(last_hour),
+            aa_debug.show(last_ambient), ch.name, aa_debug.show(ch.layer), file, dist, ch.max_dist, period, level_vol,
+            aa_debug.show(underground), aa_debug.show(inside))
+    end
+end
+
+--- Clone of sound_ambient.update_ambient: reset on context change, else round-robin one play
+local function update_ambient_owned()
+    ResetTimeEvent("sound_channels", "update_ambient", 1)
+
+    if not level.present() then return false end
+    local next_hour = level.get_time_hours()
+    local next_level = level.name()
+    local wm = level_weathers.get_weather_manager()
+    local ambient = wm and wm:get_curr_ambient()
+    if next_hour ~= last_hour or next_level ~= last_level or ambient ~= last_ambient then
+        last_hour = next_hour
+        last_level = next_level
+        last_ambient = ambient
+        next_idx = 0
+        reset_settings(next_level, ambient)
+        return false
+    end
+
+    next_idx = next_idx + 1
+    if next_idx > tot_size then next_idx = 1 end
+
+    local tg = time_global()
+    local ch = snd_chanels[next_idx]
+    if not ch then return false end
+    if not ch.next then
+        ch.next = tg + math_random(1, (ch.periods[math_random(4)] + 1))
+        return false
+    end
+
+    if ch.next <= tg then
+        play_channel(ch, tg)
+    end
+
+    return false
+end
+
+local _owned = false
+
+--- True when any knob is non-neutral or trace is on
+local function _feature_active()
+    if aa_debug.on() then return true end
+    if variety then return true end
+    if rarity ~= 1 or distance ~= 1 or vol.global ~= 1 then return true end
+    for i = 1, #LAYERS do if vol[LAYERS[i]] ~= 1 then return true end end
+    return false
+end
+
+--- Take or release the update_ambient slot to match feature-active state
+local function _apply_owned()
+    local want = _feature_active()
+    if want == _owned then return end
+    _owned = want
+    if _owned then
+        RemoveTimeEvent("sound_channels", "update_ambient")
+        CreateTimeEvent("sound_channels", "update_ambient", 1, update_ambient_owned)
+        last_hour = nil
+        last_level = nil
+        last_ambient = nil
+        next_idx = 0
+        aa_debug.info("aa_effect: owning update_ambient (a control feature is active)")
+    else
+        if db.actor then
+            local wm = level_weathers.get_weather_manager()
+            local ambient = wm and wm:get_curr_ambient()
+            if ambient then sound_ambient.reset_settings(level.name(), ambient) end
+        end
+        RemoveTimeEvent("sound_channels", "update_ambient")
+        CreateTimeEvent("sound_channels", "update_ambient", 1, sound_ambient.update_ambient)
+        aa_debug.info("aa_effect: released update_ambient back to vanilla (neutral)")
+    end
+end
+
+--- Snapshot the MCM knobs, then apply ownership
+local function refresh()
+    vol.global = aa_mcm.get_config("vol_global") or 1
+    for i = 1, #LAYERS do vol[LAYERS[i]] = aa_mcm.get_config("vol_" .. LAYERS[i]) or 1 end
+    rarity = aa_mcm.get_config("rarity") or 1
+    distance = aa_mcm.get_config("distance") or 1
+    variety = aa_mcm.get_config("variety") ~= false
+    opt_ambient_volume = (ui_options and ui_options.get("sound/environment/ambient_volume")) or 1
+    _apply_owned()
+end
+
+function on_game_start()
+    RegisterScriptCallback("actor_on_first_update",      refresh)
+    RegisterScriptCallback("on_option_change",           refresh)
+    RegisterScriptCallback("mcm_option_restore_default", refresh)
+end

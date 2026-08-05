@@ -207,7 +207,7 @@ def dedup_pick(files):
 
 def _dedup_entries(entries):
     """Waveform-dedup a REGROUPED deployed unit, keeping the first of each confirmed group
-    (callers pre-sort by preference). dedup_pick works per SOURCE channel, but a texture bed
+    (callers pre-sort by preference). dedup_pick works per SOURCE channel, but a loop bed
     pools many source channels, so a re-encode captured into two of them reappears in the bed.
     Same three-stage identity as dedup_pick (md5 -> fp -> PCM xcorr, complete-linkage) so the
     bed never loops the same recording; distinct variety is preserved."""
@@ -528,7 +528,7 @@ def parse_presets(gamedata):
 MOD = HERE.parent                      # AlifeAmbience repo root
 GDATA = MOD / "gamedata"
 ENV = GDATA / "configs/environment"
-SND = GDATA / "sounds/zs"              # zs\acc\<mood>\N.ogg and zs\tex\<bed>\N.ogg
+SND = GDATA / "sounds/zs"              # zs\<channel>\N.ogg and zs\loop\<bed>\N.ogg
 HDR = "; GENERATED"
 
 
@@ -540,19 +540,19 @@ def _clean(d):
 
 # ----------------------------------------------------------------------------
 # The shipped model: two layers over the untouched engine bed.
-#   TEXTURE - looped continuous beds, one at a time by context (aa_texture.script).
-#   ACCENT  - dynamic one-shots on the engine's own channels, enrich/restore/define
+#   LOOP - looped continuous beds, one at a time by context (aa_loop.script).
+#   EFFECT  - dynamic one-shots on the engine's own channels, enrich/restore/define
 #             (see _channel_routing); grouped into 11 LAYERS for volume + density.
 # Role is MEASURED per file (classify); the layer comes from layer_of.
 # ----------------------------------------------------------------------------
 
 # Vocal source channels: a wail/scream/spook is an EVENT, never a bed. Forced
-# accent regardless of measured duration.
+# effect regardless of measured duration.
 VOCAL = {"out_screams", "out_spooks", "out_mutants", "out_day_spoops", "out_night_spoops",
          "urban_spoops_night", "northen_spoops", "foliage_spook", "crows_spook"}
 
-# The texture contexts (bed pool per source channel), separate from the accent layers.
-# Texture pools = the looped beds the player hears one at a time. Underground is
+# The loop contexts (bed pool per source channel), separate from the effect layers.
+# Loop pools = the looped beds the player hears one at a time. Underground is
 # SPLIT by source-channel character into a LAB pool (machine/metal/voices/banging/
 # lab hum - the X-Lab levels: X18, brain lab, war lab, X8) and a SEWER pool (drip/
 # rats/noise/drone/ambient - tunnels, bunkers, agroprom underground), so a lab does
@@ -560,7 +560,7 @@ VOCAL = {"out_screams", "out_spooks", "out_mutants", "out_day_spoops", "out_nigh
 # semantically distinct); it does NOT carry a per-level tag, so finer-than-class
 # per-level underground pools would be invented, not traced - we do not do that.
 BEDS = ["wind", "dread", "fog", "stormrain", "underground_lab", "underground_sewer"]
-TEX_CAP = 40                          # loop variations per pool; draws the held surplus
+LOOP_CAP = 40                          # loop variations per pool; draws the held surplus
 UG_LAB_CH = {"ugrnd_lab", "ugrnd_ambient_machine", "ugrnd_metal", "ugrnd_voices",
              "ugrnd_banging", "x18"}
 
@@ -578,8 +578,8 @@ def ctx_of(ch):
     return "dread"
 
 
-def tex_pool(ch):
-    """Texture pool for a source channel: the context bed, with underground split
+def loop_pool(ch):
+    """Loop pool for a source channel: the context bed, with underground split
     into lab vs sewer by channel character (UG_LAB_CH)."""
     c = ctx_of(ch)
     if c != "underground":
@@ -624,13 +624,13 @@ def _classify_one(chan, c):
     cen = int(round(sum(cens) / len(cens))) if cens else 0
     flat = round(sum(flats) / len(flats), 3) if flats else 0.0
     if chan in VOCAL:
-        role = "accent"
+        role = "effect"
     elif dur >= 30:
-        role = "texture"
+        role = "loop"
     elif dur < 4:
-        role = "accent"
+        role = "effect"
     else:
-        role = "texture" if (crest < 12 and flat < 0.40) else "accent"
+        role = "loop" if (crest < 12 and flat < 0.40) else "effect"
     bright = "dark" if cen < 2000 else ("mid" if cen < 4000 else "bright")
     tone = "tonal" if flat < 0.15 else ("mixed" if flat < 0.40 else "noisy")
     return {"ch": chan, "stem": c["stem"], "dur": dur, "cen": cen, "flat": flat,
@@ -643,8 +643,8 @@ def cmd_classify(a):
     out = sp.pmap(lambda t: _classify_one(*t), items, sp.DEF_JOBS)
     dst = Path(a.out) if a.out else (HERE / "classification.json")
     dst.write_text(json.dumps(out, indent=1), encoding="utf-8")
-    nt = sum(1 for r in out if r["role"] == "texture")
-    print(f"classified {len(out)}: {nt} texture, {len(out) - nt} accent -> {dst.name}")
+    nt = sum(1 for r in out if r["role"] == "loop")
+    print(f"classified {len(out)}: {nt} loop, {len(out) - nt} effect -> {dst.name}")
 
 
 # --- loudness (per-group median leveling, outliers only) ---------------------
@@ -693,7 +693,7 @@ def cmd_loudness(a):
 
 def _build_layers(mc, cls, ch_to_group, group_key):
     """Group the classified sounds into the deployed structure, deterministically.
-    accents[group] = [entry,...] in canonical order; textures[bed] = top-TEX_CAP by
+    effects[group] = [entry,...] in canonical order; loops[bed] = top-LOOP_CAP by
     duration. classification.json is produced by classifying _iter_chosen(mc) in order,
     so cls[i] IS the classification of the i-th chosen entry - align POSITIONALLY, not by
     (ch,stem). Two chosen entries can share a stem (distinct sounds a pack shipped under
@@ -703,22 +703,22 @@ def _build_layers(mc, cls, ch_to_group, group_key):
     assert len(cls) == len(chosen_seq), (
         f"classification.json ({len(cls)}) out of sync with merged_channels.json "
         f"({len(chosen_seq)}); rerun classify after plan")
-    accents = {g: [] for g in group_key}
-    tex_all = {b: [] for b in BEDS}
+    effects = {g: [] for g in group_key}
+    loop_all = {b: [] for b in BEDS}
     for idx, (r, (ch, c)) in enumerate(zip(cls, chosen_seq)):
         assert r["ch"] == ch and r["stem"] == c["stem"], (
             f"classification out of sync with merged_channels at row {idx}; rerun classify")
         e = {"ch": ch, "stem": c["stem"], "abs": c["abs"], "pool": c["pool"],
              "dur": r["dur"], "idx": idx}
-        if r["role"] == "texture":
-            tex_all[tex_pool(ch)].append(e)
-        elif ch in ch_to_group:          # skip accent sounds of bed channels (not routed)
-            accents[ch_to_group[ch]].append(e)
-    # dedup each bed across its pooled source channels, THEN cap - so the cap keeps TEX_CAP
-    # distinct loops, not TEX_CAP slots some of which repeat.
-    textures = {b: _dedup_entries(sorted(v, key=lambda e: (-e["dur"], e["idx"])))[:TEX_CAP]
-                for b, v in tex_all.items()}
-    return accents, textures
+        if r["role"] == "loop":
+            loop_all[loop_pool(ch)].append(e)
+        elif ch in ch_to_group:          # skip effect sounds of bed channels (not routed)
+            effects[ch_to_group[ch]].append(e)
+    # dedup each bed across its pooled source channels, THEN cap - so the cap keeps LOOP_CAP
+    # distinct loops, not LOOP_CAP slots some of which repeat.
+    loops = {b: _dedup_entries(sorted(v, key=lambda e: (-e["dur"], e["idx"])))[:LOOP_CAP]
+                for b, v in loop_all.items()}
+    return effects, loops
 
 
 def _gain_map():
@@ -737,10 +737,10 @@ def _emit_audio(entry, dst, gain):
                 "-c:a", "libvorbis", "-ar", "44100", str(dst)])
 
 
-# Each accent channel keeps its VERBATIM source settings - no median. Channels are grouped
-# by (mood, exact-settings-tuple): one deployed channel aa_acc_<mood>_<n> per distinct tuple,
+# Each effect channel keeps its VERBATIM source settings - no median. Channels are grouped
+# by (mood, exact-settings-tuple): one deployed channel aa_eff_<mood>_<n> per distinct tuple,
 # so a source channel's period/distance/indoor/height survive exactly (provenance-faithful).
-# The mood is only a tag for the MCM knobs; aa_sound reads it off the <mood> in the name.
+# The mood is only a tag for the MCM knobs; aa_effect reads it off the <mood> in the name.
 def _chan_settings(lines):
     d = {}
     for ln in lines or []:
@@ -775,11 +775,11 @@ def _settings_key(ch):
 # A LAYER is a pure-purpose group of channels. Each deployed channel belongs to
 # exactly one; the layer drives its MCM volume slider and the per-section density
 # budget. Named for what the sound IS. layer_of is the single source of truth; the
-# deploy materialises it to aa_channel_layers.ltx so aa_sound reads it, never a name.
+# deploy materialises it to aa_channel_layers.ltx so aa_effect reads it, never a name.
 LAYERS = ["spooks", "screams", "mutants", "ambience", "machines", "forest",
           "storm", "wind", "rain", "wildlife", "underground"]
 # emission priority when a section is over the density budget: dread-core first,
-# wildlife/rain last (accent colour). Layers not listed rank after these.
+# wildlife/rain last (effect colour). Layers not listed rank after these.
 LAYER_ORDER = ["spooks", "screams", "mutants", "ambience", "underground", "forest",
                "storm", "wind", "machines", "rain", "wildlife"]
 
@@ -817,21 +817,21 @@ STRIP4 = {"out_screams", "out_mutants", "out_gunfire", "wind_dark"}
 
 
 def _channel_routing(mc, cls):
-    """source channel -> (deployed, mode, layer) for every channel with ACCENT content.
+    """source channel -> (deployed, mode, layer) for every channel with EFFECT content.
       enrich  - a channel BOTH installs play: append our net-new sounds to it (deployed =
                 the base name), NO preset change (it already plays where the base plays it).
       restore - a strip-4 channel: define fully + re-add to presets (deployed = base name).
       define  - a purpose no live base channel provides: our own aa_<ch> (deployed = aa_ch).
-    Beds (texture role) are not routed here - the deploy sends them to the bed pools."""
-    have_accent = {r["ch"] for r in cls if r["role"] != "texture"}
+    Beds (loop role) are not routed here - the deploy sends them to the bed pools."""
+    have_effect = {r["ch"] for r in cls if r["role"] != "loop"}
     both = _active_channels(VAN_CFG) & _active_channels(GAMMA_WINNER)
     gam_defined = set(parse_channels(GAMMA_WINNER).keys())   # channels DSW defines (played or not)
     routing = {}
     for ch in sorted(mc):
-        if ch not in have_accent or not mc[ch]["chosen"]:
+        if ch not in have_effect or not mc[ch]["chosen"]:
             continue
         if all(v == 0 for v in _chan_settings(mc[ch].get("settings"))["p"]):
-            continue    # a bed (all periods 0) is a continuous loop -> the texture layer, never an accent
+            continue    # a bed (all periods 0) is a continuous loop -> the loop layer, never an effect
         lay = layer_of(ch)
         if ch in STRIP4 and ch in gam_defined:
             # stripped from the winner's presets but still DEFINED -> re-activate + enrich it
@@ -846,7 +846,7 @@ def _channel_routing(mc, cls):
     return routing
 
 
-def accent_group_map(cls):
+def effect_group_map(cls):
     """(ch -> deployed channel, deployed channel -> settings key), derived from the
     routing. Deployed name = the base channel (enrich/restore) or aa_<ch> (define).
     Kept as the shared entry point for _build_layers, deploy and provenance."""
@@ -859,15 +859,15 @@ def accent_group_map(cls):
     return ch_to_group, group_key
 
 
-ACC_PERIOD_FLOOR = 20000   # a period of 0 makes a one-shot fire every tick (spam); floor it.
+EFFECT_PERIOD_FLOOR = 20000   # a period of 0 makes a one-shot fire every tick (spam); floor it.
                            # The source's 0 is recorded verbatim in provenance; only the deploy floors it.
 
 
 # Play tuning - the EVOLVE step on the crystallized verbatim. The source period is kept
-# verbatim in provenance.tsv; the DEPLOYED period is tuned so accents stay DISCRETE and
+# verbatim in provenance.tsv; the DEPLOYED period is tuned so effects stay DISCRETE and
 # thin channels do not repeat:
 #   - discrete: period >= sound duration + a gap, so a long sound never overlaps itself
-#     (a 12s storm on a 5s period is a wall of noise, not an accent).
+#     (a 12s storm on a 5s period is a wall of noise, not an effect).
 #   - variety-weighted: a channel with few sounds fires proportionally less, so its handful
 #     is spread out instead of spammed. A rich channel keeps the discrete rate.
 DISCRETE_GAP = 8000        # ms guaranteed after a sound before the channel may re-fire
@@ -882,39 +882,39 @@ def _tune_period(p, dur_ms, size):
     return base
 
 
-def _acc_settings(key, dur_ms=0, size=0):
+def _effect_settings(key, dur_ms=0, size=0):
     mn, mx, p, indoor, height = key
     lines = [f"min_distance = {mn}", f"max_distance = {mx}"]
     for i, pv in enumerate(p):
-        lines.append(f"period{i} = {_tune_period(pv if pv > 0 else ACC_PERIOD_FLOOR, dur_ms, size)}")
+        lines.append(f"period{i} = {_tune_period(pv if pv > 0 else EFFECT_PERIOD_FLOOR, dur_ms, size)}")
     lines.append(f"height = {height}")
     if indoor:
         lines.append("indoor = true")
     return lines
 
 
-def deploy_texture(root, textures, gain):
-    """Emit the texture layer only (tex\\<pool>\\N.ogg + looped themes + bed list),
-    leaving the accent tree untouched. Separated so the texture pools can be rebuilt
-    without re-encoding the accents (an ffmpeg re-encode is not byte-deterministic)."""
+def deploy_loop(root, loops, gain):
+    """Emit the loop layer only (loop\\<pool>\\N.ogg + looped themes + bed list),
+    leaving the effect tree untouched. Separated so the loop pools can be rebuilt
+    without re-encoding the effects (an ffmpeg re-encode is not byte-deterministic)."""
     snd = root / "sounds/zs"
-    _clean(snd / "tex")
+    _clean(snd / "loop")
     (root / "configs/scripts").mkdir(parents=True, exist_ok=True)
     (root / "configs/misc/sound").mkdir(parents=True, exist_ok=True)
     themes, beds_cfg = [HDR], [HDR, "[beds]"]
-    beds_cfg += [b for b in BEDS if textures[b]]
+    beds_cfg += [b for b in BEDS if loops[b]]
     for bed in BEDS:
-        entries = textures[bed]
+        entries = loops[bed]
         if not entries:
             continue
         for i, e in enumerate(entries, 1):
-            _emit_audio(e, snd / "tex" / bed / f"{i}.ogg", gain)
-        names = [f"aa_tex_{bed}_{i}" for i in range(1, len(entries) + 1)]
+            _emit_audio(e, snd / "loop" / bed / f"{i}.ogg", gain)
+        names = [f"aa_loop_{bed}_{i}" for i in range(1, len(entries) + 1)]
         for i, nm in enumerate(names, 1):
-            themes += [f"[{nm}]", "type = looped", f"path = zs\\tex\\{bed}\\{i}", ""]
+            themes += [f"[{nm}]", "type = looped", f"path = zs\\loop\\{bed}\\{i}", ""]
         beds_cfg += [f"\n[{bed}]", "themes = " + ", ".join(names)]
     (root / "configs/misc/sound/mod_script_sound_aa.ltx").write_text("\n".join(themes), encoding="utf-8")
-    (root / "configs/scripts/aa_texture_beds.ltx").write_text("\n".join(beds_cfg) + "\n", encoding="utf-8")
+    (root / "configs/scripts/aa_loop_beds.ltx").write_text("\n".join(beds_cfg) + "\n", encoding="utf-8")
 
 
 def cmd_deploy(a):
@@ -929,22 +929,22 @@ def cmd_deploy(a):
     group_key = {dep: _settings_key(ch) for ch, (dep, _m, _l) in routing.items()}
     dep_mode = {dep: mode for _ch, (dep, mode, _l) in routing.items()}
     dep_layer = {dep: lay for _ch, (dep, _m, lay) in routing.items()}
-    accents, textures = _build_layers(mc, cls, ch_to_group, group_key)
+    effects, loops = _build_layers(mc, cls, ch_to_group, group_key)
 
     _clean(snd); _clean(env / "ambients")
     (root / "configs/scripts").mkdir(parents=True, exist_ok=True)
     (root / "configs/misc/sound").mkdir(parents=True, exist_ok=True)
     (env / "ambients/presets").mkdir(parents=True, exist_ok=True)
 
-    # Deployed accent channels. @[C] is the DLTX safe create-or-override: it MERGES our
+    # Deployed effect channels. @[C] is the DLTX safe create-or-override: it MERGES our
     # sounds into an existing channel (enrich/restore) or CREATES it (define). Sounds are
     # always appended with >sounds so a base channel's own sounds are never replaced; a
     # define channel additionally carries its settings and a seeding `sounds =` line.
     # ONE sound per line - a single long `sounds = a,b,c,...` overflows the engine's fixed
     # LTX read buffer (IReader::r_string, FS.cpp) and CTDs at load.
     chan_lines, layer_lines = [HDR], [HDR, "[aa_channel_layers]"]
-    for dep in sorted(accents):
-        entries = accents[dep]
+    for dep in sorted(effects):
+        entries = effects[dep]
         if not entries:
             continue
         for i, e in enumerate(entries, 1):
@@ -953,7 +953,7 @@ def cmd_deploy(a):
         if dep_mode[dep] == "define":
             durs = sorted(e["dur"] for e in entries)
             dur_ms = int(durs[len(durs) // 2] * 1000) if durs else 0
-            chan_lines.extend(_acc_settings(group_key[dep], dur_ms, len(entries)))
+            chan_lines.extend(_effect_settings(group_key[dep], dur_ms, len(entries)))
             chan_lines.append(f"sounds = zs\\{dep}\\1")
             start = 2
         else:                       # enrich / restore: append only, inherit the base settings
@@ -964,9 +964,9 @@ def cmd_deploy(a):
         layer_lines.append(f"{dep} = {dep_layer[dep]}")
     # Also map the base's OWN dark channels (the install plays them, we ship no content for
     # them), so the per-layer volume governs the WHOLE dark soundscape, not just our additions.
-    # aa_sound applies the layer to every dynamic channel it plays, ours or the base's; a base
+    # aa_effect applies the layer to every dynamic channel it plays, ours or the base's; a base
     # channel absent from the map would only obey the global knob. Beds are skipped (never a
-    # dynamic accent). Non-accent nature stays out (DARK_KEEP is dark-scoped).
+    # dynamic effect). Non-effect nature stays out (DARK_KEEP is dark-scoped).
     mapped = {ln.split(" = ", 1)[0] for ln in layer_lines[2:]}
     base_active = (_active_channels(VAN_CFG) | _active_channels(GAMMA_WINNER)) & DARK_KEEP
     for ch in sorted(base_active):
@@ -976,26 +976,28 @@ def cmd_deploy(a):
     (env / "mod_sound_channels_alifeambience.ltx").write_text("\n".join(chan_lines), encoding="utf-8")
     (env / "aa_channel_layers.ltx").write_text("\n".join(layer_lines) + "\n", encoding="utf-8")
 
-    deploy_texture(root, textures, gain)
-    write_presets(env, routing)
-    # placement guard: every restore/define channel must be placed in >=1 preset, else it
-    # ships content that never plays (enrich channels are intentionally not placed - they
-    # play via the base). Surfaced as a warning so a routing/evidence gap is not silent.
+    deploy_loop(root, loops, gain)
+    write_placement(env, routing)
+    # placement guard: every restore/define channel must be placed for >=1 (level, section),
+    # else it ships content that never plays (enrich channels are intentionally not placed -
+    # they play via the base). Surfaced as a warning so a routing/evidence gap is not silent.
     placed = set()
-    for f in (env / "ambients/presets").glob("*.ltx"):
-        for line in f.read_text(encoding="utf-8", errors="replace").splitlines():
-            m = re.match(r"\s*>sound_channels_dynamic\s*=\s*(\S+)", line)
+    pf = env.parent / "scripts" / "aa_placement.ltx"
+    if pf.exists():
+        for line in pf.read_text(encoding="utf-8", errors="replace").splitlines():
+            m = re.match(r"\s*\w+\s*=\s*(.+)", line)
             if m:
-                placed.add(m.group(1))
-    dead = sorted(d for d in accents
-                  if accents[d] and dep_mode.get(d) in ("restore", "define") and d not in placed)
+                for c in m.group(1).split(","):
+                    placed.add(c.strip())
+    dead = sorted(d for d in effects
+                  if effects[d] and dep_mode.get(d) in ("restore", "define") and d not in placed)
     if dead:
         print(f"  WARNING unplaced restore/define channels (ship sounds that never play): {dead}")
-    counts = collections.Counter(dep_mode[d] for d in accents if accents[d])
+    counts = collections.Counter(dep_mode[d] for d in effects if effects[d])
     print(f"deployed to {root}")
-    print(f"  accent channels: enrich {counts['enrich']}, restore {counts['restore']}, "
-          f"define {counts['define']}; {sum(len(v) for v in accents.values())} sounds")
-    print(f"  textures: " + ", ".join(f"{b} {len(textures[b])}" for b in BEDS))
+    print(f"  effect channels: enrich {counts['enrich']}, restore {counts['restore']}, "
+          f"define {counts['define']}; {sum(len(v) for v in effects.values())} sounds")
+    print(f"  loops: " + ", ".join(f"{b} {len(loops[b])}" for b in BEDS))
 
 
 # --- distribution: which channel plays in which (level, time, weather) section -----
@@ -1045,28 +1047,47 @@ def _section_channels(fname, sec, place, routing):
     return sorted(deps)
 
 
-# Vanilla presets no pack rebinds away. Portability: on bare vanilla (no soundscape
-# packs), darkscape/red-forest use environment_forest_more and the coast uses
-# environment_swamp_coast; alias them to the nearest generated distribution so every
-# vanilla preset is overlaid too. On GAMMA these are moot (the packs rebind to the 21).
-PRESET_ALIASES = {"environment_forest_more": "environment_forest",
-                  "environment_swamp_coast": "environment_swamp"}
 _PER_PACK = {}
 _VANILLA_PRESETS = {}
 
 
-def write_presets(env, routing):
-    """Emit mod_<preset>_alifeambience.ltx. Per (level, section), place our restore/define
-    channels via >sound_channels_dynamic (evidence + lore), then cap so the winner's base
-    channel count + our additions stays <= SECTION_MAX (vanilla's ceiling); over budget,
-    drop by LAYER_ORDER (dread-core kept, wildlife/rain first out). Enrich channels are not
-    placed - they already play wherever the base plays them."""
+def _level_preset_map():
+    """level.name() -> preset stem, resolved the way the engine resolves it on GAMMA.
+    Dark Signal rebinds each level stub to its area preset (l02_garbage -> environment_garbage);
+    levels DS does not rebind keep vanilla's stub (e.g. the underground levels). This is the
+    same binding the clone hits when it opens environment\\ambients\\<level>.ltx, so keying
+    placement by level.name() lines up with what plays there."""
+    def read_dir(gd):
+        m = {}
+        d = Path(gd) / "configs/environment/ambients"
+        if not d.is_dir():
+            return m
+        for f in d.glob("*.ltx"):
+            hit = re.search(r"environment_[a-z0-9_]+", f.read_text(encoding="utf-8", errors="replace"))
+            if hit:
+                m[f.stem] = hit.group(0)
+        return m
+    m = read_dir(VAN_CFG)              # vanilla stubs (fallback)
+    m.update(read_dir(GAMMA_WINNER))   # Dark Signal's rebinds win
+    return m
+
+
+def write_placement(env, routing):
+    """Emit configs/scripts/aa_placement.ltx: per level, per section, our restore/define
+    channels. The clone (aa_effect.reset_settings) reads this and appends them to the
+    section's channel list at runtime. This is the delivery that works: DLTX cannot patch
+    the ambient presets, because the engine opens the per-level stub and #includes the preset,
+    and DLTX does not merge into #included files (doc/library/modding/dltx.md, the root-file
+    rule). Capped so the winner's base count + our additions stays <= SECTION_MAX; over budget,
+    dropped by LAYER_ORDER (dread-core kept, wildlife/rain first out). Enrich channels are not
+    listed - they play wherever the base plays them."""
     global _PER_PACK, _VANILLA_PRESETS
     _PER_PACK = {name: parse_presets(gd) for name, gd in MODS if name != "vanilla"}
     _VANILLA_PRESETS = parse_presets(VAN_CFG)
     base = parse_presets(GAMMA_WINNER)
     place = _place_map(routing)
     lay = {dep: layer_of(dep) for dep in place.values()}
+    level_map = _level_preset_map()
 
     def budget_cap(deps, base_count):
         room = SECTION_MAX - base_count
@@ -1080,33 +1101,39 @@ def write_presets(env, routing):
             return (LAYER_ORDER.index(l) if l in LAYER_ORDER else len(LAYER_ORDER), d)
         return sorted(sorted(deps, key=rank)[:room])
 
-    def emit(out_stem, src_fname, secs):
-        lines = [HDR, ""]
+    lines = [HDR, ""]
+    for level in sorted(level_map):
+        secs = base.get(level_map[level] + ".ltx")
+        if not secs:
+            continue
+        body = []
         for sec in secs:
-            deps = budget_cap(_section_channels(src_fname, sec, place, routing),
+            deps = budget_cap(_section_channels(level_map[level] + ".ltx", sec, place, routing),
                               len(secs[sec].get("dynamic", [])))
-            # D1 - NORMALIZE THE FLOOR. Strip the fake-horror channels we are NOT placing
-            # here (out_screams/mutants/gunfire/wind_dark). On VANILLA this removes the
-            # low-quality horror GAMMA already dropped, so both installs share one floor and
-            # the density budget (computed vs the GAMMA winner) holds on vanilla too - measured
-            # avg 9.1, max 13, 0 over vs 20 over without it. On GAMMA every strip is a no-op
-            # (already absent). A channel we DO restore here is excluded from the strip, so it
-            # is never removed and re-added in the same section (which would be order-dependent).
-            strip = sorted(STRIP4 - set(deps))
-            lines.append(f"![{sec}]")
-            for ch in strip:
-                lines.append(f"<sound_channels_dynamic = {ch}")
-            for d in deps:
-                lines.append(f">sound_channels_dynamic = {d}")
+            if deps:
+                body.append(f"{sec} = " + ", ".join(deps))
+        if body:
+            lines.append(f"[{level}]")
+            lines.extend(body)
             lines.append("")
-        (env / "ambients/presets" / f"mod_{out_stem}_alifeambience.ltx").write_text("\n".join(lines), encoding="utf-8")
+    (env.parent / "scripts").mkdir(parents=True, exist_ok=True)
+    (env.parent / "scripts" / "aa_placement.ltx").write_text("\n".join(lines), encoding="utf-8")
 
-    for fname, secs in base.items():
-        emit(fname[:-4], fname, secs)
-    for alias_stem, src_stem in PRESET_ALIASES.items():   # vanilla-only presets
-        src_fname = src_stem + ".ltx"
-        if src_fname in base:
-            emit(alias_stem, src_fname, base[src_fname])
+
+def cmd_placement(a):
+    root = Path(a.root) if a.root else GDATA
+    env = root / "configs/environment"
+    mc = json.loads((HERE / "merged_channels.json").read_text())
+    cls = json.loads((HERE / "classification.json").read_text())
+    routing = _channel_routing(mc, cls)
+    write_placement(env, routing)
+    # remove the old, inert preset patches (they never merged - presets are #include-only)
+    old = root / "configs/environment/ambients/presets"
+    n = 0
+    if old.is_dir():
+        for f in list(old.glob("mod_environment_*_alifeambience.ltx")):
+            f.unlink(); n += 1
+    print(f"placement -> configs/scripts/aa_placement.ltx  (removed {n} inert preset patches)")
 
 
 # --- ledger (the content-hash proof: UNUSED-DARK must be 0) -------------------
@@ -1149,10 +1176,10 @@ def cmd_ledger(a):
             under_root = low.split("/", 1)[0] in INCLUDE_ROOTS
             if h in deployed:
                 st = "USED-shipped"
-            elif h in chosen and role.get(chosen[h]) != "texture":
+            elif h in chosen and role.get(chosen[h]) != "loop":
                 st = "USED-gained"
             elif h in chosen:
-                st = "HELD-texture-surplus"
+                st = "HELD-loop-surplus"
             elif emission:
                 st = "EMISSION-excluded"
             elif h in base_md5:                         # the install plays it (exact) -> not ours
@@ -1229,8 +1256,8 @@ def cmd_provenance(a):
     mc = json.loads((HERE / "merged_channels.json").read_text())
     cls = json.loads((HERE / "classification.json").read_text())
     gain = _gain_map()
-    ch_to_group, group_key = accent_group_map(cls)
-    accents, textures = _build_layers(mc, cls, ch_to_group, group_key)
+    ch_to_group, group_key = effect_group_map(cls)
+    effects, loops = _build_layers(mc, cls, ch_to_group, group_key)
     settings = {ch: _parse_settings(mc[ch]["settings"]) for ch in mc}
     ch_sec = _channel_sections()
     zs = GDATA / "sounds/zs"
@@ -1259,10 +1286,10 @@ def cmd_provenance(a):
                     verify_ok += 1
                 else:
                     verify_bad += 1
-    for g in sorted(group_key):                       # accents deploy to zs\<channel>\N
-        add(accents[g], layer_of(g), g, g)
-    for bed in BEDS:                                  # texture beds to zs\tex\<bed>\N
-        add(textures[bed], "texture", bed, f"tex\\{bed}")
+    for g in sorted(group_key):                       # effects deploy to zs\<channel>\N
+        add(effects[g], layer_of(g), g, g)
+    for bed in BEDS:                                  # loop beds to zs\loop\<bed>\N
+        add(loops[bed], "loop", bed, f"loop\\{bed}")
     lines = ["\t".join(cols)] + ["\t".join(r) for r in rows]
     (HERE / "provenance.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"provenance: {len(rows)} shipped sounds -> provenance.tsv")
@@ -1280,6 +1307,7 @@ if __name__ == "__main__":
     p = sub.add_parser("classify"); p.add_argument("--out"); p.set_defaults(func=cmd_classify)
     p = sub.add_parser("loudness"); p.add_argument("--out"); p.set_defaults(func=cmd_loudness)
     p = sub.add_parser("deploy"); p.add_argument("--root"); p.set_defaults(func=cmd_deploy)
+    p = sub.add_parser("placement"); p.add_argument("--root"); p.set_defaults(func=cmd_placement)
     sub.add_parser("ledger").set_defaults(func=cmd_ledger)
     sub.add_parser("provenance").set_defaults(func=cmd_provenance)
     a = ap.parse_args(); a.func(a)
