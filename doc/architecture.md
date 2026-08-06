@@ -94,7 +94,12 @@ max(6, 1.5 x IQR). Everything inside the band is shipped verbatim (no re-encode,
 quality loss); outliers are re-encoded with `ffmpeg volume=<median-LUFS>dB`,
 preserving dynamics. This is deliberately NOT a global normalize: slamming a whisper
 and a scream to one level would flatten the mix. On the measured data 148 of 2596
-(6%) are outliers; the rest ship untouched.
+(6%) are outliers; the rest ship untouched. CAVEAT: the `ffmpeg volume` re-encode DROPS
+the ogg's X-Ray comment blob (per-file `base_volume` + source min/max distance), so a
+gained file reverts to the engine defaults (1/300, base_volume 1.0) and the author's
+authored loudness/distance is lost (see
+`stalker-dev/doc/library/anomaly/internals/sound-source-and-emitter.md`). n107 removes the
+re-encode (ship verbatim) to keep every blob.
 
 Fitness gate: 44100 Hz vorbis only (the X-Ray standard); off-rate and junk-bitrate
 files are dropped and accounted (never silently).
