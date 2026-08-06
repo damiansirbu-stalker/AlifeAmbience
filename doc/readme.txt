@@ -25,8 +25,8 @@ Why it is different:
   treeline, a groan under the ground, wind that carries something wrong.
 - Measured, not dumped. Every sound goes through signal analysis for spectral shape,
   loudness, and length, then a three-stage dedup - exact hash, acoustic fingerprint, and a
-  waveform cross-correlation that tells a re-encoded copy from a genuinely different sound -
-  and per-group loudness leveling. No junk, no duplicates, no lost variety.
+  waveform cross-correlation that tells a re-encoded copy from a genuinely different sound.
+  No junk, no duplicates, no lost variety.
 - Never repetitive. Play rates are tuned so a long storm never overlaps into a wall and a
   channel with few sounds is not spammed, and a runtime no-repeat memory means you never
   hear the same call twice - the whole library is heard, not the same 10% on a loop.
@@ -68,13 +68,14 @@ How it is built:
   the same recording before merging - so genuinely different sounds are never merged away.
   Anything your install already plays is excluded the same way, and each loop bed is
   deduped across the channels that feed it, so a continuous bed never loops the same recording.
-  Loudness is leveled per group, outliers only, so a whisper and a scream keep their
-  difference. A ledger proves no net-new dark sound is missed, and a provenance record maps
+  Every sound ships exactly as its author made it, no loudness re-encode, so each keeps its
+  own volume and distance; a file that lacks that metadata is given it to match its channel.
+  A ledger proves no net-new dark sound is missed, and a provenance record maps
   every included sound back to its origin. The whole overlay rebuilds from the packs in one run.
   The pipeline, one command end to end:
     index what your install plays  ->  pool the packs' dark sounds  ->  dedup each channel to
     one copy per recording (hash, fingerprint, waveform)  ->  measure and classify each  ->
-    level loudness  ->  compose the overlay (channels + placement)  ->  prove coverage and origin.
+    keep every file verbatim  ->  compose the overlay (channels + placement)  ->  prove coverage and origin.
   On the current build that meant 5487 candidate sounds pulled and reduced to 1487 genuinely
   new dark sounds: the waveform test caught 177 re-encoded copies plain hashing kept, every
   sound the game already plays was excluded, and every included sound traces to its origin.

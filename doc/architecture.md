@@ -88,18 +88,17 @@ cheap ones flag (`dedup_pick` in `merge.py`, `pcm_correlation`/`decode_pcm` in `
 
 The SAME three-stage identity guards base-dedup (never ship a sound the install already plays): a candidate the fingerprint matches to a base sound is dropped only when the cross-correlation confirms it, so a distinct sound the fingerprint wrongly flags is KEPT, not lost. The base index therefore records md5 + fingerprint + duration + path, so the confirm step can decode the base sound. The intra-corpus and base thresholds are the same waveform test applied to two ends: keep every distinct variant, drop every genuine re-encode, byte or not.
 
-Loudness leveling: per group (channel/bed) take the MEDIAN integrated LUFS as the
-group level, and gain back only the OUTLIERS - files where |LUFS - median| >
-max(6, 1.5 x IQR). Everything inside the band is shipped verbatim (no re-encode, no
-quality loss); outliers are re-encoded with `ffmpeg volume=<median-LUFS>dB`,
-preserving dynamics. This is deliberately NOT a global normalize: slamming a whisper
-and a scream to one level would flatten the mix. On the measured data 148 of 2596
-(6%) are outliers; the rest ship untouched. CAVEAT: the `ffmpeg volume` re-encode DROPS
-the ogg's X-Ray comment blob (per-file `base_volume` + source min/max distance), so a
-gained file reverts to the engine defaults (1/300, base_volume 1.0) and the author's
-authored loudness/distance is lost (see
-`stalker-dev/doc/library/anomaly/internals/sound-source-and-emitter.md`). n107 removes the
-re-encode (ship verbatim) to keep every blob.
+Loudness and per-file metadata: every sound ships VERBATIM (no re-encode), so each file
+keeps its source X-Ray ogg comment blob - the per-file `base_volume` and attenuation min/max
+the engine applies at play (`SoundRender_Emitter_FSM.cpp:133,361`; full mechanics in
+`stalker-dev/doc/library/anomaly/internals/sound-source-and-emitter.md`). A source that lacks
+a blob (a text-tagged or ffmpeg-encoded pack file) is given one, written losslessly
+(`_band_blobs`): per channel folder the median (min, max) of the blob-carrying members is
+written into the blob-less ones with `base_volume` 1.0, so a blob-less file attenuates like
+its channel-mates instead of the engine's 1/300 default. The write rebuilds only the vorbis
+comment-header page - the audio pages stay byte-identical, and provenance self-verifies by
+audio hash. The earlier per-group median-LUFS re-encode was removed: it re-baked a lossy gain
+AND destroyed the source blob (reverting attenuation + base_volume to the engine defaults).
 
 Fitness gate: 44100 Hz vorbis only (the X-Ray standard); off-rate and junk-bitrate
 files are dropped and accounted (never silently).
@@ -144,8 +143,8 @@ time of day (the dread drone-bed dusk-to-dawn, the lighter wind-bed by day, via
 
 ## Provenance and proof
 
-- `provenance.tsv` (`cmd_provenance`): every shipped `N.ogg` -> original mod, directory, filename, source channel, that channel's LTX `min/max_distance`/`period0-3`/`indoor`/`height`, the gain applied, and the exact list of original `level:time:weather` sections it played in. Nothing loses its origin under the `N.ogg` rename.
-- Self-verification: the deterministic deploy is re-derived and every VERBATIM shipped file is md5-compared to its claimed source. Current build: 1066 verbatim match, 0 mismatch (the gained files differ by design) - the rename is proven lossless and the provenance exact.
+- `provenance.tsv` (`cmd_provenance`): every shipped `N.ogg` -> original mod, directory, filename, source channel, that channel's LTX `min/max_distance`/`period0-3`/`indoor`/`height`, the deployed `base_volume`, and the exact list of original `level:time:weather` sections it played in. Nothing loses its origin under the `N.ogg` rename.
+- Self-verification: the deterministic deploy is re-derived and every shipped file's AUDIO is compared to its claimed source (comment-blob-agnostic: a written blob changes the header page, never a sample). The rename and the blob write are proven lossless and the provenance exact.
 - `ledger.tsv` (`cmd_ledger`): hash every source ogg against the deployed set and categorise: USED-shipped, USED-gained, HELD-loop-surplus, EMISSION-excluded, BASE-DUP-excluded (the install already plays it - md5 or cross-correlation), INTRA-DUP-excluded (our own re-encode the PCM dedup dropped - captured then deduped, not missed), OFFSPEC-48k-excluded, off-scope-or-dup, SKIP-nonambient, and UNUSED-DARK. The invariant: **UNUSED-DARK = 0** - no NET-NEW dark file (one the install doesn't play) is left uncaptured. Current: UNUSED-DARK 0, BASE-DUP-excluded 3644, USED-shipped 1310, HELD 269, EMISSION 279, INTRA-DUP-excluded 177, USED-gained 92, OFFSPEC 1.
 
 ## Numbers (current build)
@@ -169,7 +168,7 @@ time of day (the dread drone-bed dusk-to-dawn, the lighter wind-bed by day, via
 - I3b Never ship a sound the install already plays. Base-dedup drops a sound only when the fingerprint matches AND the cross-correlation confirms it, against the winner-resolved base-played index (vanilla + GAMMA), so no duplication on either install, byte or re-encode - and a distinct sound the fingerprint wrongly flags is kept.
 - I3c Work ON the engine's channels, not beside them. Enrich a channel both installs play, restore one the winner strips, define a new one only for a purpose no live base channel provides; never parallel a channel the base already plays.
 - I4 Fitness is codec + sample rate: 44100 Hz vorbis. Off-spec files are dropped and accounted.
-- I5 Loudness by per-group median leveling, outliers only. Preserve dynamics; loop beds sit below effects; distance varies at play.
+- I5 Ship verbatim; per-file loudness is the file's own `base_volume` (its ogg comment blob), never re-encoded. A blob-less file gets a channel-band blob written losslessly (median min/max of its blob-carrying channel-mates, base_volume 1.0).
 - I6 Capture from folder trees, not just channel-wired files. The proof that this matters is the ledger: it is what drives UNUSED-DARK to 0.
 - I7 Distribution is traced from the source configs, refined by canon for the specials, then density-capped to vanilla's per-section ceiling. No flat map; no random placement; no density blow-up.
 - I7b The channel -> layer map is the single control axis. One layer per channel (data, not name); the layer drives both the MCM volume and the density budget. 11 layers, fixed; channel count is free.

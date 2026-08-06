@@ -11,7 +11,7 @@ highest-priority mod that defines the channel.
 
 Presets and the LTX/sound emit into GammaOverrides come in the next steps.
 """
-import sys, json, re, collections, hashlib
+import sys, json, re, collections, hashlib, struct
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import soundpool as sp
@@ -783,20 +783,157 @@ def _build_layers(mc, cls, ch_to_group, group_key):
     return effects, loops
 
 
-def _gain_map():
-    return {(o["ch"], o["stem"]): o["gain_db"]
-            for o in json.loads((HERE / "loudness_outliers.json").read_text())}
-
-
-def _emit_audio(entry, dst, gain):
+def _emit_audio(entry, dst):
+    # n107: ship every sound VERBATIM. No ffmpeg volume re-encode - it re-baked a lossy
+    # gain AND dropped the source's X-Ray ogg comment blob (base_volume + min/max), which
+    # reverts attenuation to the 1/300 default. Per-file loudness now rides in base_volume
+    # (see _band_blobs, n108), not in the samples.
     dst.parent.mkdir(parents=True, exist_ok=True)
-    g = gain.get((entry["ch"], entry["stem"]))
-    if g is None:
-        import shutil as sh
-        sh.copy2(entry["abs"], dst)
-    else:
-        sp.run([sp.tool("ffmpeg"), "-y", "-i", entry["abs"], "-af", f"volume={g}dB",
-                "-c:a", "libvorbis", "-ar", "44100", str(dst)])
+    import shutil as sh
+    sh.copy2(entry["abs"], dst)
+
+
+# --- n108: X-Ray ogg comment blob (per-file min/max distance + base_volume) ------------
+# The engine reads the FIRST vorbis comment of an ogg as a binary struct (version 0x0003:
+# u32 ver, f32 min, f32 max, f32 base_volume, u32 game_type, f32 max_ai) and applies
+# base_volume plus the min/max attenuation at play (SoundRender_Source_loader.cpp:108-152,
+# SoundRender_Emitter_FSM.cpp:133,361). A missing/text-tagged comment falls back to 1/300 +
+# base_volume 1.0. ffmpeg CANNOT write it (it emits text tags), so we rewrite the comment
+# header page directly - lossless: only page 1 changes, the audio pages are byte-identical.
+
+def _crc_ogg(data):
+    crc = 0
+    for b in data:
+        crc ^= b << 24
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x04c11db7) & 0xffffffff if (crc & 0x80000000) else (crc << 1) & 0xffffffff
+    return crc
+
+
+def _ogg_pages(d):
+    off, out = 0, []
+    while off < len(d) and d[off:off + 4] == b"OggS":
+        nseg = d[off + 26]
+        segs = d[off + 27:off + 27 + nseg]
+        dlen = sum(segs)
+        out.append((off, bytes(segs), d[off + 27 + nseg:off + 27 + nseg + dlen]))
+        off += 27 + nseg + dlen
+    return out, off
+
+
+def _ogg_packets(segs, body):
+    pkts, cur, start = [], 0, 0
+    for s in segs:
+        cur += s
+        if s < 255:
+            pkts.append(body[start:start + cur]); start += cur; cur = 0
+    return pkts
+
+
+def _read_blob(d):
+    """comment[0] as (min, max, base_volume) when it is a valid X-Ray blob, else None."""
+    i = d.find(b"\x03vorbis")
+    if i < 0:
+        return None
+    p = i + 7
+    (vl,) = struct.unpack("<I", d[p:p + 4]); p += 4 + vl
+    (n,) = struct.unpack("<I", d[p:p + 4]); p += 4
+    if n == 0:
+        return None
+    (cl,) = struct.unpack("<I", d[p:p + 4]); p += 4
+    c0 = d[p:p + cl]
+    if len(c0) < 4:
+        return None
+    (v,) = struct.unpack("<I", c0[:4])
+    if v == 1 and len(c0) >= 16:
+        mn, mx = struct.unpack("<ff", c0[4:12]); return (mn, mx, 1.0)
+    if v in (2, 3) and len(c0) >= 20:
+        mn, mx, bv = struct.unpack("<fff", c0[4:16]); return (mn, mx, bv)
+    return None
+
+
+def _build_ogg_page(htype, granule, serial, seq, packets):
+    segtab, body = [], b""
+    for pk in packets:
+        n = len(pk)
+        while n >= 255:
+            segtab.append(255); n -= 255
+        segtab.append(n); body += pk
+    if len(segtab) > 255:
+        return None
+    page = (b"OggS" + bytes([0, htype]) + struct.pack("<q", granule) +
+            struct.pack("<I", serial) + struct.pack("<I", seq) +
+            struct.pack("<I", 0) + bytes([len(segtab)]) + bytes(segtab) + body)
+    return page[:22] + struct.pack("<I", _crc_ogg(page)) + page[26:]
+
+
+def _write_blob(path, mn, mx, bv):
+    """Write a 0x0003 X-Ray blob as comment[0], losslessly. Only the standard
+    [ID | comment+setup | audio...] layout is handled; anything else is left unchanged
+    (returns False). Audio pages are byte-identical after the write."""
+    d = path.read_bytes()
+    pg, end = _ogg_pages(d)
+    if end != len(d) or len(pg) < 3:
+        return False
+    pkts = _ogg_packets(pg[1][1], pg[1][2])
+    if len(pkts) != 2 or not pkts[0].startswith(b"\x03vorbis") or not pkts[1].startswith(b"\x05vorbis"):
+        return False
+    comment_pkt, setup_pkt = pkts
+    p = 7
+    (vl,) = struct.unpack("<I", comment_pkt[p:p + 4]); p += 4
+    vendor = comment_pkt[p:p + vl]
+    blob = struct.pack("<I", 3) + struct.pack("<fff", mn, mx, bv) + struct.pack("<I", 0) + struct.pack("<f", mx)
+    new_comment = (b"\x03vorbis" + struct.pack("<I", len(vendor)) + vendor +
+                   struct.pack("<I", 1) + struct.pack("<I", len(blob)) + blob + b"\x01")
+    o = pg[1][0]
+    htype = d[o + 5]
+    gran = struct.unpack("<q", d[o + 6:o + 14])[0]
+    serial = struct.unpack("<I", d[o + 14:o + 18])[0]
+    seq = struct.unpack("<I", d[o + 18:o + 22])[0]
+    new_p1 = _build_ogg_page(htype, gran, serial, seq, [new_comment, setup_pkt])
+    if new_p1 is None:
+        return False
+    path.write_bytes(d[:pg[1][0]] + new_p1 + d[pg[2][0]:])
+    return True
+
+
+def _audio_hash(path):
+    """md5 of the audio pages (everything after the ID + comment/setup header pages), so a
+    comment-blob rewrite still verifies as the same audio as its verbatim source."""
+    pg, _ = _ogg_pages(path.read_bytes())
+    return hashlib.md5(b"".join(p[2] for p in pg[2:])).hexdigest()
+
+
+def _band_blobs(root):
+    """Give blob-less files an X-Ray comment blob. Per channel folder, take the median
+    (min, max) of the members that carry a blob and write it (base_volume 1.0) into the
+    members that do not, so a blob-less file attenuates like its channel-mates instead of
+    the 1/300 engine default; fall back to the global median for a folder with no carrier."""
+    zs = root / "sounds/zs"
+    scan, g_mins, g_maxs = {}, [], []
+    for fld in {f.parent for f in zs.rglob("*.ogg")}:
+        rows = [(f, _read_blob(f.read_bytes())) for f in sorted(fld.glob("*.ogg"))]
+        scan[fld] = rows
+        for _, b in rows:
+            if b:
+                g_mins.append(b[0]); g_maxs.append(b[1])
+    g_min = _median(sorted(g_mins)) if g_mins else 1.0
+    g_max = _median(sorted(g_maxs)) if g_maxs else 300.0
+    wrote = skipped = 0
+    for fld, rows in scan.items():
+        cs = [b for _, b in rows if b]
+        cmin = _median(sorted(c[0] for c in cs)) if cs else g_min
+        cmax = _median(sorted(c[1] for c in cs)) if cs else g_max
+        if cmax <= cmin:
+            cmax = cmin + 1.0
+        for f, b in rows:
+            if b is None:
+                if _write_blob(f, cmin, cmax, 1.0):
+                    wrote += 1
+                else:
+                    skipped += 1
+    print(f"blobs: wrote {wrote} X-Ray comment blobs (per-channel distance band, base_volume 1.0), "
+          f"skipped {skipped} (non-standard ogg layout)")
 
 
 # Each effect channel keeps its VERBATIM source settings - no median. Channels are grouped
@@ -955,7 +1092,7 @@ def _effect_settings(key, dur_ms=0, size=0):
     return lines
 
 
-def deploy_loop(root, loops, gain):
+def deploy_loop(root, loops):
     """Emit the loop layer only (loop\\<pool>\\N.ogg + looped themes + bed list),
     leaving the effect tree untouched. Separated so the loop pools can be rebuilt
     without re-encoding the effects (an ffmpeg re-encode is not byte-deterministic)."""
@@ -970,7 +1107,7 @@ def deploy_loop(root, loops, gain):
         if not entries:
             continue
         for i, e in enumerate(entries, 1):
-            _emit_audio(e, snd / "loop" / bed / f"{i}.ogg", gain)
+            _emit_audio(e, snd / "loop" / bed / f"{i}.ogg")
         names = [f"aa_loop_{bed}_{i}" for i in range(1, len(entries) + 1)]
         for i, nm in enumerate(names, 1):
             themes += [f"[{nm}]", "type = looped", f"path = zs\\loop\\{bed}\\{i}", ""]
@@ -985,7 +1122,6 @@ def cmd_deploy(a):
     snd = root / "sounds/zs"
     mc = json.loads((HERE / "merged_channels.json").read_text())
     cls = json.loads((HERE / "classification.json").read_text())
-    gain = _gain_map()
     routing = _channel_routing(mc, cls)
     ch_to_group = {ch: dep for ch, (dep, _m, _l) in routing.items()}
     group_key = {dep: _settings_key(ch) for ch, (dep, _m, _l) in routing.items()}
@@ -1010,7 +1146,7 @@ def cmd_deploy(a):
         if not entries:
             continue
         for i, e in enumerate(entries, 1):
-            _emit_audio(e, snd / dep / f"{i}.ogg", gain)
+            _emit_audio(e, snd / dep / f"{i}.ogg")
         chan_lines.append(f"@[{dep}]")
         if dep_mode[dep] == "define":
             durs = sorted(e["dur"] for e in entries)
@@ -1038,8 +1174,9 @@ def cmd_deploy(a):
     (env / "mod_sound_channels_alifespooks.ltx").write_text("\n".join(chan_lines), encoding="utf-8")
     (env / "as_channel_layers.ltx").write_text("\n".join(layer_lines) + "\n", encoding="utf-8")
 
-    deploy_loop(root, loops, gain)
+    deploy_loop(root, loops)
     write_placement(env, routing)
+    _band_blobs(root)
     # placement guard: every restore/define channel must be placed for >=1 (level, section),
     # else it ships content that never plays (enrich channels are intentionally not placed -
     # they play via the base). Surfaced as a warning so a routing/evidence gap is not silent.
@@ -1317,7 +1454,6 @@ def _channel_sections():
 def cmd_provenance(a):
     mc = json.loads((HERE / "merged_channels.json").read_text())
     cls = json.loads((HERE / "classification.json").read_text())
-    gain = _gain_map()
     ch_to_group, group_key = effect_group_map(cls)
     effects, loops = _build_layers(mc, cls, ch_to_group, group_key)
     settings = {ch: _parse_settings(mc[ch]["settings"]) for ch in mc}
@@ -1326,28 +1462,32 @@ def cmd_provenance(a):
 
     cols = ["deployed", "layer", "group", "orig_mod", "orig_dir", "orig_file", "orig_channel",
             "min_distance", "max_distance", "period0", "period1", "period2", "period3",
-            "indoor", "height", "gain_db", "orig_sections"]
+            "indoor", "height", "base_volume", "orig_sections"]
     rows, verify_ok, verify_bad = [], 0, 0
     def add(entries, layer, group, reldir):
         nonlocal verify_ok, verify_bad
         for i, e in enumerate(entries, 1):
             dep = f"zs\\{reldir}\\{i}"
             s = settings.get(e["ch"], {})
-            g = gain.get((e["ch"], e["stem"]))
             stem = e["stem"]
+            dfile = zs / Path(reldir.replace("\\", "/")) / f"{i}.ogg"
+            # n107/n108: every file ships audio-verbatim; a blob write touches only the
+            # comment header. Record the DEPLOYED base_volume and self-verify by AUDIO.
+            bv = ""
+            if dfile.exists():
+                b = _read_blob(dfile.read_bytes())
+                if b:
+                    bv = round(b[2], 3)
+                if _audio_hash(dfile) == _audio_hash(Path(e["abs"])):
+                    verify_ok += 1
+                else:
+                    verify_bad += 1
             rows.append([dep, layer, group, e["pool"], str(Path(stem).parent).replace("\\", "/"),
                          Path(stem).name, e["ch"],
                          s.get("min_distance", ""), s.get("max_distance", ""),
                          s.get("period0", ""), s.get("period1", ""), s.get("period2", ""), s.get("period3", ""),
                          s.get("indoor", ""), s.get("height", ""),
-                         "" if g is None else str(g), "; ".join(ch_sec.get(e["ch"], []))])
-            # self-verify: a verbatim (ungained) shipped file must hash-equal its source
-            if g is None:
-                dfile = zs / Path(reldir.replace("\\", "/")) / f"{i}.ogg"
-                if dfile.exists() and file_hash(dfile) == file_hash(e["abs"]):
-                    verify_ok += 1
-                else:
-                    verify_bad += 1
+                         str(bv), "; ".join(ch_sec.get(e["ch"], []))])
     for g in sorted(group_key):                       # effects deploy to zs\<channel>\N
         add(effects[g], layer_of(g), g, g)
     for bed in BEDS:                                  # loop beds to zs\loop\<bed>\N
@@ -1355,7 +1495,7 @@ def cmd_provenance(a):
     lines = ["\t".join(cols)] + ["\t".join(r) for r in rows]
     (HERE / "provenance.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"provenance: {len(rows)} shipped sounds -> provenance.tsv")
-    print(f"verbatim hash self-verify vs deployed tree: {verify_ok} match, {verify_bad} MISMATCH")
+    print(f"audio self-verify vs source (comment-blob-agnostic): {verify_ok} match, {verify_bad} MISMATCH")
     if verify_bad:
         print("  MISMATCH != 0 -> the deploy ordering does NOT reproduce the tree; provenance is NOT exact.")
 
