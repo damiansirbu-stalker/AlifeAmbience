@@ -35,7 +35,7 @@ DARK_KEEP = {
     # dread cues
     "out_spooks", "out_day_spoops", "out_night_spoops", "northen_spoops", "urban_spoops_night",
     "out_screams", "out_mutants", "out_dark_amb", "out_night_amb", "dark_signal",
-    "foliage_spook", "crows_spook", "inside_noise", "psistorm_background",
+    "foliage_spook", "crows_spook", "inside_noise",
     "background_creepy_low_wind",
     "background_forest_whisper_day", "background_forest_whisper_evening",
     "background_forest_whisper_morning", "background_forest_whisper_night", "background_forest_whisper_tuman",
@@ -72,6 +72,8 @@ DARK_FILL = [
     ("spooks_below/rats", "ugrnd_rats"), ("spooks_below/noise", "ugrnd_noise"),
     ("spooks_below/lab", "ugrnd_lab"), ("water_drip", "ugrnd_drip"), ("/drip", "ugrnd_drip"),
     ("spooks_below/machine", "ugrnd_ambient_machine"), ("spooks_below/ambient", "ugrnd_ambient"),
+    ("spooks_below/creaks", "ugrnd_ambient"),          # Audio Expansion creaking underground dread
+
     ("spooks_below/drone", "ugrnd_drone"), ("spooks_above/drone", "out_drone"),
     ("spooks_below/spooks", "out_spooks"), ("spooks_above/spooks", "out_spooks"), ("/spooks/", "out_spooks"),
     ("/thunder", "storm"), ("/rain", "rain_gust"),
@@ -83,6 +85,12 @@ DARK_FILL = [
     ("tuman", "background_tuman_open"), ("underground_", "ugrnd_ambient"),
 ]
 
+# Out-of-scope / misfiled files to skip even when a DARK_FILL or channel rule would
+# capture them (n109, verified 2026-08-06). psi-storm is emission-domain (readme: "does
+# not touch emission or psi-storm sound"); giant_underground is a monster roar misfiled
+# into ugrnd_ambient. Substring match on the lowercased source path.
+EXCLUDE = ("psi_storm", "psistorm", "giant_underground")
+
 # priority order: settings for a shared channel come from the first that defines it
 MODS = [
     ("DarkSigWeather", "D:/Games/GAMMA/GAMMA/mods/304- Dark Signal Weather and Ambiance Audio - Shrike/gamedata"),
@@ -92,6 +100,9 @@ MODS = [
     # net-new distant-creature calls (99 files, 0 content-hash overlap with Amplified's
     # mutant pool). No sound_channels.ltx of its own - captured via DARK_FILL /mutants/.
     ("RealDistantMutants", "C:/Users/damian/Downloads/anomaly_audio_mods/Real Distant Mutants Sounds/gamedata"),
+    # net-new underground dread (spooks_below creaks/ambient/noise): 244 of 268 unique vs
+    # active GAMMA + our corpus (measured 2026-08-06, fpcalc). Not installed in GAMMA.
+    ("AudioExpansion", "C:/Users/damian/Downloads/anomaly_audio_mods/Audio Expansion/gamedata"),
     ("vanilla",        "D:/Games/GAMMA/Anomaly/tools/_unpacked"),   # last: only for channels no pack defines (portability coverage)
 ]
 
@@ -390,6 +401,51 @@ def _base_dedup(merged):
           f"(of {len(uniq)} chosen)")
 
 
+def _cross_channel_dedup(merged):
+    """Drop byte-identical copies of a recording a source pack listed in more than one
+    channel. md5-exact ONLY - a hash match is provably the same file, so no distinct
+    sound can be lost (no fingerprint judgment, unlike _base_dedup). Keep one home per
+    recording (first channel it appears in); never empty a channel."""
+    seen = {}
+    n_drop = 0
+    for chan in merged:
+        keep, dup = [], []
+        for c in merged[chan]["chosen"]:
+            h = file_hash(c["abs"])
+            if seen.get(h, chan) == chan:
+                seen[h] = chan
+                keep.append(c)
+            else:
+                dup.append(c)                      # byte-identical to a home in another channel
+        if not keep and dup:                       # never-empty: rescue one as this channel's home
+            keep.append(dup.pop(0))
+        n_drop += len(dup)
+        merged[chan]["chosen"] = keep
+    print(f"cross-channel dedup: dropped {n_drop} byte-identical copies (md5-exact, one home each)")
+
+
+def _silence_gate(merged):
+    """Drop dead/empty files ONLY - true peak level = -inf (no audio at all). Hard rule:
+    never ship a silent sound (caught the shipped-dead ugrnd_lab/1-3). Uses the real peak
+    (astats over the full-rate stream), NOT the 4kHz correlation PCM - so intentionally
+    quiet or distant sounds (a faint owl at -17dB, a distant spook at -50dB) are KEPT;
+    only a file with no audio at all is removed."""
+    import subprocess, re
+    def is_dead(a):
+        r = subprocess.run([sp.tool("ffmpeg"), "-i", a, "-af", "astats=metadata=1:reset=0",
+                            "-f", "null", "-"], capture_output=True, text=True)
+        m = re.search(r"Peak level dB:\s*(\S+)", r.stderr)
+        return (m is None) or (m.group(1) == "-inf")      # unmeasurable or true silence
+    paths = list({c["abs"] for chan in merged for c in merged[chan]["chosen"]})
+    dead = {a for a, d in zip(paths, sp.pmap(is_dead, paths, sp.DEF_JOBS)) if d}
+    n = 0
+    for chan in merged:
+        before = len(merged[chan]["chosen"])
+        merged[chan]["chosen"] = [c for c in merged[chan]["chosen"] if c["abs"] not in dead]
+        n += before - len(merged[chan]["chosen"])
+    print(f"silence gate: dropped {n} dead/empty files (true peak -inf, quiet sounds kept)")
+
+
 def cmd_plan(_):
     # 1. gather every channel's assigned sounds across mods
     per_mod = {name: parse_channels(gd) for name, gd in MODS}
@@ -407,6 +463,8 @@ def cmd_plan(_):
                 f = resolve(stem, sounds_root)
                 if f is None:
                     missing[name] += 1
+                    continue
+                if any(x in f.as_posix().lower() for x in EXCLUDE):
                     continue
                 info = sp.probe(str(f)) or {}
                 if info.get("sample_rate") != 44100:      # X-Ray fitness: 44100 only
@@ -443,6 +501,8 @@ def cmd_plan(_):
             continue
         for f in sroot.rglob("*.ogg"):
             rel = f.as_posix().lower()
+            if any(x in rel for x in EXCLUDE):
+                continue
             chan = next((c for sub, c in DARK_FILL if sub in rel), None)
             if not chan:
                 continue
@@ -486,7 +546,9 @@ def cmd_plan(_):
     (HERE / "intra_dups.json").write_text(json.dumps(sorted(pool_hashes - kept_hashes)), encoding="utf-8")
     # base-dedup: never ship a sound vanilla or the GAMMA winner already plays (md5 +
     # acoustic). Runs on the chosen set before it is frozen into merged_channels.json.
+    _silence_gate(merged)
     _base_dedup(merged)
+    _cross_channel_dedup(merged)
     (HERE / "merged_channels.json").write_text(json.dumps(merged, indent=1), encoding="utf-8")
 
     # 3. report
