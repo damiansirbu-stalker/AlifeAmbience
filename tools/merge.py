@@ -82,6 +82,9 @@ DARK_FILL = [
     ("northern_spoops", "out_spooks"), ("storm_debris", "storm"), ("wind_tuman", "background_tuman_open"),
     ("spooks_above", "out_spooks"), ("spooks_below", "out_spooks"), ("/underground/", "ugrnd_ambient"),
     ("thunder", "storm"), ("pre_storm", "pre_storm"), ("storm_", "storm"), ("rain_storm", "storm"),
+    ("nature/whispers", "out_spooks"), ("/whispers", "out_spooks"),   # AudioExpansion surface whisper dread
+    ("_storm", "storm"), ("stormstrike", "storm"),                    # *_storm beds + storm-strike one-shots
+    ("ugrnd_whispers", "ugrnd_voices"),                              # dead in Audio Expansion; capture so the silence gate books them
     ("tuman", "background_tuman_open"), ("underground_", "ugrnd_ambient"),
 ]
 
@@ -395,6 +398,11 @@ def _base_dedup(merged):
     hit = dict(zip(uniq, sp.pmap(base_hit, list(uniq), sp.DEF_JOBS)))
     n_md5 = sum(1 for v in hit.values() if v == "md5")
     n_fp = sum(1 for v in hit.values() if v == "fp")
+    # Record the source hashes dropped as base-dups so the ledger books them by hash. The
+    # ledger's own recheck is fingerprint-only, so it misses the re-encodes this stage caught
+    # with fp + PCM xcorr; without this record those show as false UNUSED-DARK.
+    (HERE / "base_dropped.json").write_text(
+        json.dumps(sorted({uniq[a] for a, v in hit.items() if v})), encoding="utf-8")
     for chan in merged:
         merged[chan]["chosen"] = [c for c in merged[chan]["chosen"] if hit[c["abs"]] is None]
     print(f"base-dedup: dropped {n_md5} md5 + {n_fp} acoustic re-encodes the install already plays "
@@ -438,6 +446,8 @@ def _silence_gate(merged):
         return (m is None) or (m.group(1) == "-inf")      # unmeasurable or true silence
     paths = list({c["abs"] for chan in merged for c in merged[chan]["chosen"]})
     dead = {a for a, d in zip(paths, sp.pmap(is_dead, paths, sp.DEF_JOBS)) if d}
+    (HERE / "silence_dropped.json").write_text(
+        json.dumps(sorted({file_hash(a) for a in dead})), encoding="utf-8")
     n = 0
     for chan in merged:
         before = len(merged[chan]["chosen"])
@@ -1352,13 +1362,18 @@ def cmd_ledger(a):
     chosen = {}                                        # source hash -> (ch, stem)
     for ch, c in _iter_chosen(mc):
         chosen[file_hash(c["abs"])] = (ch, c["stem"])
-    deployed = set()                                   # hashes actually shipped
-    zs = GDATA / "sounds/zs"
-    for f in zs.rglob("*.ogg"):
-        deployed.add(file_hash(f))
+    deployed = set()                                   # AUDIO hashes actually shipped - n108
+    zs = GDATA / "sounds/zs"                            # rewrites comment headers, so a shipped
+    for f in zs.rglob("*.ogg"):                         # file's BYTES differ from source while its
+        deployed.add(_audio_hash(f))                    # audio does not; match blob-agnostic.
     base_md5, base_by_dur = _load_base_index()         # sounds the install already PLAYS
     ip = HERE / "intra_dups.json"                       # our own re-encodes the PCM dedup dropped
     intra_dropped = set(json.loads(ip.read_text())) if ip.exists() else set()
+    def _load_set(fn):
+        p = HERE / fn
+        return set(json.loads(p.read_text())) if p.exists() else set()
+    base_dropped = _load_set("base_dropped.json")       # dropped as install-plays-it (fp + xcorr)
+    silence_dropped = _load_set("silence_dropped.json") # dropped as dead/empty (true peak -inf)
     rows, counts, pending = [], collections.Counter(), []
     for name, gd in MODS:
         if name == "vanilla":
@@ -1373,10 +1388,10 @@ def cmd_ledger(a):
             dark = any(k in low for k in DARK_KW)
             emission = any(k in low for k in EMISSION_KW)
             under_root = low.split("/", 1)[0] in INCLUDE_ROOTS
-            if h in deployed:
+            if _audio_hash(f) in deployed:
                 st = "USED-shipped"
             elif h in chosen and role.get(chosen[h]) != "loop":
-                st = "USED-gained"
+                st = "USED-effect-unshipped"
             elif h in chosen:
                 st = "HELD-loop-surplus"
             elif emission:
@@ -1385,6 +1400,10 @@ def cmd_ledger(a):
                 st = "BASE-DUP-excluded"
             elif h in intra_dropped:                    # our own re-encode, deduped by cross-correlation
                 st = "INTRA-DUP-excluded"
+            elif h in silence_dropped:                  # dead/empty, dropped by the silence gate
+                st = "SILENCE-excluded"
+            elif h in base_dropped:                     # the install plays it, dropped by base-dedup
+                st = "BASE-DUP-excluded"
             elif dark and under_root:
                 info = sp.probe(str(f)) or {}
                 if info.get("sample_rate") != 44100:
