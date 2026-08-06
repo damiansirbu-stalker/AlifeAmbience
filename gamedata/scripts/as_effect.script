@@ -1,4 +1,4 @@
---- aa_effect: dynamic effect layer. Clones sound_ambient.update_ambient and owns the slot while a knob or trace is active.
+--- as_effect: dynamic effect layer. Clones sound_ambient.update_ambient and owns the slot while a knob or trace is active.
 
 local math_random, math_rad, math_cos, math_sin = math.random, math.rad, math.cos, math.sin
 local table_remove, table_concat = table.remove, table.concat
@@ -29,14 +29,14 @@ local function _period(v)
 end
 
 local _place_ini, _place_loaded = nil, false
---- Load the per-level placement map (aa_placement.ltx), once
+--- Load the per-level placement map (as_placement.ltx), once
 local function _placement()
     if not _place_loaded then
         _place_loaded = true
-        _place_ini = ini_file("scripts\\aa_placement.ltx")
-        aa_debug.dbg("placement file %s", _place_ini
-            and "loaded (scripts\\aa_placement.ltx)"
-            or "MISSING (scripts\\aa_placement.ltx) - no aa_ channels will be injected")
+        _place_ini = ini_file("scripts\\as_placement.ltx")
+        as_debug.dbg("placement file %s", _place_ini
+            and "loaded (scripts\\as_placement.ltx)"
+            or "MISSING (scripts\\as_placement.ltx) - no aa_ channels will be injected")
     end
     return _place_ini
 end
@@ -61,13 +61,13 @@ end
 local function reset_settings(level_name, ambient)
     snd_chanels = {}
     if not (level_name and ambient and ambient ~= "") then
-        aa_debug.dbg("reset SKIP: no level/ambient (lvl=%s amb=%s)",
-            aa_debug.show(level_name), aa_debug.show(ambient))
+        as_debug.dbg("reset SKIP: no level/ambient (lvl=%s amb=%s)",
+            as_debug.show(level_name), as_debug.show(ambient))
         return false
     end
     local ini_lvl = ini_file("environment\\ambients\\" .. level_name .. ".ltx")
     if not ini_lvl then
-        aa_debug.dbg("reset SKIP lvl=%s: no environment\\ambients\\%s.ltx", level_name, level_name)
+        as_debug.dbg("reset SKIP lvl=%s: no environment\\ambients\\%s.ltx", level_name, level_name)
         return false
     end
     local channels = parse_list(ini_lvl, ambient, "sound_channels_dynamic")
@@ -81,12 +81,12 @@ local function reset_settings(level_name, ambient)
         for i = 1, #ours do channels[#channels + 1] = ours[i] end
     end
     if #channels == 0 then
-        aa_debug.dbg("reset lvl=%s amb=%s: no channels (base=0, no placement)", level_name, ambient)
+        as_debug.dbg("reset lvl=%s amb=%s: no channels (base=0, no placement)", level_name, ambient)
         return false
     end
     local cached = {}
     local ini_snd = ini_file("environment\\sound_channels.ltx")
-    local ini_lay = ini_file("environment\\aa_channel_layers.ltx")
+    local ini_lay = ini_file("environment\\as_channel_layers.ltx")
     for i = 1, #channels do
         local ch = channels[i]
         local sounds = (not cached[ch]) and ini_snd:section_exist(ch) and parse_list(ini_snd, ch, "sounds")
@@ -106,9 +106,9 @@ local function reset_settings(level_name, ambient)
         end
     end
     tot_size = #snd_chanels
-    if aa_debug.on() then
+    if as_debug.on() then
         local dropped = _dropped(channels, cached, ini_snd)
-        aa_debug.dbg("reset lvl=%s amb=%s base=%d placed[%d]=%s built=%d drop[%d]=%s",
+        as_debug.dbg("reset lvl=%s amb=%s base=%d placed[%d]=%s built=%d drop[%d]=%s",
             level_name, ambient, base_n, n_ours, placed_str, tot_size, #dropped, table_concat(dropped, ","))
     end
     return true
@@ -164,11 +164,11 @@ local function play_channel(ch, tg)
     local period = ch.periods[math_random(4)] * rarity
     ch.next = tg + period
 
-    if aa_debug.on() then
-        aa_debug.dbg("effect lvl=%s pos=%.0f,%.0f,%.0f hour=%s amb=%s ch=%s layer=%s file=%s dist=%.1f max=%.0f per=%.0f vol=%.2f ug=%s inside=%s",
-            aa_debug.show(level.name()), pos.x, pos.y, pos.z, aa_debug.show(last_hour),
-            aa_debug.show(last_ambient), ch.name, aa_debug.show(ch.layer), file, dist, ch.max_dist, period, level_vol,
-            aa_debug.show(underground), aa_debug.show(inside))
+    if as_debug.on() then
+        as_debug.dbg("effect lvl=%s pos=%.0f,%.0f,%.0f hour=%s amb=%s ch=%s layer=%s file=%s dist=%.1f max=%.0f per=%.0f vol=%.2f ug=%s inside=%s",
+            as_debug.show(level.name()), pos.x, pos.y, pos.z, as_debug.show(last_hour),
+            as_debug.show(last_ambient), ch.name, as_debug.show(ch.layer), file, dist, ch.max_dist, period, level_vol,
+            as_debug.show(underground), as_debug.show(inside))
     end
 end
 
@@ -212,7 +212,7 @@ local _owned = false
 
 --- True when any knob is non-neutral or trace is on
 local function _feature_active()
-    if aa_debug.on() then return true end
+    if as_debug.on() then return true end
     if variety then return true end
     if rarity ~= 1 or distance ~= 1 or vol.global ~= 1 then return true end
     for i = 1, #LAYERS do if vol[LAYERS[i]] ~= 1 then return true end end
@@ -231,7 +231,7 @@ local function _apply_owned()
         last_level = nil
         last_ambient = nil
         next_idx = 0
-        aa_debug.info("aa_effect: owning update_ambient (a control feature is active)")
+        as_debug.info("as_effect: owning update_ambient (a control feature is active)")
     else
         if db.actor then
             local wm = level_weathers.get_weather_manager()
@@ -240,17 +240,17 @@ local function _apply_owned()
         end
         RemoveTimeEvent("sound_channels", "update_ambient")
         CreateTimeEvent("sound_channels", "update_ambient", 1, sound_ambient.update_ambient)
-        aa_debug.info("aa_effect: released update_ambient back to vanilla (neutral)")
+        as_debug.info("as_effect: released update_ambient back to vanilla (neutral)")
     end
 end
 
 --- Snapshot the MCM knobs, then apply ownership
 local function refresh()
-    vol.global = aa_mcm.get_config("vol_global") or 1
-    for i = 1, #LAYERS do vol[LAYERS[i]] = aa_mcm.get_config("vol_" .. LAYERS[i]) or 1 end
-    rarity = aa_mcm.get_config("rarity") or 1
-    distance = aa_mcm.get_config("distance") or 1
-    variety = aa_mcm.get_config("variety") ~= false
+    vol.global = as_mcm.get_config("vol_global") or 1
+    for i = 1, #LAYERS do vol[LAYERS[i]] = as_mcm.get_config("vol_" .. LAYERS[i]) or 1 end
+    rarity = as_mcm.get_config("rarity") or 1
+    distance = as_mcm.get_config("distance") or 1
+    variety = as_mcm.get_config("variety") ~= false
     opt_ambient_volume = (ui_options and ui_options.get("sound/environment/ambient_volume")) or 1
     _apply_owned()
 end

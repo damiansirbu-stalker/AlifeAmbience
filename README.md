@@ -1,9 +1,9 @@
-# AlifeAmbience: a dark-mood ambient overlay for STALKER Anomaly
+# AlifeSpooks: a dark-mood ambient overlay for STALKER Anomaly
 
 Gathers the dreadful, horror, and mournful sounds from several soundscape packs, keeps the best-quality copy of each, and layers them over your existing ambience: mutant growls, distant screams, underground dread, ominous drones, creeping wind, eerie animals, and oppressive weather.
 It overrides no ambient files, composing through DLTX, so it layers onto GAMMA, vanilla, or any other soundscape.
 
-[ModDB](TBD) | [Releases](https://github.com/damiansirbu-stalker/AlifeAmbience/releases) | [Bugs, suggestions](https://github.com/damiansirbu-stalker/AlifeAmbience/issues)
+[ModDB](TBD) | [Releases](https://github.com/damiansirbu-stalker/AlifeSpooks/releases) | [Bugs, suggestions](https://github.com/damiansirbu-stalker/AlifeSpooks/issues)
 
 Requires: Anomaly 1.5.3, a DLTX-capable engine (the modded exes / GAMMA). Content and configuration only, no scripts, no MCM.
 

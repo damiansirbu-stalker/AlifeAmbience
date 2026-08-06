@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <string_table>
-  <string id="ui_mcm_menu_aa">
-    <text>AlifeAmbience</text>
+  <string id="ui_mcm_menu_as">
+    <text>AlifeSpooks</text>
   </string>
   <string id="ui_mcm_menu_atmosphere">
     <text>Atmosphere</text>
@@ -9,154 +9,154 @@
   <string id="ui_mcm_menu_development">
     <text>Development</text>
   </string>
-  <string id="ui_mcm_aa_desc">
+  <string id="ui_mcm_as_desc">
     <text>Dark ambient overlay. Every control at 1.0 means no change from the base soundscape; move one and the runtime layer takes over the dynamic ambient to apply it.</text>
   </string>
-  <string id="ui_mcm_aa_hdr_layers">
+  <string id="ui_mcm_as_hdr_layers">
     <text>Effect volume by layer</text>
   </string>
-  <string id="ui_mcm_aa_vol_global">
+  <string id="ui_mcm_as_vol_global">
     <text>Effect volume (all)</text>
   </string>
-  <string id="ui_mcm_aa_vol_global_desc">
+  <string id="ui_mcm_as_vol_global_desc">
     <text>Volume multiplier for every dynamic ambient one-shot.</text>
   </string>
-  <string id="ui_mcm_aa_vol_spooks">
+  <string id="ui_mcm_as_vol_spooks">
     <text>Spooks volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_spooks_desc">
+  <string id="ui_mcm_as_vol_spooks_desc">
     <text>Volume of spook effects: whispers, presence, footsteps.</text>
   </string>
-  <string id="ui_mcm_aa_vol_screams">
+  <string id="ui_mcm_as_vol_screams">
     <text>Screams volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_screams_desc">
+  <string id="ui_mcm_as_vol_screams_desc">
     <text>Volume of distant human and creature screams.</text>
   </string>
-  <string id="ui_mcm_aa_vol_mutants">
+  <string id="ui_mcm_as_vol_mutants">
     <text>Mutants volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_mutants_desc">
+  <string id="ui_mcm_as_vol_mutants_desc">
     <text>Volume of distant mutant calls and growls.</text>
   </string>
-  <string id="ui_mcm_aa_vol_ambience">
+  <string id="ui_mcm_as_vol_ambience">
     <text>Dark ambience volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_ambience_desc">
+  <string id="ui_mcm_as_vol_ambience_desc">
     <text>Volume of low dread pads and drones.</text>
   </string>
-  <string id="ui_mcm_aa_vol_machines">
+  <string id="ui_mcm_as_vol_machines">
     <text>Machines volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_machines_desc">
+  <string id="ui_mcm_as_vol_machines_desc">
     <text>Volume of distant gunfire, drones, industry and radio.</text>
   </string>
-  <string id="ui_mcm_aa_vol_forest">
+  <string id="ui_mcm_as_vol_forest">
     <text>Forest volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_forest_desc">
+  <string id="ui_mcm_as_vol_forest_desc">
     <text>Volume of branch snaps, foliage rustle and woods startle.</text>
   </string>
-  <string id="ui_mcm_aa_vol_storm">
+  <string id="ui_mcm_as_vol_storm">
     <text>Storm volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_storm_desc">
+  <string id="ui_mcm_as_vol_storm_desc">
     <text>Volume of thunder and storm effects.</text>
   </string>
-  <string id="ui_mcm_aa_vol_wind">
+  <string id="ui_mcm_as_vol_wind">
     <text>Wind volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_wind_desc">
+  <string id="ui_mcm_as_vol_wind_desc">
     <text>Volume of wind and creeping gusts.</text>
   </string>
-  <string id="ui_mcm_aa_vol_rain">
+  <string id="ui_mcm_as_vol_rain">
     <text>Rain volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_rain_desc">
+  <string id="ui_mcm_as_vol_rain_desc">
     <text>Volume of rain effects.</text>
   </string>
-  <string id="ui_mcm_aa_vol_wildlife">
+  <string id="ui_mcm_as_vol_wildlife">
     <text>Wildlife volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_wildlife_desc">
+  <string id="ui_mcm_as_vol_wildlife_desc">
     <text>Volume of crow, dog and owl effects.</text>
   </string>
-  <string id="ui_mcm_aa_vol_underground">
+  <string id="ui_mcm_as_vol_underground">
     <text>Underground volume</text>
   </string>
-  <string id="ui_mcm_aa_vol_underground_desc">
+  <string id="ui_mcm_as_vol_underground_desc">
     <text>Volume of tunnel and lab effects: rats, metal, drips, machinery.</text>
   </string>
-  <string id="ui_mcm_aa_hdr_feel">
+  <string id="ui_mcm_as_hdr_feel">
     <text>Frequency and distance</text>
   </string>
-  <string id="ui_mcm_aa_rarity">
+  <string id="ui_mcm_as_rarity">
     <text>Rarity</text>
   </string>
-  <string id="ui_mcm_aa_rarity_desc">
+  <string id="ui_mcm_as_rarity_desc">
     <text>Wait between effects. Higher plays them less often.</text>
   </string>
-  <string id="ui_mcm_aa_distance">
+  <string id="ui_mcm_as_distance">
     <text>Distance</text>
   </string>
-  <string id="ui_mcm_aa_distance_desc">
+  <string id="ui_mcm_as_distance_desc">
     <text>How far effects spawn. Higher is farther and quieter.</text>
   </string>
-  <string id="ui_mcm_aa_loop_volume">
+  <string id="ui_mcm_as_loop_volume">
     <text>Loop bed volume</text>
   </string>
-  <string id="ui_mcm_aa_loop_volume_desc">
+  <string id="ui_mcm_as_loop_volume_desc">
     <text>Loudness of the continuous looped bed under everything.</text>
   </string>
-  <string id="ui_mcm_aa_variety">
+  <string id="ui_mcm_as_variety">
     <text>No-repeat variety</text>
   </string>
-  <string id="ui_mcm_aa_variety_desc">
+  <string id="ui_mcm_as_variety_desc">
     <text>Never replay a channel's recent sound, so its full variety is heard instead of the same few on repeat. Off falls back to the base random pick.</text>
   </string>
-  <string id="ui_mcm_aa_development_desc">
+  <string id="ui_mcm_as_development_desc">
     <text>Tracing for diagnosing the soundscape. No effect on gameplay.</text>
   </string>
-  <string id="ui_mcm_aa_hdr_logging">
+  <string id="ui_mcm_as_hdr_logging">
     <text>Logging</text>
   </string>
-  <string id="ui_mcm_aa_log_level">
+  <string id="ui_mcm_as_log_level">
     <text>Ambient trace</text>
   </string>
-  <string id="ui_mcm_aa_log_level_desc">
-    <text>Records each ambient play to alifeambience.log with channel, mood, file, distance, volume and context. Use to diagnose the soundscape.</text>
+  <string id="ui_mcm_as_log_level_desc">
+    <text>Records each ambient play to alifespooks.log with channel, mood, file, distance, volume and context. Use to diagnose the soundscape.</text>
   </string>
-  <string id="aa_development_log_level_lst_error">
+  <string id="as_development_log_level_lst_error">
     <text>Error</text>
   </string>
-  <string id="aa_development_log_level_lst_warn">
+  <string id="as_development_log_level_lst_warn">
     <text>Warn</text>
   </string>
-  <string id="aa_development_log_level_lst_info">
+  <string id="as_development_log_level_lst_info">
     <text>Info</text>
   </string>
-  <string id="aa_development_log_level_lst_debug">
+  <string id="as_development_log_level_lst_debug">
     <text>Debug</text>
   </string>
-  <string id="ui_mcm_aa_log_flush">
+  <string id="ui_mcm_as_log_flush">
     <text>Flush log each line</text>
   </string>
-  <string id="ui_mcm_aa_log_flush_desc">
+  <string id="ui_mcm_as_log_flush_desc">
     <text>Write every line immediately. Slower; use only when hunting a crash.</text>
   </string>
-  <string id="ui_mcm_aa_development_btn_reset_all">
+  <string id="ui_mcm_as_development_btn_reset_all">
     <text>Reset to defaults</text>
   </string>
-  <string id="ui_mcm_aa_development_btn_reset_all_desc">
-    <text>Restore all AlifeAmbience MCM settings to defaults. Use after upgrading from a version with a different MCM structure.</text>
+  <string id="ui_mcm_as_development_btn_reset_all_desc">
+    <text>Restore all AlifeSpooks MCM settings to defaults. Use after upgrading from a version with a different MCM structure.</text>
   </string>
-  <string id="ui_mcm_aa_development_reset_warning">
+  <string id="ui_mcm_as_development_reset_warning">
     <text>Warning: save or discard pending MCM changes first, otherwise they override the reset on the next Accept.</text>
   </string>
-  <string id="st_aa_reset_all_done">
-    <text>AlifeAmbience: all settings restored to defaults.</text>
+  <string id="st_as_reset_all_done">
+    <text>AlifeSpooks: all settings restored to defaults.</text>
   </string>
-  <string id="ui_mcm_aa_title">
-    <text>AlifeAmbience</text>
+  <string id="ui_mcm_as_title">
+    <text>AlifeSpooks</text>
   </string>
 </string_table>

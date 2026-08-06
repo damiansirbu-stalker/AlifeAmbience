@@ -2,7 +2,7 @@
 
 In development. Initial release.
 
-AlifeAmbience restores the old-school horror of the Zone that modern realism
+AlifeSpooks restores the old-school horror of the Zone that modern realism
 soundscapes stripped, and adds control over the in-world sound the Zone already plays.
 It works ON the game's own sound channels: it enriches the channels your install plays
 with net-new dark sounds, restores the horror the GAMMA soundscape strips, and defines

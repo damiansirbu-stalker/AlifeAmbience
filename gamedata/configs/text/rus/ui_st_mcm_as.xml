@@ -1,141 +1,141 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <string_table>
-  <string id="ui_mcm_menu_aa">
-    <text>AlifeAmbience</text>
+  <string id="ui_mcm_menu_as">
+    <text>AlifeSpooks</text>
   </string>
-  <string id="ui_mcm_aa_desc">
+  <string id="ui_mcm_as_desc">
     <text>Тёмный эмбиент поверх базового саундскейпа. Все параметры на 1.0 — без изменений; сдвиньте любой, и рантайм-слой перехватит динамический эмбиент, чтобы применить настройку.</text>
   </string>
-  <string id="ui_mcm_aa_hdr_layers">
+  <string id="ui_mcm_as_hdr_layers">
     <text>Громкость акцентов по слою</text>
   </string>
-  <string id="ui_mcm_aa_vol_global">
+  <string id="ui_mcm_as_vol_global">
     <text>Громкость акцентов (все)</text>
   </string>
-  <string id="ui_mcm_aa_vol_global_desc">
+  <string id="ui_mcm_as_vol_global_desc">
     <text>Множитель громкости для каждого одиночного динамического звука.</text>
   </string>
-  <string id="ui_mcm_aa_vol_spooks">
+  <string id="ui_mcm_as_vol_spooks">
     <text>Громкость призраков</text>
   </string>
-  <string id="ui_mcm_aa_vol_spooks_desc">
+  <string id="ui_mcm_as_vol_spooks_desc">
     <text>Громкость акцентов призраков: шёпот, присутствие, шаги.</text>
   </string>
-  <string id="ui_mcm_aa_vol_screams">
+  <string id="ui_mcm_as_vol_screams">
     <text>Громкость криков</text>
   </string>
-  <string id="ui_mcm_aa_vol_screams_desc">
+  <string id="ui_mcm_as_vol_screams_desc">
     <text>Громкость далёких человеческих и звериных криков.</text>
   </string>
-  <string id="ui_mcm_aa_vol_mutants">
+  <string id="ui_mcm_as_vol_mutants">
     <text>Громкость мутантов</text>
   </string>
-  <string id="ui_mcm_aa_vol_mutants_desc">
+  <string id="ui_mcm_as_vol_mutants_desc">
     <text>Громкость далёких зовов и рыков мутантов.</text>
   </string>
-  <string id="ui_mcm_aa_vol_ambience">
+  <string id="ui_mcm_as_vol_ambience">
     <text>Громкость тёмного эмбиента</text>
   </string>
-  <string id="ui_mcm_aa_vol_ambience_desc">
+  <string id="ui_mcm_as_vol_ambience_desc">
     <text>Громкость низких гнетущих подложек и гулов.</text>
   </string>
-  <string id="ui_mcm_aa_vol_machines">
+  <string id="ui_mcm_as_vol_machines">
     <text>Громкость машин</text>
   </string>
-  <string id="ui_mcm_aa_vol_machines_desc">
+  <string id="ui_mcm_as_vol_machines_desc">
     <text>Громкость далёкой стрельбы, дронов, промышленности и радио.</text>
   </string>
-  <string id="ui_mcm_aa_vol_forest">
+  <string id="ui_mcm_as_vol_forest">
     <text>Громкость леса</text>
   </string>
-  <string id="ui_mcm_aa_vol_forest_desc">
+  <string id="ui_mcm_as_vol_forest_desc">
     <text>Громкость треска веток, шелеста листвы и лесных вздрагиваний.</text>
   </string>
-  <string id="ui_mcm_aa_vol_storm">
+  <string id="ui_mcm_as_vol_storm">
     <text>Громкость грозы</text>
   </string>
-  <string id="ui_mcm_aa_vol_storm_desc">
+  <string id="ui_mcm_as_vol_storm_desc">
     <text>Громкость грома и грозовых акцентов.</text>
   </string>
-  <string id="ui_mcm_aa_vol_wind">
+  <string id="ui_mcm_as_vol_wind">
     <text>Громкость ветра</text>
   </string>
-  <string id="ui_mcm_aa_vol_wind_desc">
+  <string id="ui_mcm_as_vol_wind_desc">
     <text>Громкость ветра и крадущихся порывов.</text>
   </string>
-  <string id="ui_mcm_aa_vol_rain">
+  <string id="ui_mcm_as_vol_rain">
     <text>Громкость дождя</text>
   </string>
-  <string id="ui_mcm_aa_vol_rain_desc">
+  <string id="ui_mcm_as_vol_rain_desc">
     <text>Громкость дождевых акцентов.</text>
   </string>
-  <string id="ui_mcm_aa_vol_wildlife">
+  <string id="ui_mcm_as_vol_wildlife">
     <text>Громкость живности</text>
   </string>
-  <string id="ui_mcm_aa_vol_wildlife_desc">
+  <string id="ui_mcm_as_vol_wildlife_desc">
     <text>Громкость акцентов ворон, собак и сов.</text>
   </string>
-  <string id="ui_mcm_aa_vol_underground">
+  <string id="ui_mcm_as_vol_underground">
     <text>Громкость подземелья</text>
   </string>
-  <string id="ui_mcm_aa_vol_underground_desc">
+  <string id="ui_mcm_as_vol_underground_desc">
     <text>Громкость акцентов туннелей и лабораторий: крысы, металл, капли, механизмы.</text>
   </string>
-  <string id="ui_mcm_aa_hdr_feel">
+  <string id="ui_mcm_as_hdr_feel">
     <text>Частота и расстояние</text>
   </string>
-  <string id="ui_mcm_aa_rarity">
+  <string id="ui_mcm_as_rarity">
     <text>Редкость</text>
   </string>
-  <string id="ui_mcm_aa_rarity_desc">
+  <string id="ui_mcm_as_rarity_desc">
     <text>Пауза между акцентами. Выше — реже.</text>
   </string>
-  <string id="ui_mcm_aa_distance">
+  <string id="ui_mcm_as_distance">
     <text>Расстояние</text>
   </string>
-  <string id="ui_mcm_aa_distance_desc">
+  <string id="ui_mcm_as_distance_desc">
     <text>Как далеко возникают акценты. Выше — дальше и тише.</text>
   </string>
-  <string id="ui_mcm_aa_loop_volume">
+  <string id="ui_mcm_as_loop_volume">
     <text>Громкость фоновой текстуры</text>
   </string>
-  <string id="ui_mcm_aa_loop_volume_desc">
+  <string id="ui_mcm_as_loop_volume_desc">
     <text>Громкость непрерывного зацикленного фона под всем остальным.</text>
   </string>
-  <string id="ui_mcm_aa_variety">
+  <string id="ui_mcm_as_variety">
     <text>Без повторов</text>
   </string>
-  <string id="ui_mcm_aa_variety_desc">
+  <string id="ui_mcm_as_variety_desc">
     <text>Никогда не проигрывать недавний звук канала, чтобы слышать всё его разнообразие, а не одни и те же немногие по кругу. Выкл. — базовый случайный выбор.</text>
   </string>
-  <string id="ui_mcm_aa_development_desc">
+  <string id="ui_mcm_as_development_desc">
     <text>Трассировка для диагностики звукового ландшафта. Не влияет на игровой процесс.</text>
   </string>
-  <string id="ui_mcm_aa_hdr_logging">
+  <string id="ui_mcm_as_hdr_logging">
     <text>Логирование</text>
   </string>
-  <string id="ui_mcm_aa_log_level">
+  <string id="ui_mcm_as_log_level">
     <text>Трассировка эмбиента</text>
   </string>
-  <string id="ui_mcm_aa_log_level_desc">
-    <text>Записывает каждое воспроизведение эмбиента в alifeambience.log: канал, настроение, файл, расстояние, громкость и контекст. Для диагностики саундскейпа.</text>
+  <string id="ui_mcm_as_log_level_desc">
+    <text>Записывает каждое воспроизведение эмбиента в alifespooks.log: канал, настроение, файл, расстояние, громкость и контекст. Для диагностики саундскейпа.</text>
   </string>
-  <string id="aa_development_log_level_lst_error">
+  <string id="as_development_log_level_lst_error">
     <text>Ошибки</text>
   </string>
-  <string id="aa_development_log_level_lst_warn">
+  <string id="as_development_log_level_lst_warn">
     <text>Предупреждения</text>
   </string>
-  <string id="aa_development_log_level_lst_info">
+  <string id="as_development_log_level_lst_info">
     <text>Инфо</text>
   </string>
-  <string id="aa_development_log_level_lst_debug">
+  <string id="as_development_log_level_lst_debug">
     <text>Отладка</text>
   </string>
-  <string id="ui_mcm_aa_log_flush">
+  <string id="ui_mcm_as_log_flush">
     <text>Сброс лога построчно</text>
   </string>
-  <string id="ui_mcm_aa_log_flush_desc">
+  <string id="ui_mcm_as_log_flush_desc">
     <text>Записывать каждую строку немедленно. Медленнее; только при поиске вылета.</text>
   </string>
   <string id="ui_mcm_menu_atmosphere">
@@ -144,19 +144,19 @@
   <string id="ui_mcm_menu_development">
     <text>Разработка</text>
   </string>
-  <string id="ui_mcm_aa_development_btn_reset_all">
+  <string id="ui_mcm_as_development_btn_reset_all">
     <text>Сбросить настройки</text>
   </string>
-  <string id="ui_mcm_aa_development_btn_reset_all_desc">
-    <text>Восстановить все настройки MCM AlifeAmbience по умолчанию. Используйте после обновления с версии с другой структурой MCM.</text>
+  <string id="ui_mcm_as_development_btn_reset_all_desc">
+    <text>Восстановить все настройки MCM AlifeSpooks по умолчанию. Используйте после обновления с версии с другой структурой MCM.</text>
   </string>
-  <string id="ui_mcm_aa_development_reset_warning">
+  <string id="ui_mcm_as_development_reset_warning">
     <text>Внимание: сначала сохраните или отмените несохранённые изменения MCM, иначе они переопределят сброс при следующем применении.</text>
   </string>
-  <string id="st_aa_reset_all_done">
-    <text>AlifeAmbience: все настройки сброшены к значениям по умолчанию.</text>
+  <string id="st_as_reset_all_done">
+    <text>AlifeSpooks: все настройки сброшены к значениям по умолчанию.</text>
   </string>
-  <string id="ui_mcm_aa_title">
-    <text>AlifeAmbience</text>
+  <string id="ui_mcm_as_title">
+    <text>AlifeSpooks</text>
   </string>
 </string_table>

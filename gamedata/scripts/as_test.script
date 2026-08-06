@@ -1,6 +1,6 @@
---- aa_test: AlifeAmbience playtest harness. Console-invoked via run_string, inert otherwise.
+--- as_test: AlifeSpooks playtest harness. Console-invoked via run_string, inert otherwise.
 
-aa_test = aa_test or {}
+as_test = as_test or {}
 
 local news_manager, ui_options, game_fast_travel = news_manager, ui_options, game_fast_travel
 
@@ -10,14 +10,14 @@ local function _tip(msg)
 end
 
 --- Unlock all fast-travel waypoints
-function aa_test.travel()
+function as_test.travel()
     ui_options.set("gameplay/fast_travel/state", 2)
     game_fast_travel.update_settings()
     _tip("fast travel: all waypoints unlocked")
 end
 
 --- Give money (default 100000)
-function aa_test.money(amount)
+function as_test.money(amount)
     local actor = db.actor
     if not actor then return end
     actor:give_money(amount or 100000)
@@ -25,7 +25,7 @@ function aa_test.money(amount)
 end
 
 --- Disable the northern psy fields so Radar / Red Forest are walkable
-function aa_test.north()
+function as_test.north()
     local actor = db.actor
     if not actor then return end
     actor:give_info_portion("bar_deactivate_radar_done")
@@ -34,8 +34,8 @@ function aa_test.north()
 end
 
 --- Unlock travel, give money, open the north
-function aa_test.all()
-    aa_test.travel()
-    aa_test.money(100000)
-    aa_test.north()
+function as_test.all()
+    as_test.travel()
+    as_test.money(100000)
+    as_test.north()
 end

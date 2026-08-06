@@ -1,10 +1,10 @@
-AlifeAmbience: dark horror ambience and in-world audio control for STALKER Anomaly / GAMMA, by Damian
+AlifeSpooks: dark horror ambience and in-world audio control for STALKER Anomaly / GAMMA, by Damian
 Version: next (xlibs optional; no modded exes required)
-GitHub: https://github.com/damiansirbu-stalker/AlifeAmbience
-Changelog: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/changelog
-Architecture: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/architecture.md
-Russian / Na russkom: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/readme_ru.txt
-Bugs, suggestions: https://github.com/damiansirbu-stalker/AlifeAmbience/issues
+GitHub: https://github.com/damiansirbu-stalker/AlifeSpooks
+Changelog: https://github.com/damiansirbu-stalker/AlifeSpooks/blob/main/doc/changelog
+Architecture: https://github.com/damiansirbu-stalker/AlifeSpooks/blob/main/doc/architecture.md
+Russian / Na russkom: https://github.com/damiansirbu-stalker/AlifeSpooks/blob/main/doc/readme_ru.txt
+Bugs, suggestions: https://github.com/damiansirbu-stalker/AlifeSpooks/issues
 
 Alife Collection:
 AlifeBalance: https://www.moddb.com/mods/stalker-anomaly/addons/alifebalance
@@ -17,7 +17,7 @@ AlifeTactics: https://www.moddb.com/mods/stalker-anomaly/addons/alifetactics
 ! Reset MCM settings to defaults after updating !
 
 The Zone used to be frightening. Modern soundscape mods sharpened its realism and, in
-the trade, stripped the horror. AlifeAmbience puts it back, and hands you a mixer for the
+the trade, stripped the horror. AlifeSpooks puts it back, and hands you a mixer for the
 in-world sound the Zone already plays.
 
 Why it is different:

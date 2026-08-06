@@ -1,6 +1,6 @@
-# AlifeAmbience - architecture and method
+# AlifeSpooks - architecture and method
 
-AlifeAmbience is a dark ambient layer over the untouched engine soundscape for S.T.A.L.K.E.R.
+AlifeSpooks is a dark ambient layer over the untouched engine soundscape for S.T.A.L.K.E.R.
 Anomaly / G.A.M.M.A. It gathers the dark, dreadful, and mournful sounds from several
 soundscape packs, measures each one, and composes two of its own layers (loop + effect) on
 top of whatever ambient setup is installed, using DLTX. It does not replace the ambient
@@ -13,11 +13,11 @@ every number below is reproduced by a subcommand of it, not chosen by hand.
 
 The engine primitive is the CHANNEL (`sound_channels.ltx`): a named channel with
 settings (distance, four periods, indoor, height) and a `sounds=` list; presets switch
-channels on per (level, time, weather) section via `sound_channels_dynamic`. AlifeAmbience
+channels on per (level, time, weather) section via `sound_channels_dynamic`. AlifeSpooks
 adds two layers, split by how a sound behaves, decided per file by measurement (below):
 
-- LOOP - continuous LOOPED beds (drones, whispers, fog, wind, rain, tunnels). One bed at a time by context, low, crossfaded. `xr_sound.play_sound_looped` + `set_volume_sound_looped`, native volume, no engine hook. Driven by `gamedata/scripts/aa_loop.script`, six pools: wind, dread, fog, stormrain, and underground split lab vs sewer.
-- EFFECT - dynamic ONE-SHOT scares. Instead of shipping its own parallel channels, AlifeAmbience works ON the engine's own channels, via DLTX `@[channel]` (safe create-or-override) with `>sounds` (append), routed per source channel:
+- LOOP - continuous LOOPED beds (drones, whispers, fog, wind, rain, tunnels). One bed at a time by context, low, crossfaded. `xr_sound.play_sound_looped` + `set_volume_sound_looped`, native volume, no engine hook. Driven by `gamedata/scripts/as_loop.script`, six pools: wind, dread, fog, stormrain, and underground split lab vs sewer.
+- EFFECT - dynamic ONE-SHOT scares. Instead of shipping its own parallel channels, AlifeSpooks works ON the engine's own channels, via DLTX `@[channel]` (safe create-or-override) with `>sounds` (append), routed per source channel:
   - ENRICH - a channel BOTH installs play (`out_spooks`, the `ugrnd_*` set, `out_drone`, ...): append our net-new sounds to it. No new channel, no preset change, no added density - it already plays where the base plays it, now with more variety.
   - RESTORE - a channel vanilla plays but the GAMMA winner (Dark Signal) STRIPS (`out_mutants`, `out_screams`, `out_gunfire`): define it + re-add it to the presets, restoring the horror GAMMA removed.
   - DEFINE - a purpose no live base channel provides (forest creaks, rain, the distant spook variants, creeping wind): our own self-contained `aa_<channel>` with full settings, placed in the presets. Install-independent, so it behaves the same on Anomaly and GAMMA.
@@ -50,7 +50,7 @@ provenance every shipped file -> its origin          -> provenance.tsv
 - plan (`cmd_plan`): pool each dark channel's sounds and walk the FOLDER TREES (`DARK_FILL`), because the packs ship far more dark content than any channel references; resolve, gate on codec+rate, then DEDUP each channel to one copy per distinct recording - md5, then Chromaprint to propose candidates, then PCM cross-correlation to decide (see Deduplication below). Then BASE-DEDUP: drop any sound the install already plays (`_base_dedup`), fingerprint-matched and cross-correlation-confirmed against the winner-resolved base index. Output `merged_channels.json`, the net-new dark corpus.
 - classify (`cmd_classify`): measure every pooled sound and assign its role (below).
 - loudness (`cmd_loudness`): measure integrated loudness and flag per-group outliers (below).
-- deploy (`cmd_deploy`): route each source channel enrich/restore/define (above), emit the audio to `zs\<channel>\N.ogg`, the DLTX `mod_sound_channels_alifeambience.ltx` (channel defs), `aa_channel_layers.ltx` (the channel->layer map), `aa_placement.ltx` (the per-level channel placement the clone reads, via `write_placement`), and the loop pools. Deterministic - the shipped `N.ogg` numbering is a pure function of the JSON inputs, so provenance is recoverable.
+- deploy (`cmd_deploy`): route each source channel enrich/restore/define (above), emit the audio to `zs\<channel>\N.ogg`, the DLTX `mod_sound_channels_alifespooks.ltx` (channel defs), `aa_channel_layers.ltx` (the channel->layer map), `as_placement.ltx` (the per-level channel placement the clone reads, via `write_placement`), and the loop pools. Deterministic - the shipped `N.ogg` numbering is a pure function of the JSON inputs, so provenance is recoverable.
 - ledger (`cmd_ledger`) and provenance (`cmd_provenance`): the proofs (below).
 
 ## Measurement and signal analysis (the techniques)
@@ -111,13 +111,13 @@ how the pack authors used the sounds, not invented:
 - Two lore overrides, cross-checked against S.T.A.L.K.E.R. canon: the underground labs (`environment_underground`/`_more`/`_x18`) get underground-layer channels in indoor sections only; the haunted `environment_whisper` drops wildlife and people.
 - DENSITY BUDGET: the placed channels are capped so the winner's base channel count + our additions never exceeds `SECTION_MAX` (13, vanilla's observed per-section ceiling). Over budget, channels drop by `LAYER_ORDER` - dread-core kept, wildlife and rain first out. Because enrich adds no channels, the total tracks a vanilla-like density.
 
-DELIVERY - the clone, not DLTX presets. DLTX cannot patch the ambient presets: the engine opens the per-level stub (`environment\ambients\<level>.ltx`) and `#include`s the preset, and DLTX only merges overlays into the file opened directly, never into an `#include`d one (the root-file rule, `doc/library/modding/dltx.md`). So `write_placement` emits the placement per LEVEL to `configs/scripts/aa_placement.ltx` - resolving each level to its preset the way Dark Signal binds it (`l02_garbage` -> `environment_garbage`; underground falls back to vanilla's stub) - and the clone (`aa_effect.reset_settings`) reads it and appends our channels to the section's list at the read. Our channels are defined in the DLTX-merged `sound_channels.ltx`, so they build and play exactly like a base channel. Built for the GAMMA / Dark-Signal base; on other installs the clone still injects (best-effort).
+DELIVERY - the clone, not DLTX presets. DLTX cannot patch the ambient presets: the engine opens the per-level stub (`environment\ambients\<level>.ltx`) and `#include`s the preset, and DLTX only merges overlays into the file opened directly, never into an `#include`d one (the root-file rule, `doc/library/modding/dltx.md`). So `write_placement` emits the placement per LEVEL to `configs/scripts/as_placement.ltx` - resolving each level to its preset the way Dark Signal binds it (`l02_garbage` -> `environment_garbage`; underground falls back to vanilla's stub) - and the clone (`as_effect.reset_settings`) reads it and appends our channels to the section's list at the read. Our channels are defined in the DLTX-merged `sound_channels.ltx`, so they build and play exactly like a base channel. Built for the GAMMA / Dark-Signal base; on other installs the clone still injects (best-effort).
 
 Every placed and enriched channel maps to one of 11 LAYERS (`aa_channel_layers.ltx`,
 generated from `layer_of`): spooks, screams, mutants, ambience, machines, forest, storm,
 wind, rain, wildlife, underground. The layer is the pure-purpose group; it drives the
 per-layer MCM volume and the density budget. It is DATA in the map, never encoded in a
-channel name (`aa_effect` reads it via `r_string_ex`). The map also lists the base's OWN
+channel name (`as_effect` reads it via `r_string_ex`). The map also lists the base's OWN
 dark channels the install plays (e.g. `ugrnd_voices`, `x18`, base `storm`), so a layer's
 volume governs the WHOLE dark soundscape - base channels and ours together, not only our
 additions.
@@ -129,9 +129,9 @@ DEPLOYED play is then evolved so a big corpus is actually heard, not 10% of it 9
 time. Two mechanisms:
 
 - BUILD-TIME period tuning (`_tune_period`, define channels): the played period is set `>= sound duration + a gap` so a long sound never overlaps itself (a 12s storm on a 5s period is a wall, not an effect), then scaled by channel size so a thin channel fires proportionally less (its handful is spread, not spammed) while a rich channel keeps the discrete rate. Storm 5000 -> 21000 ms; the 3-sound night ambience 10000 -> 64200 ms. This is why the source period and the deployed period differ - provenance holds the source, git holds the evolution.
-- RUNTIME no-repeat (`aa_effect.pick_sound`): because the mod owns the play loop, each channel keeps a ring of its last few picks and re-rolls until one is fresh, so a channel never replays a recent sound - never the same call twice, even in a channel placed across many sections. A default-on MCM toggle; off falls back to base random. The recent window is capped below the sound count, so the pick always terminates.
+- RUNTIME no-repeat (`as_effect.pick_sound`): because the mod owns the play loop, each channel keeps a ring of its last few picks and re-rolls until one is fresh, so a channel never replays a recent sound - never the same call twice, even in a channel placed across many sections. A default-on MCM toggle; off falls back to base random. The recent window is capped below the sound count, so the pick always terminates.
 
-The loop bed follows context at runtime (`aa_loop.script`): underground (engine
+The loop bed follows context at runtime (`as_loop.script`): underground (engine
 `underground` event) - splitting the lab pool from the sewer pool by `level.name()`
 against the game's own X-Lab level names - then weather (storm/rain, then fog), then
 time of day (the dread drone-bed dusk-to-dawn, the lighter wind-bed by day, via
@@ -149,7 +149,7 @@ time of day (the dread drone-bed dusk-to-dawn, the lighter wind-bed by day, via
 - Pooled 5487 -> deduped 2304 (md5, then Chromaprint candidates confirmed by PCM cross-correlation; the PCM stage caught 177 acoustic re-encodes md5 kept) -> BASE-DEDUP dropped 590 md5 + 123 cross-correlation-confirmed the install plays -> 1487 NET-NEW dark sounds kept.
 - Classified: 980 effect, 507 loop (vocals forced effect).
 - EFFECT: 44 channels - 10 enrich (into base channels), 3 restore (`out_mutants`/`out_screams`/`out_gunfire`), 31 define (`aa_<channel>`). No parallel mood channels; each channel keeps its real name and its VERBATIM source settings. Every channel maps to one of 11 layers via `aa_channel_layers.ltx`.
-- Placement: restore/define channels placed per evidence + lore, density-capped to `SECTION_MAX` 13. Enrich channels add sounds, not channels, so they carry no density cost. Delivered per level via `aa_placement.ltx`, read and injected by the clone (`aa_effect.reset_settings`).
+- Placement: restore/define channels placed per evidence + lore, density-capped to `SECTION_MAX` 13. Enrich channels add sounds, not channels, so they carry no density cost. Delivered per level via `as_placement.ltx`, read and injected by the clone (`as_effect.reset_settings`).
 - Loops: each bed deduped across its pooled source channels (same waveform identity), then capped to TEX_CAP so the cap keeps distinct loops, not repeats.
 - Layer map: 47 our channels + 14 base-played dark channels = 61 mapped, so per-layer volume covers the whole dark soundscape.
 - Play tuning: deployed periods are discrete (>= duration + gap) and variety-weighted; storm's play share dropped 33% -> 20%. Runtime no-repeat variety is default-on.
@@ -177,7 +177,7 @@ time of day (the dread drone-bed dusk-to-dawn, the lighter wind-bed by day, via
 - I14 Pass-through is reachable. Turn no-repeat variety off with every knob at 1.0 and the trace off, and the mod hands the slot back to vanilla untouched. No-repeat variety is DEFAULT-ON, so out of the box the clone owns the loop - a small always-on cost for the variety it buys.
 - I15 Crystallize the verbatim, evolve the play. The source settings are kept exactly in `provenance.tsv`; the deployed period is tuned (discrete `>= duration + gap`, variety-weighted by channel size) so the corpus is heard, not 10% of it 90% of the time.
 - I16 Never the same sound twice. The owned play loop keeps a per-channel ring of recent picks and re-rolls until fresh; the window is capped below the sound count so the pick always terminates.
-- I17 Placement is delivered to the clone, not the presets. DLTX cannot patch an `#include`d ambient preset (the root-file rule, `doc/library/modding/dltx.md`), so `write_placement` emits `aa_placement.ltx` per level and the clone appends our channels at the read (`aa_effect.reset_settings`). Built for the GAMMA / Dark-Signal base; other installs get the same injection, best-effort.
+- I17 Placement is delivered to the clone, not the presets. DLTX cannot patch an `#include`d ambient preset (the root-file rule, `doc/library/modding/dltx.md`), so `write_placement` emits `as_placement.ltx` per level and the clone appends our channels at the read (`as_effect.reset_settings`). Built for the GAMMA / Dark-Signal base; other installs get the same injection, best-effort.
 - I18 The owned clone never blocks or plays out of context. It resets on hour, LEVEL, or weather change (a sound never fires on the wrong level), and guards every value an engine call needs: nil/zero period, missing distance, empty sounds, nil actor, nil weather manager.
 
 ## Tools and data artifacts
@@ -201,13 +201,13 @@ buildable source (tool + docs + the audio).
 
 Scripts add control, an in-game trace, and the MCM over the atmosphere layer, mirroring the
 alife-family pattern (`at_mcm`/`at_debug`/`xmcm`/`xlog`). All are guarded: without xlibs
-they degrade to no-ops and the mod runs content-only on any Anomaly. `_aa_deps.script` is a
+they degrade to no-ops and the mod runs content-only on any Anomaly. `_as_deps.script` is a
 SOFT xlibs check (`is_compatible`, family deps format): it warns when xlibs is present but
 older than the floor, and never aborts, so a stock install still runs content-only.
 
-- `aa_effect.script` (Atmosphere) owns the dynamic-ambient play whenever a feature is active - and no-repeat variety is default-on, so it normally owns. The vanilla one-shot loop is `sound_ambient.update_ambient`, a `CreateTimeEvent` action dispatched by stored function value (`_g.script:374`) into an EMPTY slot only (`:345`), with no callback and file-local state (`snd_chanels`/`next_idx`/`opt`) no other script can read. The only Lua path in is `RemoveTimeEvent` then `CreateTimeEvent` of a faithful clone (own state, public API only) with per-layer volume/rarity/distance knobs, the no-repeat picker, and trace at the vanilla injection points. Each played channel's layer comes from `aa_channel_layers.ltx` (`r_string_ex`), so even a base channel the mod merely enriched is volume-controlled. The clone is stricter than vanilla for correctness (I18): it resets on hour, LEVEL, or weather change (vanilla resets on hour only, so a same-hour level load leaves the old level's channels), it NEVER self-removes the slot (`_apply_owned` is the sole owner - a channel-less section ticks harmlessly instead of killing the layer), and it guards every value an engine call needs (nil/zero period, missing distance, empty sounds, nil actor, nil weather manager). GAMMA runs the vanilla script unmodified (verified). Pass-through is reachable (I14): variety off + knobs neutral + trace off hands the slot back.
-- `aa_debug.script` is the trace facade (mirrors `at_debug`): one logger, one integer gate. At DEBUG it records every effect (level, section, channel, layer, file, distance, volume) to `alifeambience.log`, so the soundscape is checked by observation and an Anomaly run diffs cleanly against a GAMMA run. Below DEBUG the off path marshals nothing and crosses no luabind bridge.
-- `aa_mcm.script` is one MCM page tree with two tabs, Atmosphere and Development (the at_mcm `_key_to_tab` + nested `path_builder`; the saved path is `aa/<tab>/<key>` and matches the tree). Atmosphere: per-layer volume (11 layers) plus a global, rarity, distance, loop volume, no-repeat variety. Development: trace log level, log flush, and a reset-to-defaults button (the at_mcm `functor_ui` + `_apply_defaults` pattern). Every control is 1.0 = pass-through. Each page opens with the `aa_mcm_banner` slide. Labels in EN + RU (`configs/text/{eng,rus}/ui_st_mcm_aa.xml`, windows-1251 for RU).
+- `as_effect.script` (Atmosphere) owns the dynamic-ambient play whenever a feature is active - and no-repeat variety is default-on, so it normally owns. The vanilla one-shot loop is `sound_ambient.update_ambient`, a `CreateTimeEvent` action dispatched by stored function value (`_g.script:374`) into an EMPTY slot only (`:345`), with no callback and file-local state (`snd_chanels`/`next_idx`/`opt`) no other script can read. The only Lua path in is `RemoveTimeEvent` then `CreateTimeEvent` of a faithful clone (own state, public API only) with per-layer volume/rarity/distance knobs, the no-repeat picker, and trace at the vanilla injection points. Each played channel's layer comes from `aa_channel_layers.ltx` (`r_string_ex`), so even a base channel the mod merely enriched is volume-controlled. The clone is stricter than vanilla for correctness (I18): it resets on hour, LEVEL, or weather change (vanilla resets on hour only, so a same-hour level load leaves the old level's channels), it NEVER self-removes the slot (`_apply_owned` is the sole owner - a channel-less section ticks harmlessly instead of killing the layer), and it guards every value an engine call needs (nil/zero period, missing distance, empty sounds, nil actor, nil weather manager). GAMMA runs the vanilla script unmodified (verified). Pass-through is reachable (I14): variety off + knobs neutral + trace off hands the slot back.
+- `as_debug.script` is the trace facade (mirrors `at_debug`): one logger, one integer gate. At DEBUG it records every effect (level, section, channel, layer, file, distance, volume) to `alifespooks.log`, so the soundscape is checked by observation and an Anomaly run diffs cleanly against a GAMMA run. Below DEBUG the off path marshals nothing and crosses no luabind bridge.
+- `as_mcm.script` is one MCM page tree with two tabs, Atmosphere and Development (the at_mcm `_key_to_tab` + nested `path_builder`; the saved path is `as/<tab>/<key>` and matches the tree). Atmosphere: per-layer volume (11 layers) plus a global, rarity, distance, loop volume, no-repeat variety. Development: trace log level, log flush, and a reset-to-defaults button (the at_mcm `functor_ui` + `_apply_defaults` pattern). Every control is 1.0 = pass-through. Each page opens with the `as_mcm_banner` slide. Labels in EN + RU (`configs/text/{eng,rus}/ui_st_mcm_as.xml`, windows-1251 for RU).
 
 ## Future (not built)
 
@@ -286,7 +286,7 @@ labs (indoor sections only) and whisper (dread + weather, no wildlife/people).
 | yantar | Yantar - dead lake/swamp, bunker, zombies | Ecologists+zombies | PSI, sickly, foggy | dread(psi)+human(sci drones)+weather+animal |
 | zaton | Zaton (CoP) - dried swamp, shipwrecks | loners/bandits | desolate wetland, foggy | full+weather+animal |
 
-Loop bed selection (`aa_loop.script want_bed`, one pool audible at a time): underground
+Loop bed selection (`as_loop.script want_bed`, one pool audible at a time): underground
 (engine event) splits LAB pool on the X-Lab level names vs SEWER pool elsewhere; then weather
 (storm/rain > 0.3 -> stormrain, foggy/tuman -> fog); then time of day (dusk-to-dawn dread bed,
 daylight wind bed). The lab/sewer split is per-CLASS, not per-level (per-level would be invented).

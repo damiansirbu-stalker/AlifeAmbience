@@ -1,4 +1,4 @@
---- aa_loop: AlifeAmbience continuous loop layer. One looped dark bed per context, crossfaded.
+--- as_loop: AlifeSpooks continuous loop layer. One looped dark bed per context, crossfaded.
 
 local ini_file, parse_list, next, pairs = ini_file, parse_list, next, pairs
 local math_random, math_min = math.random, math.min
@@ -6,19 +6,19 @@ local GetEvent, RegisterScriptCallback = GetEvent, RegisterScriptCallback
 
 local FADE_STEP    = 0.08
 local BASE_VOLUME  = 0.55
-local CFG          = "scripts\\aa_loop_beds.ltx"
+local CFG          = "scripts\\as_loop_beds.ltx"
 local SECTION_BEDS = "beds"
 
 --- Loop ceiling from MCM, or the default
 local function base_vol()
-    return (aa_mcm and aa_mcm.get_config and aa_mcm.get_config("loop_volume")) or BASE_VOLUME
+    return (as_mcm and as_mcm.get_config and as_mcm.get_config("loop_volume")) or BASE_VOLUME
 end
 
 local _beds   = nil
 local _cur    = nil
 local _target = nil
 
---- Load { bed = { theme, ... } } from aa_loop_beds.ltx, or nil if absent
+--- Load { bed = { theme, ... } } from as_loop_beds.ltx, or nil if absent
 local function load_beds()
     local ini = ini_file(CFG)
     if not ini then return nil end
@@ -66,9 +66,9 @@ local function actor_id() return db.actor and db.actor:id() or 0 end
 
 --- Trace a bed change with the player location
 local function trace_bed(bed, theme)
-    if not (aa_debug and aa_debug.on and aa_debug.on()) then return end
+    if not (as_debug and as_debug.on and as_debug.on()) then return end
     local pos = db.actor and db.actor:position()
-    aa_debug.dbg("loop bed=%s theme=%s lvl=%s pos=%.0f,%.0f,%.0f", bed, theme,
+    as_debug.dbg("loop bed=%s theme=%s lvl=%s pos=%.0f,%.0f,%.0f", bed, theme,
         (level.name and level.name()) or "?",
         pos and pos.x or 0, pos and pos.y or 0, pos and pos.z or 0)
 end
@@ -108,18 +108,18 @@ end
 local function on_first_update()
     _beds = load_beds()
     if not _beds then
-        if aa_debug and aa_debug.warn then
-            aa_debug.warn("loop: no beds (scripts\\aa_loop_beds.ltx missing/empty) - loop layer inert")
+        if as_debug and as_debug.warn then
+            as_debug.warn("loop: no beds (scripts\\as_loop_beds.ltx missing/empty) - loop layer inert")
         end
         return
     end
-    if aa_debug and aa_debug.on and aa_debug.on() then
+    if as_debug and as_debug.on and as_debug.on() then
         local count = 0
         for _ in pairs(_beds) do count = count + 1 end
-        aa_debug.dbg("loop: %d beds loaded", count)
+        as_debug.dbg("loop: %d beds loaded", count)
     end
-    CreateTimeEvent("aa_loop", "update", 1, function()
-        ResetTimeEvent("aa_loop", "update", 1)
+    CreateTimeEvent("as_loop", "update", 1, function()
+        ResetTimeEvent("as_loop", "update", 1)
         update_bed()
         return false
     end)

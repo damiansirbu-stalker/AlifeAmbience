@@ -27,7 +27,7 @@ MANUAL_FILL = {
 }
 LOWQ_BITRATE = 32000  # drop clearly junk-bitrate files when a channel has better
 
-# Dark scope (I9): the ONLY channels AlifeAmbience keeps. Everything else in the
+# Dark scope (I9): the ONLY channels AlifeSpooks keeps. Everything else in the
 # packs (generic daytime life, neutral beds, plain wind) is left to the base
 # ambience. Emission (blowout_*, emission_wind) is a separate system, never touched.
 # Grouped by family - the same grouping seeds the runtime per-family policy later.
@@ -587,7 +587,7 @@ def parse_presets(gamedata):
     return out
 
 
-MOD = HERE.parent                      # AlifeAmbience repo root
+MOD = HERE.parent                      # AlifeSpooks repo root
 GDATA = MOD / "gamedata"
 ENV = GDATA / "configs/environment"
 SND = GDATA / "sounds/zs"              # zs\<channel>\N.ogg and zs\loop\<bed>\N.ogg
@@ -802,7 +802,7 @@ def _emit_audio(entry, dst, gain):
 # Each effect channel keeps its VERBATIM source settings - no median. Channels are grouped
 # by (mood, exact-settings-tuple): one deployed channel aa_eff_<mood>_<n> per distinct tuple,
 # so a source channel's period/distance/indoor/height survive exactly (provenance-faithful).
-# The mood is only a tag for the MCM knobs; aa_effect reads it off the <mood> in the name.
+# The mood is only a tag for the MCM knobs; as_effect reads it off the <mood> in the name.
 def _chan_settings(lines):
     d = {}
     for ln in lines or []:
@@ -837,7 +837,7 @@ def _settings_key(ch):
 # A LAYER is a pure-purpose group of channels. Each deployed channel belongs to
 # exactly one; the layer drives its MCM volume slider and the per-section density
 # budget. Named for what the sound IS. layer_of is the single source of truth; the
-# deploy materialises it to aa_channel_layers.ltx so aa_effect reads it, never a name.
+# deploy materialises it to as_channel_layers.ltx so as_effect reads it, never a name.
 LAYERS = ["spooks", "screams", "mutants", "ambience", "machines", "forest",
           "storm", "wind", "rain", "wildlife", "underground"]
 # emission priority when a section is over the density budget: dread-core first,
@@ -975,8 +975,8 @@ def deploy_loop(root, loops, gain):
         for i, nm in enumerate(names, 1):
             themes += [f"[{nm}]", "type = looped", f"path = zs\\loop\\{bed}\\{i}", ""]
         beds_cfg += [f"\n[{bed}]", "themes = " + ", ".join(names)]
-    (root / "configs/misc/sound/mod_script_sound_aa.ltx").write_text("\n".join(themes), encoding="utf-8")
-    (root / "configs/scripts/aa_loop_beds.ltx").write_text("\n".join(beds_cfg) + "\n", encoding="utf-8")
+    (root / "configs/misc/sound/mod_script_sound_as.ltx").write_text("\n".join(themes), encoding="utf-8")
+    (root / "configs/scripts/as_loop_beds.ltx").write_text("\n".join(beds_cfg) + "\n", encoding="utf-8")
 
 
 def cmd_deploy(a):
@@ -1026,7 +1026,7 @@ def cmd_deploy(a):
         layer_lines.append(f"{dep} = {dep_layer[dep]}")
     # Also map the base's OWN dark channels (the install plays them, we ship no content for
     # them), so the per-layer volume governs the WHOLE dark soundscape, not just our additions.
-    # aa_effect applies the layer to every dynamic channel it plays, ours or the base's; a base
+    # as_effect applies the layer to every dynamic channel it plays, ours or the base's; a base
     # channel absent from the map would only obey the global knob. Beds are skipped (never a
     # dynamic effect). Non-effect nature stays out (DARK_KEEP is dark-scoped).
     mapped = {ln.split(" = ", 1)[0] for ln in layer_lines[2:]}
@@ -1035,8 +1035,8 @@ def cmd_deploy(a):
         if ch in mapped or "background" in ch or ch.endswith("_bkg_1"):
             continue
         layer_lines.append(f"{ch} = {layer_of(ch)}")
-    (env / "mod_sound_channels_alifeambience.ltx").write_text("\n".join(chan_lines), encoding="utf-8")
-    (env / "aa_channel_layers.ltx").write_text("\n".join(layer_lines) + "\n", encoding="utf-8")
+    (env / "mod_sound_channels_alifespooks.ltx").write_text("\n".join(chan_lines), encoding="utf-8")
+    (env / "as_channel_layers.ltx").write_text("\n".join(layer_lines) + "\n", encoding="utf-8")
 
     deploy_loop(root, loops, gain)
     write_placement(env, routing)
@@ -1044,7 +1044,7 @@ def cmd_deploy(a):
     # else it ships content that never plays (enrich channels are intentionally not placed -
     # they play via the base). Surfaced as a warning so a routing/evidence gap is not silent.
     placed = set()
-    pf = env.parent / "scripts" / "aa_placement.ltx"
+    pf = env.parent / "scripts" / "as_placement.ltx"
     if pf.exists():
         for line in pf.read_text(encoding="utf-8", errors="replace").splitlines():
             m = re.match(r"\s*\w+\s*=\s*(.+)", line)
@@ -1135,8 +1135,8 @@ def _level_preset_map():
 
 
 def write_placement(env, routing):
-    """Emit configs/scripts/aa_placement.ltx: per level, per section, our restore/define
-    channels. The clone (aa_effect.reset_settings) reads this and appends them to the
+    """Emit configs/scripts/as_placement.ltx: per level, per section, our restore/define
+    channels. The clone (as_effect.reset_settings) reads this and appends them to the
     section's channel list at runtime. This is the delivery that works: DLTX cannot patch
     the ambient presets, because the engine opens the per-level stub and #includes the preset,
     and DLTX does not merge into #included files (doc/library/modding/dltx.md, the root-file
@@ -1179,7 +1179,7 @@ def write_placement(env, routing):
             lines.extend(body)
             lines.append("")
     (env.parent / "scripts").mkdir(parents=True, exist_ok=True)
-    (env.parent / "scripts" / "aa_placement.ltx").write_text("\n".join(lines), encoding="utf-8")
+    (env.parent / "scripts" / "as_placement.ltx").write_text("\n".join(lines), encoding="utf-8")
 
 
 def cmd_placement(a):
@@ -1195,7 +1195,7 @@ def cmd_placement(a):
     if old.is_dir():
         for f in list(old.glob("mod_environment_*_alifeambience.ltx")):
             f.unlink(); n += 1
-    print(f"placement -> configs/scripts/aa_placement.ltx  (removed {n} inert preset patches)")
+    print(f"placement -> configs/scripts/as_placement.ltx  (removed {n} inert preset patches)")
 
 
 # --- ledger (the content-hash proof: UNUSED-DARK must be 0) -------------------
