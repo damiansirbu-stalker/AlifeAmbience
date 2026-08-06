@@ -14,3 +14,5 @@ tools/merged_channels.json
 tools/merged_presets.json
 tools/base_index.json
 tools/intra_dups.json
+tools/base_dropped.json
+tools/silence_dropped.json
