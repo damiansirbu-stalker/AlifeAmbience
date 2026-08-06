@@ -5,7 +5,7 @@ It overrides no ambient files, composing through DLTX, so it layers onto GAMMA, 
 
 [ModDB](TBD) | [Releases](https://github.com/damiansirbu-stalker/AlifeSpooks/releases) | [Bugs, suggestions](https://github.com/damiansirbu-stalker/AlifeSpooks/issues)
 
-Requires: Anomaly 1.5.3, a DLTX-capable engine (the modded exes / GAMMA). Content and configuration only, no scripts, no MCM.
+Requires: Anomaly 1.5.3, a DLTX-capable engine (the modded exes / GAMMA). xlibs is optional: it adds the MCM and the in-game trace; without it the content runs on its own.
 
 ## What it adds
 
