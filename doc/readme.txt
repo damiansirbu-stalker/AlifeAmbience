@@ -39,8 +39,16 @@ Why it is different:
   and exact settings.
 - Configurable. MCM volume control of the atmosphere per layer - spooks, screams, mutants,
   storm, wind, rain, underground, and more.
-- Growing. Original sounds recorded for this mod, and a scripted system that triggers
-  dread inside buildings and lairs, are in progress.
+- A director for the atmosphere. Today the mod curates each sound through a measured pipeline,
+  then places it and sets its level. Where it goes next is to conduct it. A director hooks into
+  Anomaly and reads where you stand as you play, inside or open, dark or under the sun, alone or
+  in a crowd, an empty village that should hold people, a lair with mutants near, a safe bar,
+  and shapes the soundscape to match: dread where it belongs, quiet where you are safe.
+- A larger library. The same measured pipeline is turned on the great STALKER standalones and
+  total conversions, Prosectors Project, OLR, Lost Alpha, OGSE, OGSR, NLC and more, to draw out
+  their horror sound and fold it in, deduped against what your install already plays.
+- Growing. The director and the wider library are in progress, along with original sounds
+  recorded for this mod and scripted dread inside buildings and lairs.
 
 One system in two MCM tabs - Atmosphere, and a Development tab that holds the trace controls
 and a reset-to-defaults button.
@@ -79,6 +87,12 @@ How it is built:
   On the current build that meant 5487 candidate sounds pulled and reduced to 1487 genuinely
   new dark sounds: the waveform test caught 177 re-encoded copies plain hashing kept, every
   sound the game already plays was excluded, and every included sound traces to its origin.
+
+Performance:
+  Performance comes first, ahead of any feature. AlifeSpooks composes the engine's own sound
+  channels and ships audio verbatim; it adds no per-frame work and changes nothing in the engine
+  bed. When a feature cannot fit that budget it is reworked, replaced, or removed with an X-Ray
+  engine modification rather than allowed to slow the game.
 
 Installation:
   A DLTX overlay plus a few scripts. Loads at any position, changes nothing in the engine
