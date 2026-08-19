@@ -1,0 +1,20 @@
+.idea/
+.claude/
+.deleted/
+AGENTS.md
+meta.ini
+*.tmp
+*.bak
+*~
+
+# build intermediates (reproducible via tools/merge.py)
+tools/__pycache__/
+tools/hashes.json
+tools/manifest.json
+tools/ledger_detail.json
+tools/merged_beds.json
+tools/classification.json
+tools/loudness_outliers.json
+tools/base_index.json
+tools/intra_dups.json
+tools/_reencoded/

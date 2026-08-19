@@ -1,0 +1,7 @@
+invariant	count	severity
+1 orphan files (on disk, unwired)	0	FAIL
+2 orphan channels (defined, unreferenced)	55	INFO
+3 dangling refs (referenced, undefined)	0	FAIL
+4 missing paths (channel -> no file)	0	FAIL
+5 level-routing errors	0	FAIL
+6 weather-matrix gaps	0	FAIL
