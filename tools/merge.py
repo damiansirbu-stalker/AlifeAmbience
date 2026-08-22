@@ -1,34 +1,37 @@
-"""AlifeAmbience bed union merge.
+"""AlifeAmbience: build the ambient soundscape from a best-of-breed pack roster, made audible by ear.
 
 Two orchestrator commands (shape shared with AlifeSpooks):
-  rebuild   full, destructive, RARE: wipe the deployed audio, regenerate the whole corpus from source
-  add       incremental, EVERYDAY: run the pipeline without wiping (deploy skips existing, fold/master/
-            level are hash-cached), so only net-new source content is processed
+  rebuild   full, destructive: wipe the deployed audio, regenerate the whole corpus from source.
+  add       incremental: run the pipeline WITHOUT wiping (deploy skips existing, fold/level hash-cached).
+            NOTE: graft APPENDS, so `add` is not idempotent - prefer `rebuild` after any config/roster change.
 Run: python merge.py <command|stage>   (bare = add).
 
 Stages, in order (each reads the previous stage's output on disk):
-  plan    hash every source ogg, dedup by PATH, resolve conflicts (master wins beds)  -> manifest.json
-  deploy  copy the chosen files + the spine sound-routing config subset               -> gamedata/
-  config  fix the stock channel defects, strip dead refs                              -> gamedata/ cfg
-  graft   wire the union content into channels + presets by terrain                   -> gamedata/ cfg
-  prune   delete every file no channel references                                     -> gamedata/sounds
-  fold    stereo -> mono (re-encode) + resample off-rate to 44100                     -> sounds, fold_blobs
-  master  floor blob min_distance to 0.5 x felt-far (lossless)                        -> sounds
-  level   floor base_volume so sample loudness reaches the target (lossless)          -> sounds, level_cache
-  verify  six-invariant config-closure ledger                                         -> ledger.tsv
-  audit   wired min/felt-far ratio + crushed share (acceptance gate)                  -> stdout
+  plan    hash the roster packs' oggs, dedup by PATH                                   -> manifest.json
+  deploy  copy the chosen files + the Amplified config subset (the spine)              -> gamedata/
+  config  fix stock channel defects, strip dead refs, cap spawn distance per category  -> gamedata/ cfg
+  graft   wire best-of-breed folders into channels + presets, add frogs/helicopter     -> gamedata/ cfg
+  prune   delete every file no channel references                                      -> gamedata/sounds
+  fold    stereo -> mono (re-encode) + resample off-rate to 44100                      -> sounds, fold_blobs
+  master  RETIRED no-op (its min floor moved into level, crest-inverted)               -> -
+  level   the two blob floors + the loudness ceiling, from one crest+LUFS pass         -> sounds, level_cache
+  cull    delete silent/dead files, strip their refs (never emptying a channel)        -> gamedata/sounds
+  verify  six-invariant config-closure ledger                                          -> ledger.tsv
+  audit   wired min/felt-far ratio + crushed share (acceptance gate)                   -> stdout
 
 Design:
-  - Ship the whole ambient union, deduped by PATH, at ORIGINAL source paths so AlifeSpooks's
-    path-based veto lines up.
-  - Spine = Amplified: its sound-routing config is the base; its sound copy is the largest.
-  - Path conflict (same relative path, different audio across packs): the AUDIBLE MASTER wins
-    (RETUNE / myRETUNE) for background bed loops; otherwise the spine wins.
-  - Never ship the bundled non-sound logic (surge/psi managers, weather graph, thunderbolts,
-    unrelated system mods) - that fights GAMMA / Atmospherics. Keep only the ambient sound config.
-  - Audibility (fold/master/level): the engine, not loudness, is why a merged pack is inaudible at
-    range - stereo plays 2D, min 1-2 is crushed by OpenAL, and quiet samples stay quiet. See
-    doc/library/anomaly/internals/sound-source-and-emitter.md.
+  - ROSTER, not a union: best-of-breed per category (Soundscape environment, Audio Expansion insects/
+    frogs, Immersive wind/helicopter) on the Amplified config spine. RETUNE/Antares dropped.
+  - Amplified is the config spine (the only pack with a complete level/weather config). The roster packs
+    SHARE deploy paths, so best-of-breed emerges from level (lift the salvageable) + cull (drop the dead),
+    not from folder selection.
+  - Never ship the bundled non-sound logic (surge/psi managers, weather graph, thunderbolts) - it fights
+    GAMMA / Atmospherics. Keep only the ambient sound config.
+  - Audibility is an ENGINE problem, not loudness: stereo plays 2D, min 1-2 is crushed by OpenAL, quiet
+    content stays quiet. Fixed by lossless blob edits keyed to an ear calibration: fold stereo->mono; a
+    crest-inverted min-distance floor (fixes the OpenAL rolloff); and a base_volume loudness BAND (floor
+    lifts quiet content, ceiling lowers hot content) to the ear-anchored -30/-36 floors and -24/-28
+    ceilings (bed / one-shot). See doc/library/anomaly/internals/sound-source-and-emitter.md.
 """
 import os, sys, json, hashlib, shutil, re, struct, subprocess, math, statistics
 
@@ -225,6 +228,41 @@ def _read(p):
     return open(p, encoding="utf-8", errors="replace").read()
 
 
+# Gentle per-category spawn-distance cap: a category's channels should not spawn TOO far (System B felt ~
+# max_distance/2). Channel-name keyed, lower-only, guarded so max stays > min (engine assert). Applied by the
+# pipeline, not by hand. Values are ear-tune starting points, like the loudness floors.
+SPAWN_CAP = {"wind": 130.0}   # wind 200 -> 130 (felt ~100 -> ~65): nudge the far ones without collapsing them
+
+
+def _cap_spawn_distances():
+    """Cap each channel's spawn max_distance to its category cap. Only lowers a max above the cap; never
+    raises; keeps max > min. Channel-name keyed (SPAWN_CAP)."""
+    capped = 0
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
+            continue
+        out, cap, cmin = [], None, 0.0
+        for ln in _read(f).split("\n"):
+            mh = re.match(r"\s*\[([^\]]+)\]", ln)
+            if mh:
+                nm = mh.group(1).lower()
+                cap = next((c for k, c in SPAWN_CAP.items() if k in nm), None)
+                cmin = 0.0
+            mn = re.match(r"\s*min_distance\s*=\s*([\d.]+)", ln, re.I)
+            if mn:
+                cmin = float(mn.group(1))
+            mx = re.match(r"(\s*max_distance\s*=\s*)([\d.]+)", ln, re.I)
+            if mx and cap is not None:
+                cur = float(mx.group(2))
+                lim = max(cap, cmin + 10.0)          # keep max > min (engine asserts max > min, strict)
+                if cur > lim:
+                    ln = f"{mx.group(1)}{lim:g}"
+                    capped += 1
+            out.append(ln)
+        open(f, "w", encoding="utf-8").write("\n".join(out))
+    print(f"  spawn-cap: capped {capped} channel max_distances (wind <= {SPAWN_CAP.get('wind')})")
+
+
 def cmd_config():
     """Fix the four stock dangling-ref defects (invariant 3) in the deployed presets."""
     fixed = {"rename": 0, "drop": 0}
@@ -291,9 +329,10 @@ def cmd_config():
         open(f, "w", encoding="utf-8").write("\n".join(out))
     print(f"  defect fix: wind_trong x{fixed['rename']}, bad-ref lists x{fixed['drop']}, "
           f"aambient x{typo}, dead channel refs stripped x{dead}")
+    _cap_spawn_distances()
 
 
-# ---- graft: wire the union content into the config (research-derived placement) ----
+# ---- graft: wire best-of-breed folders into the config (research-derived placement) ----
 # Placement is DERIVED, not chosen: the folder name states zone+time, the preset pattern states which
 # channel plays where, and most species already have a channel (enrich it). Evidence: environment_swamp
 # schedules bugs_swamp/birds_night by time; Audio Expansion ships insect_swamp_night, insect_morning,
@@ -686,7 +725,7 @@ def cmd_prune():
     print(f"  prune: removed {removed} files no channel references (all channels kept)")
 
 
-# ---- master: audibility pass (stereo fold + min_distance floor) --------------
+# ---- audibility: the engine facts behind the fold + the blob floors (fold stage, then floors in level) ----
 # Two engine facts (doc/library/anomaly/internals/sound-source-and-emitter.md) make most of a merged
 # ambient corpus INAUDIBLE at range even when the files sound fine at-ear:
 #   1. A STEREO ogg force-plays 2D at-ear at full volume, escaping both distance rolloffs (":258-268").
@@ -696,8 +735,8 @@ def cmd_prune():
 #      costs -26..-31 dB at a 25-50 m placement BEFORE the linear fade. base_volume can't rescue it.
 # The fix is two stages, in order: fold every stereo file to mono (re-encode, lossy - the one place
 # byte-for-byte is impossible since the engine only positions mono), then floor each file's blob
-# min_distance to K x its channel felt-far placement (Antares' practice, the ear-validated reference).
-# base_volume and max_distance stay the author's. Off-rate files (!=44100) are resampled in the fold.
+# min_distance to a crest-inverted ratio of its channel felt-far placement (the crest-min floor, applied in
+# level). base_volume and max_distance stay the author's. Off-rate files (!=44100) are resampled in the fold.
 
 FLOOR_MAX_FRAC = 0.8     # cap the min floor below blob max so a real fade band always survives.
 DEFAULT_MAX    = 100.0   # blob max for a blob-less file (corpus median from the survey).
@@ -728,7 +767,10 @@ LOUD_FRAC        = 0.7     # close this fraction of each file's deficit (partial
 LOUD_MASTER      = 0.5     # psSoundVEffects*psSoundVFactor at calibration
 LOUD_ROLLOFF     = 0.75    # psSoundRolloff (fixed, SoundRender_Core.cpp:19)
 DEAD_LUFS        = -60.0   # content LUFS at/below = silent/dead (ebur128 floors true silence at ~-70) -> cull
-# continuous-bed path keys get LOUD_FLOOR_BED; everything else is a one-shot
+LOUD_CEIL_BED    = -24.0   # eff ceiling, beds: lower a file delivering louder than this (mirror of the floor)
+LOUD_CEIL_1SHOT  = -28.0   # eff ceiling, one-shots: caps the hot tail (e.g. the loudest ~7% of crickets)
+LOUD_MINBV       = 0.20    # base_volume floor when LOWERING an over-loud file (never kill it)
+# continuous-bed path keys get LOUD_FLOOR_BED / LOUD_CEIL_BED; everything else is a one-shot
 BED_KEYS = ("wind", "storm", "rain", "thunder", "tuman", "background",
             "ambient_forest", "ambient_swamp", "drone", "rumble")
 
@@ -763,6 +805,29 @@ def _loudness_floor(bv, mn, mx, felt_far, lufs, floor):
     want = bv * (10 ** (LOUD_FRAC * (floor - eff) / 20.0))   # close FRAC of the deficit
     farcap = LOUD_FARCAP / (va * al * LOUD_MASTER)            # keep far gain below the 1.0 clamp
     return max(bv, min(want, farcap, LOUD_MAXBV))
+
+
+def _ceil_for(rel_lc):
+    """The eff loudness CEILING for a file (mirror of _loud_floor_for): beds tighter, one-shots wider."""
+    return LOUD_CEIL_BED if any(k in rel_lc for k in BED_KEYS) else LOUD_CEIL_1SHOT
+
+
+def _loudness_ceiling(bv, mn, mx, felt_far, lufs, ceil):
+    """Mirror of _loudness_floor: LOWER base_volume of a file delivering ABOVE the ceiling at felt-far,
+    partial (close FRAC of the excess), floored at LOUD_MINBV, never raised. Floor+ceiling form a per-
+    category band; a file is only ever in one arm (below floor OR above ceiling), so the two never fight."""
+    if lufs is None or felt_far >= mx:
+        return bv
+    va = max(0.0, min(1.0, (mx - felt_far) / (mx - mn))) if mx > mn else 0.0
+    d = min(max(felt_far, mn), mx)
+    al = mn / (mn + LOUD_ROLLOFF * (d - mn)) if d > mn else 1.0
+    if va * al <= 1e-6 or bv <= 0.0:
+        return bv
+    eff = lufs + 20.0 * math.log10(bv * va * al)
+    if eff <= ceil:
+        return bv
+    want = bv * (10 ** (LOUD_FRAC * (ceil - eff) / 20.0))    # ceil-eff < 0 -> lowers by FRAC of the excess
+    return min(bv, max(want, LOUD_MINBV))
 
 
 def _ogg_info(path):
@@ -1016,8 +1081,8 @@ def cmd_master():
 
 def cmd_audit():
     """Acceptance gate: over the WIRED files, report min/felt-far (the audibility ratio) and the crushed
-    share (<0.15 = whisper). Reference band (Antares): median ~0.30, p75 ~0.67, crushed ~39%. Blob reads
-    only, no ffmpeg."""
+    share (<0.15 = whisper). Target = the crest-inverted min floor's ratio band (0.40-0.60), so the median
+    should sit ~0.4-0.5 with few crushed. Blob reads only, no ffmpeg."""
     ff = _file_felt_far(_channel_bands())
     ratios = []
     crushed = 0
@@ -1040,7 +1105,7 @@ def cmd_audit():
     p25 = ratios[n // 4]
     p75 = ratios[(3 * n) // 4]
     print(f"  audit: wired={n}  min/felt-far median={med:.2f} p25={p25:.2f} p75={p75:.2f}  "
-          f"crushed(<0.15)={100 * crushed // n}%  (Antares ref: med 0.30, crushed 39%)")
+          f"crushed(<0.15)={100 * crushed // n}%  (target: crest-floor ratio {RATIO_LO}-{RATIO_HI}, low crushed)")
 
 
 # ---- level: the two blob floors (min-distance + base_volume loudness) ---------
@@ -1092,7 +1157,7 @@ def cmd_level():
     cache = json.load(open(LEVEL_CACHE)) if os.path.exists(LEVEL_CACHE) else {}
     fold_blobs = json.load(open(FOLD_BLOBS)) if os.path.exists(FOLD_BLOBS) else {}
     ff = _file_felt_far(_channel_bands())
-    total = wrote = floored = lifted = e_skip = u_skip = no_meas = measured = 0
+    total = wrote = floored = lifted = lowered = e_skip = u_skip = no_meas = measured = 0
     gains = []
     for full, rel_lc in _iter_deployed():
         total += 1
@@ -1122,12 +1187,18 @@ def cmd_level():
         if mn < floor:
             mn = floor
             floored += 1
-        if lufs is not None:                                          # (2) loudness floor needs content LUFS
+        if lufs is not None:                                          # (2) loudness band: floor lifts, ceiling lowers
             bvn = _loudness_floor(bv, mn, mx, felt, lufs, _loud_floor_for(rel_lc))
             if bvn > bv + 1e-9:
                 gains.append(20.0 * math.log10(bvn / bv))
                 bv = bvn
                 lifted += 1
+            else:                                                     # not lifted -> maybe over the ceiling
+                bvn = _loudness_ceiling(bv, mn, mx, felt, lufs, _ceil_for(rel_lc))
+                if bvn < bv - 1e-9:
+                    gains.append(20.0 * math.log10(bvn / bv))
+                    bv = bvn
+                    lowered += 1
         else:
             no_meas += 1
         if mx < mn + 0.1:                                             # engine (max-min) divide / loader safety
@@ -1137,8 +1208,8 @@ def cmd_level():
     json.dump(cache, open(LEVEL_CACHE, "w"))
     gm = statistics.median(gains) if gains else 0.0
     gx = max(gains) if gains else 0.0
-    print(f"  level: {total} files | min-floored {floored} (crest-inverted), loudness-lifted {lifted} "
-          f"(+{gm:.1f} dB median, up to +{gx:.1f} dB)")
+    print(f"  level: {total} files | min-floored {floored} (crest-inverted), loudness-lifted {lifted}, "
+          f"lowered {lowered} (over ceiling) (median {gm:+.1f} dB, up to {gx:+.1f} dB)")
     print(f"         wrote {wrote} blobs | skipped {e_skip} emission, {u_skip} unwired, "
           f"{no_meas} unmeasurable | measured {measured} new, {len(cache) - measured} cached")
 

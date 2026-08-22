@@ -1,20 +1,21 @@
-# AlifeAmbience: a living nature-and-weather ambient bed for STALKER Anomaly
+# AlifeAmbience: the most complete and most refined ambient soundscape for STALKER Anomaly
 
-Merges the best ambient beds from several soundscape packs into one audible, per-map, per-weather nature bed: birds, insects, wind, frogs, crows, foliage, rain, and the day/night ecosystem, leveled to one even loudness and wired to the weather so the Zone breathes.
+Every sound measured, curated, and engineered instead of crammed together. Content is chosen best-of-breed per category from the strongest soundscape packs and deduplicated by waveform, then made to actually sound in the Zone: folded to mono so everything positions in 3D, distance-corrected so each sound carries and decays naturally across its area, and loudness-banded to an ear-calibrated target so nothing is muffled or blaring. Birds, insects, wind, frogs, crows, foliage, rain, the helicopter, and the day/night ecosystem, wired to the weather so the Zone breathes.
 
 It is the bed counterpart to [AlifeSpooks](https://github.com/damiansirbu-stalker/AlifeSpooks): AlifeSpooks owns the horror one-shots and vetoes them out of the base channels; AlifeAmbience owns the audible living bed AlifeSpooks leaves alone. Run both for realism and horror at once.
 
 Requires: Anomaly 1.5.3, a DLTX-capable engine (the modded exes / GAMMA), and a weather mod whose ambient states the bed covers (Atmospherics out of the box).
 
-## What it does
+## What makes it different
 
-- A curated, deduplicated nature/weather bed built from the audible masters and the richest content across the source packs, not one pack picked whole.
-- Every bed leveled to one even loudness (the "dead calm-day air" of the stock packs is fixed), so the ambience is actually audible.
-- Wired to the weather engine: every map and every weather state the weather mod emits resolves to a bed, proven by a config-closure ledger, so no weather goes silent.
+- Best-of-breed, not a pile. Each category (wind, weather, birds, insects, frogs, foliage, helicopter) comes from the pack that measured best for it, not one pack taken whole. Dead, muffled, and redundant audio is culled, not kept.
+- Actually audible. The engine crushes most community ambience to a whisper at range and cannot position stereo at all. AlifeAmbience folds every file to mono, floors each file's distance reference so it carries, and levels loudness into an ear-calibrated band, all as lossless edits to the sound's own metadata.
+- Scientific, not guessed. Every file is profiled for loudness (LUFS) and transient shape (crest); the playback gain is verified against the X-Ray engine's own attenuation math; the targets come from a listening calibration.
+- Proven complete. A config-closure check gates every build: no map goes silent, no weather state goes silent, no reference dangles.
 
 ## How it is built
 
-A pipeline (`tools/`) merges each pack's beds, dedups by exact content, re-levels every file's loudness losslessly (the X-Ray gain field in the ogg comment, the same masterization AlifeSpooks uses), and reconciles the level + weather config into one closed set. A verifier proves the config closure before any build ships. See [architecture.md](doc/architecture.md).
+A reproducible pipeline (`tools/merge.py`) selects the roster, deduplicates by waveform, folds stereo to mono, floors each file's min-distance (crest-inverted, so a sustained tone carries and a transient stays near-field), levels loudness into a floor-and-ceiling band, culls the dead, and reconciles the level and weather config into one closed set. A closure verifier and an audibility audit gate every build. See [architecture.md](doc/architecture.md).
 
 ## Alife Collection
 
