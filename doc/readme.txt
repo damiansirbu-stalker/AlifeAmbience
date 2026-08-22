@@ -52,9 +52,10 @@ Install (MO2):
 1. Install xlibs
 2. Install AlifeAmbience
 3. Give it higher MO2 priority than any other ambient or soundscape mod, so its config wins
-4. Optional: MCM for the version footer and diagnostics. The game's own sound options set overall ambient loudness
+4. Keep a weather mod active whose ambient states AlifeAmbience covers. Atmospherics is the reference it is built and verified against, and covers every map and state out of the box
+5. Optional: MCM for the version footer and diagnostics. The game's own sound options set overall ambient loudness
 
-GAMMA players (the xlibs + Alife stack): disable the soundscape mods AlifeAmbience replaces, so nothing leaks through them:
+GAMMA players (the xlibs + Alife stack): GAMMA already ships Atmospherics, so the weather side is covered. Disable the soundscape mods AlifeAmbience replaces, so nothing leaks through:
 304- Dark Signal Weather and Ambiance Audio, 3- Soundscape Overhaul, G.A.M.M.A. Soundscape Overhaul, and G.A.M.M.A. Dark Signal Audio Lite. Run AlifeSpooks alongside for the horror layer.
 
 Uninstall (MO2):
