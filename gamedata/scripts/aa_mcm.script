@@ -1,0 +1,112 @@
+--- aa_mcm: MCM configuration for AlifeAmbience
+
+-- AlifeAmbience is a config-only ambient bed: it has no runtime gameplay knobs, so the menu is
+-- informational (the platform/version footer) plus the shared Development tab (log level + the ambient
+-- diagnostics toggle + reset). Structure and helpers are identical to the other mods so the tooling
+-- (xmcm.create_config, the platform footer, the reset button) reads the same everywhere.
+defaults = {
+    diag_ambient = false,
+    log_level = "WARN",
+}
+
+local RegisterScriptCallback = RegisterScriptCallback
+
+local _key_to_tab = {
+    diag_ambient  = "development",
+    log_level     = "development",
+    btn_reset_all = "development",
+}
+
+local function path_builder(key)
+    local tab = _key_to_tab[key] or "general"
+    return "aa/" .. tab .. "/" .. key
+end
+
+cfg, get_config, load_config = xmcm.create_config("aa", defaults, path_builder)
+
+-- functor_ui receives the UI_MCM instance as trailing arg (ui_mcm.script:1435); functor would receive
+-- nothing, and MCM 1.7.2fix leaves the file-local GUI nil on fresh opens, so ui_mcm.get_gui() returns
+-- nil. functor_ui sidesteps that. On_Cancel (not On_Discard) closes cleanly on all exe builds; see the
+-- other mods' MCM for the full rationale.
+local function _apply_defaults(gui, msg)
+    local config = axr_main.config
+    for k, v in pairs(defaults) do
+        config:w_value("mcm", path_builder(k), v)
+    end
+    config:save()
+    load_config()
+    if gui then
+        if gui.owner and gui.owner.SetMsg then
+            gui.owner:SetMsg(msg, 5)
+        end
+        if gui.On_Cancel then
+            gui:On_Cancel()
+        end
+    end
+    if db.actor then
+        news_manager.send_tip(db.actor, msg, nil, nil, 5000)
+    end
+end
+
+function btn_reset_all(gui)
+    _apply_defaults(gui, game.translate_string("st_aa_reset_all_done"))
+end
+
+local function _tab_header(desc_id)
+    return {
+        { id = "title", type = "slide", link = "aa_mcm_banner",
+            text = "ui_mcm_aa_title", size = {512, 50}, spacing = 20 },
+        { id = "desc", type = "desc", text = desc_id },
+        { id = "div_top", type = "line" },
+    }
+end
+
+local function _with_header(desc_id, entries)
+    local gr = _tab_header(desc_id)
+    for i = 1, #entries do gr[#gr + 1] = entries[i] end
+    return gr
+end
+
+function on_mcm_load()
+    return {
+        id = "aa",
+        gr = {
+            {
+                id = "general",
+                sh = true,
+                gr = _with_header("ui_mcm_aa_general_desc", {
+                    { id = "div_footer", type = "line" },
+                    { id = "platform", type = "desc", text = "ui_mcm_xmcm_footer",
+                        ui_hook_functor = { _aa_deps.platform_functor() }, clr = {255, 212, 201, 168} },
+                }),
+            },
+            {
+                id = "development",
+                sh = true,
+                gr = _with_header("ui_mcm_aa_development_desc", {
+                    { id = "hdr_logging", type = "desc", text = "ui_mcm_aa_hdr_logging", clr = {255, 200, 200, 200} },
+                    { id = "log_level", type = "list", val = 0, def = "WARN",
+                        content = {
+                            {"ERROR", "error"},
+                            {"WARN", "warn"},
+                            {"INFO", "info"},
+                            {"DEBUG", "debug"},
+                        },
+                    },
+                    { id = "div_diagnostics", type = "line" },
+                    { id = "hdr_diagnostics", type = "desc", text = "ui_mcm_aa_hdr_diagnostics", clr = {255, 200, 200, 200} },
+                    { id = "diag_ambient", type = "check", val = 1, def = false },
+                    { id = "div_reset", type = "line" },
+                    { id = "warn_reset", type = "desc", text = "ui_mcm_aa_development_reset_warning", clr = {255, 240, 200, 80} },
+                    { id = "btn_reset_all", type = "button", functor_ui = { btn_reset_all } },
+                }),
+            },
+        },
+    }
+end
+
+function on_game_start()
+    load_config()
+    RegisterScriptCallback("on_option_change", load_config)
+    RegisterScriptCallback("mcm_option_restore_default", load_config)
+end

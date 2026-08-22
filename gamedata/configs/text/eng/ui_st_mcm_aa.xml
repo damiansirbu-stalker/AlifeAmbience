@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+    <string id="ui_mcm_menu_aa">
+        <text>AlifeAmbience</text>
+    </string>
+
+    <string id="ui_mcm_menu_general">
+        <text>General</text>
+    </string>
+    <string id="ui_mcm_menu_development">
+        <text>Development</text>
+    </string>
+
+    <string id="ui_mcm_aa_title">
+        <text>AlifeAmbience</text>
+    </string>
+
+    <string id="ui_mcm_aa_general_desc">
+        <text>AlifeAmbience is a curated nature-and-weather ambient bed for the Zone. It merges the strongest ambient content from several soundscape packs into one set, reconciles the per-level and per-weather routing so every map in every weather state plays an audible living bed, and leaves the dread one-shots to AlifeSpooks. It ships only sound and configuration; there are no gameplay settings to tune here. The game's own ambient volume slider controls its loudness.</text>
+    </string>
+
+    <string id="ui_mcm_aa_development_desc">
+        <text>Diagnostic tools for inspecting the ambient wiring. Raise the log level, or enable the ambient diagnostics toggle, to write the active level, weather, and current ambient state, the per-state dynamic channel counts of the current preset, the active bed channel, and any dangling channel reference to alifeambience.log on load.</text>
+    </string>
+
+    <string id="ui_mcm_aa_hdr_logging">
+        <text>Logging</text>
+    </string>
+    <string id="ui_mcm_aa_development_log_level">
+        <text>Log level</text>
+    </string>
+    <string id="ui_mcm_aa_development_log_level_desc">
+        <text>Controls verbosity of alifeambience.log. ERROR logs faults only. WARN adds unexpected conditions. INFO adds startup and the platform line. DEBUG adds the full per-state channel-count dump. Default WARN is silent in normal play; DEBUG is for tuning or bug reports.</text>
+    </string>
+    <string id="aa_development_log_level_lst_error">
+        <text>Error</text>
+    </string>
+    <string id="aa_development_log_level_lst_warn">
+        <text>Warn</text>
+    </string>
+    <string id="aa_development_log_level_lst_info">
+        <text>Info</text>
+    </string>
+    <string id="aa_development_log_level_lst_debug">
+        <text>Debug</text>
+    </string>
+
+    <string id="ui_mcm_aa_hdr_diagnostics">
+        <text>Diagnostics</text>
+    </string>
+    <string id="ui_mcm_aa_development_diag_ambient">
+        <text>Log ambient wiring on load</text>
+    </string>
+    <string id="ui_mcm_aa_development_diag_ambient_desc">
+        <text>Writes the ambient wiring block to alifeambience.log after each save load: level, weather, current state, per-state dynamic channel counts, the active bed channel, and any dangling reference. Independent of log level. Call aa_diag.dump() from the console to re-run it at any time.</text>
+    </string>
+
+    <string id="ui_mcm_aa_development_btn_reset_all">
+        <text>Reset to defaults</text>
+    </string>
+    <string id="ui_mcm_aa_development_btn_reset_all_desc">
+        <text>Restore all AlifeAmbience MCM settings to factory defaults. Use after upgrading from a version with different MCM structure (the old settings remain as orphaned keys in the MCM storage file but no longer apply).</text>
+    </string>
+    <string id="ui_mcm_aa_development_reset_warning">
+        <text>Warning: save or discard pending MCM changes first; otherwise they override the reset on the next Accept.</text>
+    </string>
+
+    <string id="st_aa_reset_all_done">
+        <text>AlifeAmbience: all settings restored to defaults.</text>
+    </string>
+</string_table>

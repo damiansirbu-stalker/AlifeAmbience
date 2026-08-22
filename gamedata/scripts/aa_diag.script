@@ -1,0 +1,81 @@
+--- aa_diag: AlifeAmbience runtime wiring inspector. Debug-only, no gameplay.
+--- After the save loads (and on demand from the console via aa_diag.dump()), it logs the active ambient
+--- wiring so the soundscape can be inspected without hand-typed console commands: the level, weather, and
+--- current ambient state; the per-state dynamic channel counts of the current level's preset (the density
+--- picture that explains why one install fires more often than another); the bed channel for the active
+--- state and whether it resolves; and a live dangling-ref check (a referenced dynamic channel with no
+--- definition). Runs when DEBUG logging is on OR the Development "ambient diagnostics" toggle is set.
+
+local ini_file, parse_list, tostring = ini_file, parse_list, tostring
+local RegisterScriptCallback = RegisterScriptCallback
+
+-- The weather-state vocabulary the presets cover (Atmospherics = these 12). Order is the report order.
+local WEATHER_STATES = { "day", "morning", "evening", "night", "rain", "rain_day", "rain_night",
+                         "storm_day", "storm_night", "tuman", "tuman_night", "indoor_underground" }
+local CHANNELS_FILE = "environment\\sound_channels.ltx"
+
+local function _enabled()
+    return (aa_debug and aa_debug.on())
+        or (aa_mcm and aa_mcm.get_config and aa_mcm.get_config("diag_ambient"))
+end
+
+-- Count channels referenced by a state that have no definition in sound_channels.ltx (a live dangling
+-- ref = a scheduled channel that plays nothing).
+local function _count_dangling(chans, ini_snd)
+    local count = 0
+    for i = 1, #chans do
+        local defined = ini_snd:section_exist(chans[i])
+        if not defined then count = count + 1 end
+    end
+    return count
+end
+
+-- One DEBUG line per covered state: its dynamic channel count, its dangling-ref count, and an ACTIVE
+-- marker on the state the weather currently selects. This is the density picture.
+local function _report_states(ini_lvl, ini_snd, active)
+    for i = 1, #WEATHER_STATES do
+        local st = WEATHER_STATES[i]
+        local chans = ini_lvl:section_exist(st) and parse_list(ini_lvl, st, "sound_channels_dynamic")
+        if chans then
+            aa_debug.dbg("[DIAG]   %-16s dyn=%d dangling=%d%s",
+                st, #chans, _count_dangling(chans, ini_snd), (st == active) and "   <== ACTIVE" or "")
+        end
+    end
+end
+
+-- The continuous bed (System A sound_channels) for the active state, and whether it resolves.
+local function _report_bed(ini_lvl, ini_snd, state)
+    local bed = ini_lvl:section_exist(state) and parse_list(ini_lvl, state, "sound_channels")
+    local first = bed and bed[1]
+    if first then
+        aa_debug.info("[DIAG] active bed: %s (defined=%s)",
+            tostring(first), tostring(ini_snd:section_exist(first)))
+    end
+end
+
+--- Log the active ambient wiring block. Safe to call from the console: run_string aa_diag.dump()
+function dump()
+    if not (_enabled() and level.present() and db.actor) then return end
+    local level_name = level.name()
+    local weather    = level.get_weather and level.get_weather() or "?"
+    local wm         = level_weathers and level_weathers.get_weather_manager()
+    local state      = wm and tostring(wm:get_curr_ambient()) or "?"
+
+    aa_debug.info("[DIAG] level=%s weather=%s state=%s", tostring(level_name), tostring(weather), state)
+
+    local ini_lvl = ini_file("environment\\ambients\\" .. level_name .. ".ltx")
+    if not ini_lvl then
+        aa_debug.warn("[DIAG] no level ambient ltx for %s (bed/one-shots will not schedule)", tostring(level_name))
+        aa_debug.flush()
+        return
+    end
+
+    local ini_snd = ini_file(CHANNELS_FILE)
+    _report_states(ini_lvl, ini_snd, state)
+    _report_bed(ini_lvl, ini_snd, state)
+    aa_debug.flush()
+end
+
+function on_game_start()
+    RegisterScriptCallback("actor_on_first_update", dump)
+end

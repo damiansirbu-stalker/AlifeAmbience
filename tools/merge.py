@@ -1,24 +1,36 @@
 """AlifeAmbience bed union merge.
 
-Stages (each reads the previous stage's committed artifact):
-  plan    hash every source ambient ogg, dedup by waveform, resolve path conflicts   -> manifest.json
-  deploy  copy the chosen files + the sound-routing config subset                     -> gamedata/
-  config  fix the known stock defects in the deployed config                          -> gamedata/
-  verify  six-invariant config-closure ledger                                         -> ledger.tsv
-  prov    every shipped sound -> its origin pack + path                               -> provenance.tsv
+Two orchestrator commands (shape shared with AlifeSpooks):
+  rebuild   full, destructive, RARE: wipe the deployed audio, regenerate the whole corpus from source
+  add       incremental, EVERYDAY: run the pipeline without wiping (deploy skips existing, fold/master/
+            level are hash-cached), so only net-new source content is processed
+Run: python merge.py <command|stage>   (bare = add).
 
-Run: python merge.py <stage>   (or `all`). Hashes cache to tools/hashes.json (gitignored).
+Stages, in order (each reads the previous stage's output on disk):
+  plan    hash every source ogg, dedup by PATH, resolve conflicts (master wins beds)  -> manifest.json
+  deploy  copy the chosen files + the spine sound-routing config subset               -> gamedata/
+  config  fix the stock channel defects, strip dead refs                              -> gamedata/ cfg
+  graft   wire the union content into channels + presets by terrain                   -> gamedata/ cfg
+  prune   delete every file no channel references                                     -> gamedata/sounds
+  fold    stereo -> mono (re-encode) + resample off-rate to 44100                     -> sounds, fold_blobs
+  master  floor blob min_distance to 0.5 x felt-far (lossless)                        -> sounds
+  level   floor base_volume so sample loudness reaches the target (lossless)          -> sounds, level_cache
+  verify  six-invariant config-closure ledger                                         -> ledger.tsv
+  audit   wired min/felt-far ratio + crushed share (acceptance gate)                  -> stdout
 
 Design:
-  - Ship the whole ambient union, deduped by whole-file md5, at ORIGINAL source paths so
-    AlifeSpooks's path-based veto lines up.
+  - Ship the whole ambient union, deduped by PATH, at ORIGINAL source paths so AlifeSpooks's
+    path-based veto lines up.
   - Spine = Amplified: its sound-routing config is the base; its sound copy is the largest.
   - Path conflict (same relative path, different audio across packs): the AUDIBLE MASTER wins
     (RETUNE / myRETUNE) for background bed loops; otherwise the spine wins.
   - Never ship the bundled non-sound logic (surge/psi managers, weather graph, thunderbolts,
     unrelated system mods) - that fights GAMMA / Atmospherics. Keep only the ambient sound config.
+  - Audibility (fold/master/level): the engine, not loudness, is why a merged pack is inaudible at
+    range - stereo plays 2D, min 1-2 is crushed by OpenAL, and quiet samples stay quiet. See
+    doc/library/anomaly/internals/sound-source-and-emitter.md.
 """
-import os, sys, json, hashlib, shutil, re
+import os, sys, json, hashlib, shutil, re, struct, subprocess, math, statistics
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -26,12 +38,18 @@ GD = os.path.join(REPO, "gamedata")
 sys.path.insert(0, HERE)
 import sources  # noqa
 
-SPINE = "Amplified"
-MASTERS = ("RETUNE457", "myRETUNE")  # audible background-bed masters win their paths
+SPINE = "Amplified"                              # config spine: the only pack with a complete level/weather config
+MASTERS = ("Soundscape", "ImmersiveAmbience")    # roster environment winners override the spine at background beds
+# The ROSTER (2026-08-22, measured + ear-anchored): best-of-breed per category, not a union.
+#   Amplified  - config spine + birds; its wind/foliage culled (muffled/stereo, 21%/0% dead but quiet)
+#   Soundscape - environment core: wind, weather, birds, foliage (mono, present, low content-limited)
+#   Immersive  - wind reinforcement + helicopter (loud, mono)
+#   AudioExp   - insects + frogs (loud, mono, distinct)
 # registry entries kept for licence/provenance but NOT materialized:
-#   vanilla       - GSC full unpack, non-ambient, huge; beds already come via Amplified/Soundscape
+#   vanilla       - GSC full unpack, non-ambient, huge
 #   ShrikeInterior- proven 100% redundant (0 unique md5) by the dedup census
-MATERIALIZE_SKIP = {"vanilla", "ShrikeInterior"}
+#   RETUNE457 / myRETUNE - the RETUNE/Antares family; dropped (RETUNE + loudness, 48% stereo, no unique craft)
+MATERIALIZE_SKIP = {"vanilla", "ShrikeInterior", "RETUNE457", "myRETUNE"}
 # only these sound roots are the ambient bed; excludes weapons/voice/etc. under a full unpack
 AMBIENT_MARKERS = ("/sounds/ambient/", "/sounds/ambience_exp/")
 
@@ -341,18 +359,15 @@ TERRAIN_PRESETS = {
 TERRAIN_PRESETS["outdoor"] = (TERRAIN_PRESETS["swamp"] + TERRAIN_PRESETS["forest"]
                               + TERRAIN_PRESETS["field"])
 
-# new channel: (name, [folders], params-from, [(terrain, [states])])  - placement per aa_placement.ltx:
-#   frogs  = wetland at dusk/night           owls/dogs = outdoor night birds/beasts (aa_placement plays
-#   aa_owls in escape/garbage night, aa_dogs day-night in field levels)   bats = forest/urban/lab night
+# new channel: (name, [folders], params-from-template, [(terrain, [states])]). The roster's two genuinely-new
+# categories - frogs (wetland at dusk/night, near placement) and the helicopter (a rare distant outdoor event).
+# Night-birds and time-insects are NOT here: the spine already has birds_night / Insects_night channels, so
+# those are enrichment (GRAFT_ENRICH), not new channels. Placement (spawn distance) comes from the template.
 GRAFT_NEW = [
     ("frogs", ["ambient/trx/nature/frog_a", "ambient/trx/nature/frog_b", "ambient/trx/nature/frog_c"],
      "bugs_swamp", [("swamp", ["evening", "night", "morning"])]),
-    ("owls", ["ambient/trx/nature/owl"], "bugs_night",
-     [("outdoor", ["evening", "night"])]),
-    ("dogs_amb", ["ambient/trx/nature/dog"], "bugs_night",
+    ("helicopter", ["ambience_exp/helicopter"], "storm",
      [("outdoor", ["day", "evening", "night", "morning"])]),
-    ("bats_amb", ["ambient/trx/nature/bats"], "bugs_night",
-     [("forest", ["night"]), ("urban", ["night"])]),
 ]
 SC = os.path.join(ENV, "sound_channels.ltx")
 
@@ -671,7 +686,541 @@ def cmd_prune():
     print(f"  prune: removed {removed} files no channel references (all channels kept)")
 
 
+# ---- master: audibility pass (stereo fold + min_distance floor) --------------
+# Two engine facts (doc/library/anomaly/internals/sound-source-and-emitter.md) make most of a merged
+# ambient corpus INAUDIBLE at range even when the files sound fine at-ear:
+#   1. A STEREO ogg force-plays 2D at-ear at full volume, escaping both distance rolloffs (":258-268").
+#      Only MONO spatialises. So every stereo bed/one-shot plays in-head, ignoring placement.
+#   2. Every 3D voice is attenuated TWICE - X-Ray's linear fade AND OpenAL's inverse model keyed on the
+#      ogg blob's min_distance (":132-181"). min 1-2 (the unset ffmpeg-era default, ~84% of this corpus)
+#      costs -26..-31 dB at a 25-50 m placement BEFORE the linear fade. base_volume can't rescue it.
+# The fix is two stages, in order: fold every stereo file to mono (re-encode, lossy - the one place
+# byte-for-byte is impossible since the engine only positions mono), then floor each file's blob
+# min_distance to K x its channel felt-far placement (Antares' practice, the ear-validated reference).
+# base_volume and max_distance stay the author's. Off-rate files (!=44100) are resampled in the fold.
+
+FLOOR_MAX_FRAC = 0.8     # cap the min floor below blob max so a real fade band always survives.
+DEFAULT_MAX    = 100.0   # blob max for a blob-less file (corpus median from the survey).
+ENCODE_Q       = 6       # libvorbis -q for the mono re-encode (high quality, deterministic).
+ANTIPHASE_DB   = 3.0     # side RMS this many dB above mid -> anti-phase pair, summing cancels -> drop R.
+FOLD_BLOBS     = os.path.join(HERE, "fold_blobs.json")   # author blobs captured before the fold strips them
+SROOT          = os.path.join(GD, "sounds")
+
+# --- ported audibility floors (proven in AlifeSpooks build.py, 2026-08-22) -------------------------
+# Two lift-only, lossless blob floors, applied together after measuring content LUFS + crest:
+#   1. min_distance floor, crest-INVERTED: a sustained (low-crest) tone carries in air -> higher ratio;
+#      a sharp (high-crest) transient is a near-field detail -> lower ratio. floor = ratio*felt, cap 0.8*max.
+#   2. base_volume LOUDNESS floor: lift a file whose DELIVERED loudness at felt-far sits below the ear-
+#      anchored floor. Partial (close FRAC of the deficit), capped (MAXBV + a far-gain cap that keeps far
+#      smooth_volume below the engine 1.0 clamp so falloff survives). Never lowers, overshoots, or flattens.
+# AA floor split (2026-08-22 ear calibration): beds cross the audible line higher than one-shots -
+#   bed faint ~-36 delivered, one-shot faint ~-42 delivered. With the -6 dB effects master (slider 0.5)
+#   that is eff (content+blob) floor -30 for beds, -36 for one-shots.
+RATIO_HI         = 0.60    # sustained (low crest): carries at distance
+RATIO_LO         = 0.40    # transient (high crest): near-field
+CREST_LO         = 6.0     # dB -> RATIO_HI
+CREST_HI         = 24.0    # dB -> RATIO_LO
+LOUD_FLOOR_BED   = -30.0   # eff floor, continuous beds   (= -36 delivered at effects slider 0.5)
+LOUD_FLOOR_1SHOT = -36.0   # eff floor, one-shots         (= -42 delivered)
+LOUD_MAXBV       = 6.0     # base_volume ceiling
+LOUD_FARCAP      = 0.85    # keep far smooth_volume below the engine 1.0 clamp
+LOUD_FRAC        = 0.7     # close this fraction of each file's deficit (partial lift)
+LOUD_MASTER      = 0.5     # psSoundVEffects*psSoundVFactor at calibration
+LOUD_ROLLOFF     = 0.75    # psSoundRolloff (fixed, SoundRender_Core.cpp:19)
+DEAD_LUFS        = -60.0   # content LUFS at/below = silent/dead (ebur128 floors true silence at ~-70) -> cull
+# continuous-bed path keys get LOUD_FLOOR_BED; everything else is a one-shot
+BED_KEYS = ("wind", "storm", "rain", "thunder", "tuman", "background",
+            "ambient_forest", "ambient_swamp", "drone", "rumble")
+
+
+def _crest_ratio(crest):
+    """Crest dB -> min/felt-far ratio, INVERTED: high crest (transient) -> RATIO_LO, low (sustained) -> RATIO_HI."""
+    t = (crest - CREST_LO) / (CREST_HI - CREST_LO)
+    t = 0.0 if t < 0.0 else (1.0 if t > 1.0 else t)
+    return RATIO_HI - (RATIO_HI - RATIO_LO) * t
+
+
+def _loud_floor_for(rel_lc):
+    """The eff loudness floor for a file, by whether its path is a continuous bed or a one-shot."""
+    return LOUD_FLOOR_BED if any(k in rel_lc for k in BED_KEYS) else LOUD_FLOOR_1SHOT
+
+
+def _loudness_floor(bv, mn, mx, felt_far, lufs, floor):
+    """Floored base_volume for one file (lift-only, partial, capped). mn/mx = the ALREADY min-floored blob
+    range, felt_far = channel felt placement, lufs = deployed content loudness (or None). Model:
+    delivered = base_volume*volume_att*al_gain; va=(mx-d)/(mx-mn) clamped; al=mn/(mn+0.75*(d-mn)). No lift
+    when placed past its own max (silent by placement, not loudness) or when loudness is unknown."""
+    if lufs is None or felt_far >= mx:
+        return bv
+    va = max(0.0, min(1.0, (mx - felt_far) / (mx - mn))) if mx > mn else 0.0
+    d = min(max(felt_far, mn), mx)
+    al = mn / (mn + LOUD_ROLLOFF * (d - mn)) if d > mn else 1.0
+    if va * al <= 1e-6 or bv <= 0.0:
+        return bv
+    eff = lufs + 20.0 * math.log10(bv * va * al)
+    if eff >= floor:
+        return bv
+    want = bv * (10 ** (LOUD_FRAC * (floor - eff) / 20.0))   # close FRAC of the deficit
+    farcap = LOUD_FARCAP / (va * al * LOUD_MASTER)            # keep far gain below the 1.0 clamp
+    return max(bv, min(want, farcap, LOUD_MAXBV))
+
+
+def _ogg_info(path):
+    """(channels, sample_rate) from the vorbis identification header, or (None, None)."""
+    with open(path, "rb") as f:
+        d = f.read(4096)
+    i = d.find(b"\x01vorbis")
+    if i < 0 or i + 16 > len(d):
+        return None, None
+    return d[i + 11], struct.unpack("<I", d[i + 12:i + 16])[0]
+
+
+# --- X-Ray ogg comment blob: read + lossless bitstream write (technique per the engine loader) ---
+
+def _crc32(data):
+    crc = 0
+    for b in data:
+        crc ^= b << 24
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x04c11db7) & 0xffffffff if (crc & 0x80000000) else (crc << 1) & 0xffffffff
+    return crc
+
+
+def _ogg_pages(d):
+    off, out = 0, []
+    while off < len(d) and d[off:off + 4] == b"OggS":
+        nseg = d[off + 26]
+        segs = d[off + 27:off + 27 + nseg]
+        dlen = sum(segs)
+        out.append((off, bytes(segs), d[off + 27 + nseg:off + 27 + nseg + dlen]))
+        off += 27 + nseg + dlen
+    return out, off
+
+
+def _ogg_packets(segs, body):
+    pkts, cur, start = [], 0, 0
+    for s in segs:
+        cur += s
+        if s < 255:
+            pkts.append(body[start:start + cur]); start += cur; cur = 0
+    return pkts
+
+
+def _read_blob(d):
+    """comment[0] as (min, max, base_volume) for a valid X-Ray blob, else None."""
+    i = d.find(b"\x03vorbis")
+    if i < 0:
+        return None
+    p = i + 7
+    try:
+        (vl,) = struct.unpack("<I", d[p:p + 4]); p += 4 + vl
+        (n,) = struct.unpack("<I", d[p:p + 4]); p += 4
+        if n == 0:
+            return None
+        (cl,) = struct.unpack("<I", d[p:p + 4]); p += 4
+        c0 = d[p:p + cl]
+        if len(c0) < 4:
+            return None
+        (v,) = struct.unpack("<I", c0[:4])
+        if v == 1 and len(c0) >= 16:
+            mn, mx = struct.unpack("<ff", c0[4:12]); return (mn, mx, 1.0)
+        if v in (2, 3) and len(c0) >= 20:
+            mn, mx, bv = struct.unpack("<fff", c0[4:16]); return (mn, mx, bv)
+    except struct.error:
+        return None
+    return None
+
+
+def _build_page(htype, granule, serial, seq, packets):
+    segtab, body = [], b""
+    for packet in packets:
+        seg_len = len(packet)
+        while seg_len >= 255:
+            segtab.append(255); seg_len -= 255
+        segtab.append(seg_len); body += packet
+    if len(segtab) > 255:
+        return None
+    page = (b"OggS" + bytes([0, htype]) + struct.pack("<q", granule) +
+            struct.pack("<I", serial) + struct.pack("<I", seq) +
+            struct.pack("<I", 0) + bytes([len(segtab)]) + bytes(segtab) + body)
+    return page[:22] + struct.pack("<I", _crc32(page)) + page[26:]
+
+
+def _write_blob(path, mn, mx, bv):
+    """Write a 0x0003 X-Ray blob as comment[0] losslessly (only page 1 changes; audio pages
+    byte-identical). Standard [ID | comment+setup | audio...] layout only; else returns False."""
+    with open(path, "rb") as f:
+        d = f.read()
+    pg, end = _ogg_pages(d)
+    if end != len(d) or len(pg) < 3:
+        return False
+    pkts = _ogg_packets(pg[1][1], pg[1][2])
+    if len(pkts) != 2 or not pkts[0].startswith(b"\x03vorbis") or not pkts[1].startswith(b"\x05vorbis"):
+        return False
+    comment_pkt, setup_pkt = pkts
+    p = 7
+    (vl,) = struct.unpack("<I", comment_pkt[p:p + 4]); p += 4
+    vendor = comment_pkt[p:p + vl]
+    blob = struct.pack("<I", 3) + struct.pack("<fff", mn, mx, bv) + struct.pack("<I", 0) + struct.pack("<f", mx)
+    new_comment = (b"\x03vorbis" + struct.pack("<I", len(vendor)) + vendor +
+                   struct.pack("<I", 1) + struct.pack("<I", len(blob)) + blob + b"\x01")
+    o = pg[1][0]
+    htype = d[o + 5]
+    gran = struct.unpack("<q", d[o + 6:o + 14])[0]
+    serial = struct.unpack("<I", d[o + 14:o + 18])[0]
+    seq = struct.unpack("<I", d[o + 18:o + 22])[0]
+    new_p1 = _build_page(htype, gran, serial, seq, [new_comment, setup_pkt])
+    if new_p1 is None:
+        return False
+    with open(path, "wb") as f:
+        f.write(d[:pg[1][0]] + new_p1 + d[pg[2][0]:])
+    return True
+
+
+# --- channel felt-far (placement) mapping ---
+
+def _channel_bands():
+    """channel(lower) -> (felt_far, [sound tokens]). felt_far = ltx max_distance / 2 (System B places at
+    ~ltx_max/2; ambient-sound-system.md). A token is a file path (no ext) or a folder path."""
+    bands = {}
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
+            continue
+        for blk in re.split(r"(?m)^(?=\[[A-Za-z0-9_]+\])", _read(f)):
+            hm = re.match(r"\[([A-Za-z0-9_]+)\]", blk)
+            if not hm:
+                continue
+            mx = re.search(r"(?im)^\s*max_distance\s*=\s*([\d.]+)", blk)
+            toks = []
+            for m in re.findall(r"(?im)^\s*sounds\d*\s*=\s*(.+)$", blk):
+                for one in re.split(r"[,;]", m):
+                    t = _tok_ok(one)
+                    if t:
+                        toks.append(t)
+            bands[hm.group(1).lower()] = (float(mx.group(1)) / 2.0 if mx else 40.0, toks)
+    return bands
+
+
+def _file_felt_far(bands):
+    """token(lower, file or folder) -> the MAX felt-far of any channel that references it. Max = the
+    farthest placement the file is used at (the conservative floor: audible at its farthest use)."""
+    ff = {}
+    for _ch, (felt, toks) in bands.items():
+        for t in toks:
+            if felt > ff.get(t, 0.0):
+                ff[t] = felt
+    return ff
+
+
+def _felt_for(rel_lc, ff):
+    """felt-far for a deployed ogg (rel, lower, no ext): its own file token, or its folder token."""
+    return max(ff.get(rel_lc, 0.0), ff.get(os.path.dirname(rel_lc), 0.0))
+
+
+def _iter_deployed():
+    for dp, _, fns in os.walk(SROOT):
+        for fn in fns:
+            if fn.lower().endswith(".ogg"):
+                full = os.path.join(dp, fn)
+                rel = os.path.relpath(full, SROOT).replace("\\", "/")
+                yield full, rel[:-4].lower()
+
+
+def _stereo_method(path):
+    """'sum' ((L+R)/2) normally; 'drop' (keep L) for an anti-phase pair where summing cancels. One
+    ffmpeg mid/side RMS probe. A >2-channel file has no mid/side -> 'sum' (-ac 1)."""
+    ch, _ = _ogg_info(path)
+    if ch != 2:
+        return "sum"
+    r = subprocess.run([_FFMPEG, "-hide_banner", "-i", path, "-af",
+                        "pan=stereo|c0=0.5*c0+0.5*c1|c1=0.5*c0-0.5*c1,astats=metadata=1:reset=0",
+                        "-f", "null", "-"], capture_output=True, text=True)
+    rms = re.findall(r"RMS level dB:\s*(-?[\d.]+|-inf)", r.stderr)
+    if len(rms) < 2:
+        return "sum"
+    def db(x):
+        return -120.0 if x == "-inf" else float(x)
+    mid, side = db(rms[0]), db(rms[1])
+    return "drop" if side - mid > ANTIPHASE_DB else "sum"
+
+
+def _find_ffmpeg():
+    """Resolve a real ffmpeg.exe. Native Windows subprocess cannot exec the PORTX .CMD wrapper that
+    `which` returns, so prefer a .exe: which-if-exe, then the PORTX exe, then parse the wrapper."""
+    w = shutil.which("ffmpeg")
+    if w and w.lower().endswith(".exe"):
+        return w
+    portx = r"C:\App\PORTX\packages\ffmpeg\ffmpeg.exe"
+    if os.path.exists(portx):
+        return portx
+    if w and os.path.exists(w):
+        try:
+            for ln in open(w, encoding="utf-8", errors="replace"):
+                m = re.search(r'"([^"]+\.exe)"', ln)
+                if m and os.path.exists(m.group(1)):
+                    return m.group(1)
+        except OSError:
+            pass
+    return "ffmpeg"
+
+
+_FFMPEG = _find_ffmpeg()
+
+
+def cmd_fold():
+    """Fold every STEREO file to mono and resample every OFF-RATE file to 44100, in place. Captures each
+    file's author blob to fold_blobs.json BEFORE the re-encode strips it, so master can restore its
+    min/max/base_volume. Re-encode is libvorbis -q6; the audio is no longer byte-identical (unavoidable:
+    the engine only spatialises mono). Idempotent-ish: a file already mono+44100 is skipped."""
+    fold_blobs = json.load(open(FOLD_BLOBS)) if os.path.exists(FOLD_BLOBS) else {}
+    folded = resampled = skipped = failed = 0
+    n_sum = n_drop = 0
+    for full, rel_lc in _iter_deployed():
+        ch, sr = _ogg_info(full)
+        need_mono = (ch is not None and ch >= 2)
+        need_rate = (sr is not None and sr != 44100)
+        if not (need_mono or need_rate):
+            skipped += 1
+            continue
+        # capture the author blob before the re-encode strips it
+        with open(full, "rb") as fh:
+            b = _read_blob(fh.read(16384))
+        fold_blobs[rel_lc] = list(b) if b else None
+        method = _stereo_method(full) if need_mono else "sum"
+        af = ["-ac", "1"] if method == "sum" else ["-af", "pan=mono|c0=c0"]
+        tmp = full + ".fold.ogg"
+        r = subprocess.run([_FFMPEG, "-y", "-hide_banner", "-loglevel", "error", "-i", full,
+                            *af, "-ar", "44100", "-c:a", "libvorbis", "-q:a", str(ENCODE_Q),
+                            "-map_metadata", "-1", tmp], capture_output=True, text=True)
+        if r.returncode != 0 or not os.path.exists(tmp):
+            failed += 1
+            continue
+        os.replace(tmp, full)
+        if need_mono:
+            folded += 1
+            n_sum += method == "sum"
+            n_drop += method == "drop"
+        else:
+            resampled += 1
+    json.dump(fold_blobs, open(FOLD_BLOBS, "w"))
+    print(f"  fold: {folded} stereo->mono ({n_sum} sum + {n_drop} drop), {resampled} resampled, "
+          f"{skipped} already mono+44100; {failed} FAILED")
+
+
+def cmd_master():
+    """Retired: the min_distance floor moved into cmd_level, where it is crest-inverted and applied from the
+    same crest+LUFS measurement as the loudness floor (consolidated, matching AlifeSpooks build.py
+    _normalize_blobs). Kept as a no-op for pipeline-stage compatibility."""
+    print("  master: (retired - min floor now applied in level, crest-inverted)")
+
+
+def cmd_audit():
+    """Acceptance gate: over the WIRED files, report min/felt-far (the audibility ratio) and the crushed
+    share (<0.15 = whisper). Reference band (Antares): median ~0.30, p75 ~0.67, crushed ~39%. Blob reads
+    only, no ffmpeg."""
+    ff = _file_felt_far(_channel_bands())
+    ratios = []
+    crushed = 0
+    for full, rel_lc in _iter_deployed():
+        felt = _felt_for(rel_lc, ff)
+        if felt <= 0.0:
+            continue
+        with open(full, "rb") as fh:
+            b = _read_blob(fh.read(16384))
+        mn = b[0] if b else 1.0
+        r = mn / felt
+        ratios.append(r)
+        if r < 0.15:
+            crushed += 1
+    if not ratios:
+        print("  audit: no wired files"); return
+    ratios.sort()
+    n = len(ratios)
+    med = ratios[n // 2]
+    p25 = ratios[n // 4]
+    p75 = ratios[(3 * n) // 4]
+    print(f"  audit: wired={n}  min/felt-far median={med:.2f} p25={p25:.2f} p75={p75:.2f}  "
+          f"crushed(<0.15)={100 * crushed // n}%  (Antares ref: med 0.30, crushed 39%)")
+
+
+# ---- level: the two blob floors (min-distance + base_volume loudness) ---------
+# Both applied together from one crest+LUFS measurement (see the ported-floor block: _crest_ratio /
+# _loud_floor_for / _loudness_floor). The min floor fixes the OpenAL rolloff (crest-inverted: a sustained
+# tone carries, a transient stays near-field); the loudness floor lifts quiet CONTENT the min floor cannot,
+# to the ear-anchored delivered level (-30 eff beds / -36 one-shots, 2026-08-22 calibration), partial +
+# capped, never lowered. Idempotent + add-ready: floors are absolute (not a corpus median), lift-only, and
+# the measure is cached by AUDIO-page hash (stable across blob rewrites) so a rerun re-measures only new audio.
+LEVEL_CACHE    = os.path.join(HERE, "level_cache.json")   # audio-hash -> [lufs, crest, peak]
+
+
+def _hash_audio(path):
+    """md5 of the audio pages only (after ID + comment/setup), so a comment-blob rewrite (master/level)
+    does not invalidate the cached measure - the audio is what was measured."""
+    with open(path, "rb") as f:
+        pg, _ = _ogg_pages(f.read())
+    return hashlib.md5(b"".join(p[2] for p in pg[2:])).hexdigest()
+
+
+def _measure_audio(path):
+    """(integrated LUFS, crest dB, true-peak dBFS) from one ffmpeg pass. crest = peak - rms (astats),
+    LUFS = ebur128 I. Silence/failure -> (None, 0, 0)."""
+    r = subprocess.run([_FFMPEG, "-hide_banner", "-nostats", "-i", path,
+                        "-af", "astats=metadata=1:reset=0,ebur128", "-f", "null", "-"],
+                       capture_output=True, text=True)
+    lufs = peak = rms = None
+    for ln in r.stderr.splitlines():
+        m = re.search(r"\bI:\s*(-?[0-9.]+)\s*LUFS", ln)
+        if m:
+            lufs = float(m.group(1))
+        m = re.search(r"Peak level dB:\s*(-?[0-9.]+)", ln)
+        if m:
+            peak = float(m.group(1))
+        m = re.search(r"RMS level dB:\s*(-?[0-9.]+)", ln)
+        if m:
+            rms = float(m.group(1))
+    crest = (peak - rms) if (peak is not None and rms is not None) else 0.0
+    return lufs, crest, (peak if peak is not None else 0.0)
+
+
+def cmd_level():
+    """Apply both lossless blob floors to each wired file, from one crest+LUFS measurement (the min floor
+    moved here from master so it can be crest-inverted, matching AlifeSpooks build.py _normalize_blobs):
+      1. min_distance -> max(author, crest-inverted ratio x felt-far), capped 0.8*max  (fixes OpenAL rolloff)
+      2. base_volume -> lifted so delivered loudness at felt-far reaches the ear floor (-30 eff beds /
+         -36 one-shots), partial + capped, never lowered  (fixes quiet content the min floor cannot)
+    Skips emission (blowout/anomaly) and unwired files. Measure cached by audio hash; lossless rewrite."""
+    cache = json.load(open(LEVEL_CACHE)) if os.path.exists(LEVEL_CACHE) else {}
+    fold_blobs = json.load(open(FOLD_BLOBS)) if os.path.exists(FOLD_BLOBS) else {}
+    ff = _file_felt_far(_channel_bands())
+    total = wrote = floored = lifted = e_skip = u_skip = no_meas = measured = 0
+    gains = []
+    for full, rel_lc in _iter_deployed():
+        total += 1
+        if rel_lc.startswith("ambient/blowout") or rel_lc.startswith("ambient/anomaly"):
+            e_skip += 1
+            continue
+        felt = _felt_for(rel_lc, ff)
+        if felt <= 0.0:
+            u_skip += 1                        # unwired (orphan) - leave verbatim
+            continue
+        h = _hash_audio(full)
+        m = cache.get(h)
+        if m is None:
+            m = list(_measure_audio(full))
+            cache[h] = m
+            measured += 1
+        lufs, crest, _peak = m
+        with open(full, "rb") as fh:
+            b = _read_blob(fh.read(16384))
+        if not b:                                                     # folded-stereo lost its blob -> recover
+            cap = fold_blobs.get(rel_lc)
+            b = tuple(cap) if cap else (1.0, DEFAULT_MAX, 1.0)
+        mn, mx, bv = b
+        if mn < 0.0:
+            mn = 0.0
+        floor = min(_crest_ratio(crest) * felt, mx * FLOOR_MAX_FRAC)  # (1) crest-inverted min floor
+        if mn < floor:
+            mn = floor
+            floored += 1
+        if lufs is not None:                                          # (2) loudness floor needs content LUFS
+            bvn = _loudness_floor(bv, mn, mx, felt, lufs, _loud_floor_for(rel_lc))
+            if bvn > bv + 1e-9:
+                gains.append(20.0 * math.log10(bvn / bv))
+                bv = bvn
+                lifted += 1
+        else:
+            no_meas += 1
+        if mx < mn + 0.1:                                             # engine (max-min) divide / loader safety
+            mx = mn + 0.1
+        if _write_blob(full, mn, mx, bv):
+            wrote += 1
+    json.dump(cache, open(LEVEL_CACHE, "w"))
+    gm = statistics.median(gains) if gains else 0.0
+    gx = max(gains) if gains else 0.0
+    print(f"  level: {total} files | min-floored {floored} (crest-inverted), loudness-lifted {lifted} "
+          f"(+{gm:.1f} dB median, up to +{gx:.1f} dB)")
+    print(f"         wrote {wrote} blobs | skipped {e_skip} emission, {u_skip} unwired, "
+          f"{no_meas} unmeasurable | measured {measured} new, {len(cache) - measured} cached")
+
+
+# Two orchestrator commands, two guarantees (shape shared with AlifeSpooks's rebuild/add):
+#   rebuild - full, destructive, reproducible, RARE: wipes the deployed audio and regenerates the whole
+#             corpus from source (re-folds every stereo file). The clean-slate reset.
+#   add     - incremental, curation-safe, the EVERYDAY path: never wipes. deploy skips existing, and
+#             fold/master/level are hash-cached, so only NET-NEW audio is processed. Registering a new
+#             source pack in sources.py then running `add` grows the corpus without touching the rest.
+def cmd_cull():
+    """Delete DEAD deployed files (silent - the level measure found no LUFS) after the fold + floors, then
+    strip their now-absent channel refs, keeping >=1 sound per channel (never empties a bed -> would CTD).
+    Reuses the level cache, no extra ffmpeg. A quiet-but-real sound is KEPT (the loudness floor lifts it as
+    far as it can); only true silence is removed - so best-of-breed emerges by itself: dead culled, faint lifted."""
+    cache = json.load(open(LEVEL_CACHE)) if os.path.exists(LEVEL_CACHE) else {}
+    removed = 0
+    for full, rel_lc in _iter_deployed():
+        m = cache.get(_hash_audio(full))
+        if m is not None and (m[0] is None or m[0] <= DEAD_LUFS):   # silent/dead (ebur128 floors silence ~-70)
+            os.remove(full)
+            removed += 1
+    sroot = os.path.join(GD, "sounds")                          # strip refs to now-absent files, keep >=1 per channel
+    disk = set()
+    for dp, _, fns in os.walk(sroot):
+        for fn in fns:
+            if fn.lower().endswith(".ogg"):
+                disk.add(os.path.relpath(os.path.join(dp, fn), sroot).replace("\\", "/").lower())
+    disk_dirs = {os.path.dirname(d) for d in disk}
+    stripped = 0
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
+            continue
+        out = []
+        for ln in _read(f).split("\n"):
+            mm = re.match(r"(\s*sounds\d*\s*=\s*)(\S.*)$", ln, re.I)
+            if mm:
+                keep = []
+                for one in re.split(r"[,;]", mm.group(2)):
+                    e = one.strip()
+                    t = e.replace("\\", "/").lower()
+                    if not t:
+                        continue
+                    if t == "ambient/no_sound" or (t + ".ogg") in disk or t in disk_dirs:
+                        keep.append(e)
+                    else:
+                        stripped += 1
+                if not keep:
+                    keep = ["ambient\\no_sound"]
+                ln = mm.group(1) + ", ".join(keep)
+            out.append(ln)
+        open(f, "w", encoding="utf-8").write("\n".join(out))
+    print(f"  cull: removed {removed} dead files (silent); stripped {stripped} dead channel refs (channels kept non-empty)")
+
+
+# Both run the same stage sequence; only the wipe differs.
+def _run_pipeline():
+    for name, fn in (("plan", cmd_plan), ("deploy", cmd_deploy), ("config", cmd_config),
+                     ("graft", cmd_graft), ("prune", cmd_prune), ("fold", cmd_fold),
+                     ("master", cmd_master), ("level", cmd_level), ("cull", cmd_cull),
+                     ("prune", cmd_prune), ("verify", cmd_verify), ("audit", cmd_audit)):
+        print(f"== {name} ==")
+        fn()
+
+
+def cmd_rebuild():
+    """Full destructive rebuild: wipe the deployed audio, regenerate everything from source. Rare."""
+    if os.path.isdir(SROOT):
+        shutil.rmtree(SROOT)
+        print(f"== wipe == removed {SROOT} (full rebuild)")
+    _run_pipeline()
+
+
+def cmd_add():
+    """Incremental grow-and-resync: run the whole pipeline WITHOUT wiping. deploy skips existing,
+    fold/master/level are cached, so only net-new source content is processed. The everyday path."""
+    _run_pipeline()
+
+
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "plan"
     {"plan": cmd_plan, "deploy": cmd_deploy, "config": cmd_config,
-     "graft": cmd_graft, "prune": cmd_prune, "verify": cmd_verify}.get(stage, cmd_plan)()
+     "graft": cmd_graft, "prune": cmd_prune, "verify": cmd_verify,
+     "fold": cmd_fold, "master": cmd_master, "level": cmd_level, "cull": cmd_cull, "audit": cmd_audit,
+     "rebuild": cmd_rebuild, "add": cmd_add, "all": cmd_add}.get(stage, cmd_add)()
