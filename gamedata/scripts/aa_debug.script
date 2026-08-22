@@ -1,5 +1,5 @@
 --- aa_debug: the code-tracing primitives for AlifeAmbience. ONE logger, one gate, one set of formatters.
---- AlifeAmbience is a config-only ambient bed with no gameplay logic, so the only consumer is aa_diag
+--- AlifeAmbience is a config-only ambient soundscape with no gameplay logic, so the only consumer is aa_diag
 --- (the runtime wiring inspector). The module still mirrors the family shape (aa_debug.on/dbg/info/warn/
 --- flush, MCM log level) so its tooling reads identically to the other mods.
 ---

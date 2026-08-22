@@ -2,7 +2,7 @@
 --- After the save loads (and on demand from the console via aa_diag.dump()), it logs the active ambient
 --- wiring so the soundscape can be inspected without hand-typed console commands: the level, weather, and
 --- current ambient state; the per-state dynamic channel counts of the current level's preset (the density
---- picture that explains why one install fires more often than another); the bed channel for the active
+--- picture that explains why one install fires more often than another); the background channel for the active
 --- state and whether it resolves; and a live dangling-ref check (a referenced dynamic channel with no
 --- definition). Runs when DEBUG logging is on OR the Development "ambient diagnostics" toggle is set.
 
@@ -43,12 +43,12 @@ local function _report_states(ini_lvl, ini_snd, active)
     end
 end
 
--- The continuous bed (System A sound_channels) for the active state, and whether it resolves.
-local function _report_bed(ini_lvl, ini_snd, state)
-    local bed = ini_lvl:section_exist(state) and parse_list(ini_lvl, state, "sound_channels")
-    local first = bed and bed[1]
+-- The continuous background layer (System A sound_channels) for the active state, and whether it resolves.
+local function _report_background(ini_lvl, ini_snd, state)
+    local chans = ini_lvl:section_exist(state) and parse_list(ini_lvl, state, "sound_channels")
+    local first = chans and chans[1]
     if first then
-        aa_debug.info("[DIAG] active bed: %s (defined=%s)",
+        aa_debug.info("[DIAG] active background: %s (defined=%s)",
             tostring(first), tostring(ini_snd:section_exist(first)))
     end
 end
@@ -65,14 +65,14 @@ function dump()
 
     local ini_lvl = ini_file("environment\\ambients\\" .. level_name .. ".ltx")
     if not ini_lvl then
-        aa_debug.warn("[DIAG] no level ambient ltx for %s (bed/one-shots will not schedule)", tostring(level_name))
+        aa_debug.warn("[DIAG] no level ambient ltx for %s (background/one-shots will not schedule)", tostring(level_name))
         aa_debug.flush()
         return
     end
 
     local ini_snd = ini_file(CHANNELS_FILE)
     _report_states(ini_lvl, ini_snd, state)
-    _report_bed(ini_lvl, ini_snd, state)
+    _report_background(ini_lvl, ini_snd, state)
     aa_debug.flush()
 end
 

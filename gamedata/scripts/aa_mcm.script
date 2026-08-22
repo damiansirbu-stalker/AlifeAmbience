@@ -1,6 +1,6 @@
 --- aa_mcm: MCM configuration for AlifeAmbience
 
--- AlifeAmbience is a config-only ambient bed: it has no runtime gameplay knobs, so the menu is
+-- AlifeAmbience is a config-only ambient soundscape: it has no runtime gameplay knobs, so the menu is
 -- informational (the platform/version footer) plus the shared Development tab (log level + the ambient
 -- diagnostics toggle + reset). Structure and helpers are identical to the other mods so the tooling
 -- (xmcm.create_config, the platform footer, the reset button) reads the same everywhere.

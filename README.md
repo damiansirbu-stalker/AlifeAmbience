@@ -1,33 +1,12 @@
-# AlifeAmbience: the most complete and most refined ambient soundscape for STALKER Anomaly
+# AlifeAmbience: a curated, audible ambient soundscape for STALKER Anomaly
 
-Every sound measured, curated, and engineered instead of crammed together. The build chooses content best-of-breed per category from the strongest soundscape packs and deduplicates by waveform,
-then makes it actually sound in the Zone: folded to mono so everything positions in 3D, distance-corrected so each sound carries and decays naturally across its area,
-and loudness-banded to an ear-calibrated target so nothing turns muffled or blaring. Birds, insects, wind, frogs, crows, foliage, rain, the helicopter, and the day/night ecosystem,
-wired to the weather so the Zone breathes.
+AlifeAmbience curates the best of the Zone's ambient sound, from the original games through the classic overhaul mods to today's community soundscape packs, and combines it into one living nature-and-weather soundscape. It then engineers every sound to work in-game: folded to mono for 3D positioning, distance-corrected so it carries, and loudness-leveled by measurement so nothing is muffled or blaring. It is the audible companion to AlifeSpooks, which owns the horror one-shots - run both for realism and dread at once.
 
-It is the ambient counterpart to [AlifeSpooks](https://github.com/damiansirbu-stalker/AlifeSpooks). AlifeSpooks owns the horror one-shots and vetoes them out of the base channels.
-AlifeAmbience owns the audible living ambience AlifeSpooks leaves alone. Run both for realism and horror at once.
+[GitHub](https://github.com/damiansirbu-stalker/AlifeAmbience) | [Bugs, suggestions](https://github.com/damiansirbu-stalker/AlifeAmbience/issues)
 
-Requires: Anomaly 1.5.3, a DLTX-capable engine (the modded exes / GAMMA), and a weather mod whose ambient states the soundscape covers (Atmospherics out of the box).
+Requires: Anomaly 1.5.3, modded exes (themrdemonized or AOEngine), [xlibs](https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001), and a weather mod whose ambient states it covers (Atmospherics out of the box). Exact versions in [readme.txt](doc/readme.txt).
 
-## Features
-
-- Best-of-breed selection. Each category (wind, weather, birds, insects, frogs, foliage, helicopter) comes from the pack that measured best for it, not one pack taken whole.
-  The build culls dead, muffled, and redundant audio rather than keeping it.
-- Audible at range. The engine crushes most community ambience to a whisper at range and cannot position stereo at all. AlifeAmbience folds every file to mono,
-  floors each file's distance reference so it carries, and levels loudness into an ear-calibrated band, all as lossless edits to the sound's own metadata.
-- Chosen by measurement. It profiles every file for loudness (LUFS) and transient shape (crest), verifies the playback gain against the X-Ray engine's own attenuation math,
-  and takes the targets from a listening calibration.
-- Verified coverage. A config-closure check gates every build: no map goes silent, no weather state goes silent, no reference dangles.
-
-## How it is built
-
-A reproducible pipeline (`tools/merge.py`) selects the roster, deduplicates by waveform, folds stereo to mono, floors each file's min-distance (crest-inverted,
-so a sustained tone carries and a transient stays near-field), levels loudness into a floor-and-ceiling band, culls the dead, and reconciles the level and weather config into one closed set.
-A closure verifier and an audibility audit gate every build. See [architecture.md](doc/architecture.md).
-
-## Alife Collection
-
+Alife Collection:
 - [AlifeBalance](https://www.moddb.com/mods/stalker-anomaly/addons/alifebalance)
 - [AlifeDiegetic](https://www.moddb.com/mods/stalker-anomaly/addons/diegetic-audio-control-100)
 - [AlifeGuard](https://www.moddb.com/mods/stalker-anomaly/addons/alifeguard-1001)
@@ -37,9 +16,10 @@ A closure verifier and an audibility audit gate every build. See [architecture.m
 
 ## Documentation
 
-- [readme.txt](doc/readme.txt): full description, what it adds, credits
-- [architecture.md](doc/architecture.md): method, invariants, build pipeline
-- [licensing.md](doc/licensing.md): every source's license and the granting author's permission
+- [readme.txt](doc/readme.txt) - full description, what it adds, credits
+- [changelog](https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/changelog) - version history
+- [architecture.md](doc/architecture.md) - method, invariants, build pipeline
+- [licensing.md](doc/licensing.md) - per-addon license and permission
 
 ## License
 

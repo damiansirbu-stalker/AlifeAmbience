@@ -7,31 +7,32 @@ Two orchestrator commands (shape shared with AlifeSpooks):
 Run: python merge.py <command|stage>   (bare = add).
 
 Stages, in order (each reads the previous stage's output on disk):
-  plan    hash the roster packs' oggs, dedup by PATH                                   -> manifest.json
-  deploy  copy the chosen files + the Amplified config subset (the spine)              -> gamedata/
-  config  fix stock channel defects, strip dead refs, cap spawn distance per category  -> gamedata/ cfg
-  graft   wire best-of-breed folders into channels + presets, add frogs/helicopter     -> gamedata/ cfg
-  prune   delete every file no channel references                                      -> gamedata/sounds
-  fold    stereo -> mono (re-encode) + resample off-rate to 44100                      -> sounds, fold_blobs
-  master  RETIRED no-op (its min floor moved into level, crest-inverted)               -> -
-  level   the two blob floors + the loudness ceiling, from one crest+LUFS pass         -> sounds, level_cache
-  cull    delete silent/dead files, strip their refs (never emptying a channel)        -> gamedata/sounds
-  verify  six-invariant config-closure ledger                                          -> ledger.tsv
-  audit   wired min/felt-far ratio + crushed share (acceptance gate)                   -> stdout
+  plan         hash the roster packs' oggs, dedup by PATH (byte hash)                  -> manifest.json
+  deploy       copy the chosen files + the Amplified config subset (the spine)         -> gamedata/
+  config       fix stock defects, strip dead refs, cap spawn distance per category     -> gamedata/ cfg
+  graft        wire best-of-breed folders into channels + presets, add frogs/heli      -> gamedata/ cfg
+  fingerprint  acoustic dedup (Chromaprint): collapse same-recording aliases           -> gamedata/ cfg, sounds
+  prune        delete every file no channel references                                 -> gamedata/sounds
+  fold         stereo -> mono (re-encode) + resample off-rate to 44100                 -> sounds, fold_blobs
+  master       RETIRED no-op (its min floor moved into level, crest-inverted)          -> -
+  level        the two blob floors + the loudness ceiling, from one crest+LUFS pass    -> sounds, level_cache
+  cull         delete silent/dead files, strip their refs (never emptying a channel)   -> gamedata/sounds
+  verify       six-invariant config-closure ledger                                     -> ledger.tsv
+  audit        wired min/felt-far ratio + crushed share (acceptance gate)              -> stdout
 
 Design:
   - ROSTER, not a union: best-of-breed per category (Soundscape environment, Audio Expansion insects/
     frogs, Immersive wind/helicopter) on the Amplified config spine. RETUNE/Antares dropped.
   - Amplified is the config spine (the only pack with a complete level/weather config). The roster packs
-    SHARE deploy paths, so best-of-breed emerges from level (lift the salvageable) + cull (drop the dead),
-    not from folder selection.
-  - Never ship the bundled non-sound logic (surge/psi managers, weather graph, thunderbolts) - it fights
-    GAMMA / Atmospherics. Keep only the ambient sound config.
+    SHARE deploy paths, so best-of-breed emerges from fingerprint (drop acoustic aliases), level (lift the
+    salvageable) and cull (drop the dead), not from folder selection.
+  - Never include the bundled non-sound logic (surge/psi managers, weather graph, thunderbolts) - it fights
+    the weather mods. Keep only the ambient sound config.
   - Audibility is an ENGINE problem, not loudness: stereo plays 2D, min 1-2 is crushed by OpenAL, quiet
     content stays quiet. Fixed by lossless blob edits keyed to an ear calibration: fold stereo->mono; a
     crest-inverted min-distance floor (fixes the OpenAL rolloff); and a base_volume loudness BAND (floor
     lifts quiet content, ceiling lowers hot content) to the ear-anchored -30/-36 floors and -24/-28
-    ceilings (bed / one-shot). See doc/library/anomaly/internals/sound-source-and-emitter.md.
+    ceilings (continuous / one-shot). See doc/library/anomaly/internals/sound-source-and-emitter.md.
 """
 import os, sys, json, hashlib, shutil, re, struct, subprocess, math, statistics
 
@@ -1220,6 +1221,105 @@ def cmd_level():
 #   add     - incremental, curation-safe, the EVERYDAY path: never wipes. deploy skips existing, and
 #             fold/master/level are hash-cached, so only NET-NEW audio is processed. Registering a new
 #             source pack in sources.py then running `add` grows the corpus without touching the rest.
+# --- acoustic dedup (Chromaprint) ------------------------------------------------------------------
+# `plan` dedups by BYTE hash (md5), so it keeps two files that are the SAME recording re-encoded or
+# renamed (different bytes, same sound) - measured ~1.4% of the corpus. This stage dedups by ACOUSTIC
+# identity: fpcalc fingerprints each file, each fingerprint group collapses to one canonical, config refs
+# to the aliases repoint to it, and the alias files drop (prune then tidies up). Runs on ORIGINAL audio,
+# before `fold` re-encodes it. Un-fingerprintable clips (very short) fall back to the byte dedup. Never
+# empties a channel or a referenced folder. Cached by audio-page hash, stable across the later blob rewrites.
+FP_EXE   = "C:/App/PORTX/packages/chromaprint/fpcalc.exe"
+FP_CACHE = os.path.join(HERE, "fingerprint_cache.json")   # audio-page hash -> chromaprint fingerprint ("" = none)
+
+
+def _fingerprint(path):
+    """Chromaprint acoustic fingerprint of a file, or '' if fpcalc cannot read it (very short clips)."""
+    try:
+        r = subprocess.run([FP_EXE, "-raw", "-length", "30", path], capture_output=True, text=True, timeout=40)
+        for ln in r.stdout.splitlines():
+            if ln.startswith("FINGERPRINT="):
+                return ln[12:]
+    except Exception:
+        pass
+    return ""
+
+
+def cmd_fingerprint():
+    """Dedup by acoustic identity (Chromaprint), catching same-recording aliases the byte hash misses.
+    Keep one canonical per fingerprint group, repoint config refs to it, drop the aliases. Runs before fold
+    (original audio); un-fingerprintable short clips fall back to byte dedup; never empties a channel/folder."""
+    cache = json.load(open(FP_CACHE)) if os.path.exists(FP_CACHE) else {}
+    by_fp = {}                                    # fingerprint -> [rel_lc, ...]
+    n = measured = 0
+    for full, rel_lc in _iter_deployed():
+        n += 1
+        h = _hash_audio(full)
+        fp = cache.get(h)
+        if fp is None:
+            fp = _fingerprint(full)
+            cache[h] = fp
+            measured += 1
+        if fp:                                    # un-fingerprintable clips skipped (byte dedup handled them)
+            by_fp.setdefault(fp, []).append(rel_lc)
+    json.dump(cache, open(FP_CACHE, "w"))
+    alias = {}                                    # alias rel_lc -> canonical rel_lc
+    groups = 0
+    for rels in by_fp.values():
+        u = sorted(set(rels))
+        if len(u) < 2:
+            continue
+        groups += 1
+        for r in u[1:]:
+            alias[r] = u[0]
+    if not alias:
+        print(f"  fingerprint: {n} files ({measured} measured) | no acoustic aliases beyond byte dedup")
+        return
+    repointed = 0                                 # repoint individual file refs alias -> canonical, dedup, keep >=1
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
+            continue
+        out = []
+        for ln in _read(f).split("\n"):
+            mm = re.match(r"(\s*sounds\d*\s*=\s*)(\S.*)$", ln, re.I)
+            if mm:
+                seen, keys = [], set()
+                for one in re.split(r"[,;]", mm.group(2)):
+                    e = one.strip()
+                    if not e:
+                        continue
+                    key = e.replace("\\", "/").lower()
+                    if key in alias:
+                        key = alias[key]
+                        e = key.replace("/", "\\")
+                        repointed += 1
+                    if key not in keys:
+                        keys.add(key)
+                        seen.append(e)
+                if not seen:
+                    seen = ["ambient\\no_sound"]
+                ln = mm.group(1) + ", ".join(seen)
+            out.append(ln)
+        open(f, "w", encoding="utf-8").write("\n".join(out))
+    sroot = os.path.join(GD, "sounds")            # drop alias files, but never the last ogg in a folder
+    folder_n = {}
+    for _, rel_lc in _iter_deployed():
+        d = os.path.dirname(rel_lc)
+        folder_n[d] = folder_n.get(d, 0) + 1
+    deleted = kept = 0
+    for a in sorted(alias):
+        d = os.path.dirname(a)
+        if folder_n.get(d, 0) <= 1:               # last file in a folder-referenced dir -> leave it
+            kept += 1
+            continue
+        p = os.path.join(sroot, a.replace("/", os.sep) + ".ogg")
+        if os.path.exists(p):
+            os.remove(p)
+            folder_n[d] -= 1
+            deleted += 1
+    print(f"  fingerprint: {n} files ({measured} measured) | {groups} acoustic-dup groups | "
+          f"repointed {repointed} refs, dropped {deleted} aliases (kept {kept} last-in-folder)")
+
+
 def cmd_cull():
     """Delete DEAD deployed files (silent - the level measure found no LUFS) after the fold + floors, then
     strip their now-absent channel refs, keeping >=1 sound per channel (never empties a bed -> would CTD).
@@ -1268,8 +1368,8 @@ def cmd_cull():
 # Both run the same stage sequence; only the wipe differs.
 def _run_pipeline():
     for name, fn in (("plan", cmd_plan), ("deploy", cmd_deploy), ("config", cmd_config),
-                     ("graft", cmd_graft), ("prune", cmd_prune), ("fold", cmd_fold),
-                     ("master", cmd_master), ("level", cmd_level), ("cull", cmd_cull),
+                     ("graft", cmd_graft), ("fingerprint", cmd_fingerprint), ("prune", cmd_prune),
+                     ("fold", cmd_fold), ("master", cmd_master), ("level", cmd_level), ("cull", cmd_cull),
                      ("prune", cmd_prune), ("verify", cmd_verify), ("audit", cmd_audit)):
         print(f"== {name} ==")
         fn()
@@ -1292,6 +1392,6 @@ def cmd_add():
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "plan"
     {"plan": cmd_plan, "deploy": cmd_deploy, "config": cmd_config,
-     "graft": cmd_graft, "prune": cmd_prune, "verify": cmd_verify,
+     "graft": cmd_graft, "fingerprint": cmd_fingerprint, "prune": cmd_prune, "verify": cmd_verify,
      "fold": cmd_fold, "master": cmd_master, "level": cmd_level, "cull": cmd_cull, "audit": cmd_audit,
      "rebuild": cmd_rebuild, "add": cmd_add, "all": cmd_add}.get(stage, cmd_add)()

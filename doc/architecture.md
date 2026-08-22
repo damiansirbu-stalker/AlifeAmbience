@@ -1,6 +1,6 @@
 # AlifeAmbience - architecture and method
 
-AlifeAmbience is the most complete and most refined ambient nature-and-weather soundscape for S.T.A.L.K.E.R. Anomaly and G.A.M.M.A.
+AlifeAmbience is a curated ambient nature-and-weather soundscape for S.T.A.L.K.E.R. Anomaly.
 It selects the best source for each part of the soundscape across several community packs, deduplicates by waveform, and then engineers every file to sound in the world:
 folded to mono so the engine can position it in 3D, distance-corrected so it carries and decays across its area, and loudness-leveled into an ear-calibrated band.
 It reconciles the level and weather config into one closed routing, so every map in every weather state plays an audible living soundscape.
@@ -16,7 +16,7 @@ The audibility method draws on the X-Ray engine source and the library note `doc
 No single pack is the superset, and no pack is audible out of the box. An earlier build merged the whole union of several packs. Measured and ear-tested, that was worse: crammed, muddy,
 and no cleaner than the loudest single pack. So the roster is best-of-breed per category, chosen by measurement (`ffmpeg ebur128`/`astats`, a waveform census, and the engine gain model), not by taste:
 
-- Amplified (Dark Signal Amplified Soundscape) is the config spine, the only pack with a complete level/weather config (33 levels, all Atmospherics states, plus GAMMA's extended maps),
+- Amplified (Dark Signal Amplified Soundscape) is the config spine, the only pack with a complete level/weather config (33 levels, all Atmospherics states, plus the extended maps),
   and the birds source. Its own wind and foliage are muffled and stereo, so the build culls them.
 - Soundscape Overhaul is the environment core: wind, weather, birds, foliage. Its content measured best, mostly mono, present, with little too quiet to save.
 - Audio Expansion supplies insects and frogs: distinct, loud, mono content no other pack has.
@@ -56,9 +56,14 @@ The floor, ceiling, cap, and ratios live as calibrated constants at the top of t
 
 ## Deduplication
 
-Identity is the waveform, never the filename. md5 over the file dedups byte-identical reships among the source packs. A separate audio-page hash keys the loudness/crest measurement cache,
-so a rebuild re-measures only new audio and the cache survives the blob rewrites (which change the comment page, not the audio pages). Dedup runs among the source packs only,
-never against the target install.
+Deduplication runs at two levels. `plan` dedups by BYTE hash: an md5 collapses byte-identical reships, keyed by config path.
+The same recording at two referenced paths still both ship, because a channel points at each.
+`fingerprint` then dedups by ACOUSTIC identity. fpcalc (Chromaprint) fingerprints every deployed file and collapses same-recording aliases the byte hash cannot see:
+the same sound re-encoded or renamed to different bytes, about 1.4% of the corpus.
+Each group keeps one canonical file, its aliases' config references repoint to it, and the alias files drop.
+A channel's pick-pool then never holds the same recording twice under two names.
+Fingerprints run on the original audio, before the fold re-encodes it, and cache by audio-page hash.
+Short clips fpcalc cannot read fall back to the byte hash. None of this runs against the target install.
 
 ## The five-link binding chain
 
@@ -66,7 +71,7 @@ An ambient sound reaches the player through five hand-authored links. The build 
 
 1. Weather state. The weather mod's `weathers/w_*.ltx` sets, per time frame, `ambient = <state>` (day, morning, evening, night, rain, rain_day, rain_night, storm_day, storm_night, tuman, tuman_night,
    indoor_underground for Atmospherics). This is the join key to the sound layer.
-2. Level -> preset. `ambients/<level>.ltx` is a one-line `#include "presets\environment_<name>.ltx"` binding each map to a preset. GAMMA's extended levels (bunker_a1, collaider, grimwood, poselok_ug,
+2. Level -> preset. `ambients/<level>.ltx` is a one-line `#include "presets\environment_<name>.ltx"` binding each map to a preset. The extended levels (bunker_a1, collaider, grimwood, poselok_ug,
    zaton, jupiter) only exist in the Amplified spine, the reason it owns the config.
 3. Preset -> channels, per state. `presets/environment_<name>.ltx` has one section per weather state,
    each with `sound_channels` (the continuous background layer) and `sound_channels_dynamic` (the layered one-shots such as wind, birds, bugs, crows, foliage, and frogs).
@@ -110,6 +115,7 @@ plan     hash the roster packs' oggs, dedup by path                     -> manif
 deploy   copy the chosen files + the Amplified config subset (spine)     -> gamedata/
 config   fix stock defects, strip dead refs, cap spawn distance per cat  -> gamedata/ (config)
 graft    wire best-of-breed folders into channels + presets; frogs/heli  -> gamedata/ (config)
+fingerprint  acoustic dedup by Chromaprint - collapse same-recording aliases -> gamedata/ (config, sounds)
 prune    delete every file no channel references                        -> gamedata/sounds
 fold     stereo -> mono (re-encode) + resample off-rate to 44100        -> gamedata/sounds, fold_blobs.json
 master   RETIRED no-op (min floor moved into level, crest-inverted)     -> -
@@ -133,10 +139,10 @@ and the pipeline never downloads, so `url` is a credit/provenance reference only
   and a `base_volume` loudness band (floor lifts quiet, ceiling eases hot) to an ear-calibrated target computed from delivered loudness. The game's ambient volume slider sets the overall level on top.
 - I3 Preserve the source, except where the engine forbids it. `level` rewrites only the ogg comment blob (min/max/base_volume), losslessly, leaving the audio pages byte-identical. The one exception is `fold`:
   a stereo file must become mono (a lossy re-encode) because the engine only positions mono, and it captures the author blob first so `level` can restore and then floor min/max/base_volume.
-- I4 Deduplicate by waveform, source side only. Never against the target install.
+- I4 Deduplicate twice: by byte hash in `plan`, then by acoustic fingerprint (Chromaprint) in `fingerprint`. Both run on our side, never against the target install.
 - I5 Config is closed. The six-invariant ledger passes, or the build fails. No silent map, no silent weather, no dangling ref.
 - I6 Weather-mod-bound at exactly one link. The preset state set covers the active weather mod's emitted states. Nothing else depends on the weather mod.
-- I7 Reproducible. `plan -> deploy -> config -> graft -> prune -> fold -> master -> level -> cull -> verify -> audit` (`merge.py rebuild`) regenerates the whole soundscape and its proofs from the packs.
+- I7 Reproducible. `plan -> deploy -> config -> graft -> fingerprint -> prune -> fold -> master -> level -> cull -> verify -> audit` (`merge.py rebuild`) regenerates the whole soundscape and its proofs from the packs.
 - I8 Traceable. Every deployed sound resolves to its origin via `manifest.json`. The readme credits every source, and `licensing.md` clears it.
 
 ## Scripts: dependency gate, MCM, diagnostics (no gameplay)
@@ -157,5 +163,5 @@ No gameplay logic runs.
 ## Deploy
 
 A gamedata overlay. The repo holds the buildable source, the tool, the docs, and the audio.
-Wired for local sync and the gamma-redux install through `stalker-manager` (AlifeAmbience is a local external there, so `apply-gamma-redux` copies its gamedata and enables it).
+Wired for local sync through `stalker-manager`.
 Every source carries a free license or the author's permission, granted for my mods, not per mod (see `licensing.md`). The readme credits each author, and nothing enters the build without a license or consent.

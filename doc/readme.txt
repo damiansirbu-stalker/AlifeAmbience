@@ -1,4 +1,4 @@
-AlifeAmbience: the most complete and most refined ambient soundscape for STALKER Anomaly, by Damian
+AlifeAmbience: a curated, audible ambient soundscape for STALKER Anomaly, by Damian
 Version: next
 GitHub: https://github.com/damiansirbu-stalker/AlifeAmbience
 Changelog: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/changelog
@@ -12,25 +12,24 @@ AlifePlus: https://www.moddb.com/mods/stalker-anomaly/addons/alifeplus-v1-0-01
 AlifeSpooks: https://github.com/damiansirbu-stalker/AlifeSpooks
 AlifeTactics: https://www.moddb.com/mods/stalker-anomaly/addons/alifetactics
 
-The ambience of the Zone is some of the finest atmosphere in gaming, but in Anomaly you barely hear it. It is scattered across a dozen soundscape packs, most files fade to near-silence a few metres
+The Zone's ambience is a huge part of what makes STALKER, but in Anomaly you barely hear it. It is scattered across a dozen soundscape packs, most files fade to near-silence a few metres
 from where they play, and half are stereo, which the engine cannot place in the world at all, so the Zone sounds empty in fair weather.
-AlifeAmbience takes the best of the finest community soundscape packs, combines and mixes them tastefully into one living nature-and-weather soundscape,
-then engineers every sound by measurement: proper 3D positioning, distance and decay tuned to each sound's character, and loudness leveled to a calibrated target.
-It is the most complete and most refined ambient soundscape for Anomaly.
+AlifeAmbience draws on that whole lineage, from the original games through the classic overhaul mods (Solyanka/NS OGSR, OGSE, Dead Air, Lost Alpha)
+to the community soundscape packs that carry it forward, and combines the best of it into one living nature-and-weather soundscape, engineered by measurement to sound right in the world.
 
 It is the ambient companion to AlifeSpooks. AlifeSpooks plays the horror one-shots and removes them from the base channels. AlifeAmbience owns the audible living ambience AlifeSpooks leaves alone.
 Run both and the Zone is real and frightening at once.
 
 Overview
-No single pack has everything, and no pack is audible out of the box. AlifeAmbience takes the best source for each part of the soundscape (environment ambience, insects and frogs, wind, the helicopter,
-birds, foliage, weather), deduplicates them by waveform, and then engineers the result so it actually sounds in the world: every file folded to mono so the engine can position it in 3D,
-every file's distance range corrected so it carries and decays across its area instead of vanishing, and loudness leveled into a calibrated band so nothing turns muffled or blaring.
-The build removes dead, muffled, and redundant audio rather than keeping it. The result is a day/night ecosystem, audible at placement, that no single pack is.
+No single pack has everything, and no pack is audible out of the box. AlifeAmbience takes the best source for each part of the soundscape: environment ambience, insects and frogs, wind, the helicopter,
+birds, foliage, and weather. It removes dead, muffled, and redundant audio rather than keeping it.
+The result is a day/night ecosystem, audible at placement, that no single pack is.
 
 Measurement
-The choices come from measurement, not taste. It profiles every file for loudness and transient shape with broadcast tools (ffmpeg's ebur128 and astats),
-computes its delivered volume against the X-Ray engine's own attenuation math, and takes the targets, how present each kind of sound should be and how it decays with distance,
-from an in-ear calibration. Identity is the waveform, checked by hash, so no recording enters the build twice.
+Every choice comes from measurement, not taste. ffmpeg's ebur128 reads each file's loudness as broadcast LUFS, and astats reads its shape, a steady bed versus a sharp transient, from the crest factor and true peak.
+Those numbers feed a reconstruction of the engine's own two-stage attenuation, so the loudness the build aims for is what you hear at the sound's placement, not a figure on disk.
+The per-category targets, how present each kind of sound is and how far it carries, come from an in-ear calibration.
+A content hash removes byte-identical copies. An acoustic fingerprint (Chromaprint) then removes the same recording re-encoded or renamed under another name, so a sound never plays twice from two files.
 
 Weather coverage
 Every map and every weather state your weather mod emits resolves to an ambient set. A config-closure check proves it before release: no map goes silent, no weather goes silent,
@@ -45,7 +44,7 @@ The game's ambient volume slider still sets the overall level on top.
 
 Requirements:
 Anomaly 1.5.3
-A DLTX-capable engine (the modded exes / GAMMA)
+A DLTX-capable engine (the modded exes: themrdemonized or AOEngine)
 A weather mod whose ambient states the soundscape covers (Atmospherics out of the box)
 MCM (optional, for the version footer and diagnostics)
 
@@ -72,5 +71,5 @@ You may not reproduce the implementation in other software, even with credit. Th
 
 Issues and suggestions:
 Open a report at https://github.com/damiansirbu-stalker/AlifeAmbience/issues/new/choose, or ask on the
-GAMMA, EFP, Anomaly, and Zona Discord servers.
+EFP, Anomaly, and Zona Discord servers.
 Read this readme first.
