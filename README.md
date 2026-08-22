@@ -1,6 +1,9 @@
 # AlifeAmbience: the most complete and most refined ambient soundscape for STALKER Anomaly
 
-Every sound measured, curated, and engineered instead of crammed together. Content is chosen best-of-breed per category from the strongest soundscape packs and deduplicated by waveform, then made to actually sound in the Zone: folded to mono so everything positions in 3D, distance-corrected so each sound carries and decays naturally across its area, and loudness-banded to an ear-calibrated target so nothing is muffled or blaring. Birds, insects, wind, frogs, crows, foliage, rain, the helicopter, and the day/night ecosystem, wired to the weather so the Zone breathes.
+Every sound measured, curated, and engineered instead of crammed together. Content is chosen best-of-breed per category from the strongest soundscape packs and deduplicated by waveform,
+then made to actually sound in the Zone: folded to mono so everything positions in 3D, distance-corrected so each sound carries and decays naturally across its area,
+and loudness-banded to an ear-calibrated target so nothing is muffled or blaring. Birds, insects, wind, frogs, crows, foliage, rain, the helicopter, and the day/night ecosystem,
+wired to the weather so the Zone breathes.
 
 It is the bed counterpart to [AlifeSpooks](https://github.com/damiansirbu-stalker/AlifeSpooks): AlifeSpooks owns the horror one-shots and vetoes them out of the base channels; AlifeAmbience owns the audible living bed AlifeSpooks leaves alone. Run both for realism and horror at once.
 
@@ -15,7 +18,9 @@ Requires: Anomaly 1.5.3, a DLTX-capable engine (the modded exes / GAMMA), and a 
 
 ## How it is built
 
-A reproducible pipeline (`tools/merge.py`) selects the roster, deduplicates by waveform, folds stereo to mono, floors each file's min-distance (crest-inverted, so a sustained tone carries and a transient stays near-field), levels loudness into a floor-and-ceiling band, culls the dead, and reconciles the level and weather config into one closed set. A closure verifier and an audibility audit gate every build. See [architecture.md](doc/architecture.md).
+A reproducible pipeline (`tools/merge.py`) selects the roster, deduplicates by waveform, folds stereo to mono, floors each file's min-distance (crest-inverted,
+so a sustained tone carries and a transient stays near-field), levels loudness into a floor-and-ceiling band, culls the dead, and reconciles the level and weather config into one closed set.
+A closure verifier and an audibility audit gate every build. See [architecture.md](doc/architecture.md).
 
 ## Alife Collection
 
