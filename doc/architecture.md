@@ -3,15 +3,15 @@
 AlifeAmbience is the most complete and most refined ambient nature-and-weather soundscape for S.T.A.L.K.E.R. Anomaly and G.A.M.M.A.
 It selects the best source for each part of the soundscape across several community packs, deduplicates by waveform, and then engineers every file to sound in the world:
 folded to mono so the engine can position it in 3D, distance-corrected so it carries and decays across its area, and loudness-leveled into an ear-calibrated band.
-It reconciles the level and weather config into one closed routing, so every map in every weather state plays an audible living bed.
+It reconciles the level and weather config into one closed routing, so every map in every weather state plays an audible living soundscape.
 
 It is the counterpart to AlifeSpooks. AlifeSpooks owns the horror one-shots and statically vetoes them out of the base ambient channels.
-AlifeAmbience owns the continuous nature/weather bed AlifeSpooks leaves alone. The two never overlap: dread one-shots are AlifeSpooks, the living bed is AlifeAmbience.
+AlifeAmbience owns the continuous nature/weather ambience AlifeSpooks leaves alone. The two never overlap: dread one-shots are AlifeSpooks, the living ambience is AlifeAmbience.
 
 This document is the method and the invariants. The build tool is `tools/merge.py`. A verifier that emits a config-closure ledger proves every coverage claim, rather than the doc asserting it by hand.
 The audibility method draws on the X-Ray engine source and the library note `doc/library/anomaly/internals/sound-source-and-emitter.md`, cited throughout.
 
-## The roster: best-of-breed, not a union
+## Source roster
 
 No single pack is the superset, and no pack is audible out of the box. An earlier build merged the whole union of several packs. Measured and ear-tested, that was worse: crammed, muddy,
 and no cleaner than the loudest single pack. So the roster is best-of-breed per category, chosen by measurement (`ffmpeg ebur128`/`astats`, a waveform census, and the engine gain model), not by taste:
@@ -27,11 +27,11 @@ and no cleaner than the loudest single pack. So the roster is best-of-breed per 
 The roster packs share deploy paths (they all write under `soundscape/`), so best-of-breed cannot be a folder pick: the same path holds either pack's file. Instead it emerges from the audibility pass.
 The `level` stage lifts the salvageable content and the `cull` stage drops the dead, per file, wherever it came from, so the good survives and the muffled dies without hand-selecting folders.
 
-## The audibility method: lossless levers, one ear calibration
+## Audibility method
 
 A community ambient corpus sounds fine at-ear yet is near-inaudible in-game at range, for engine reasons, not loudness (`sound-source-and-emitter.md`):
 
-1. A STEREO ogg force-plays 2D at-ear, escaping both distance rolloffs and occlusion. Only MONO spatialises. Measured: about half the raw corpus is stereo, so half the bed plays in-head.
+1. A STEREO ogg force-plays 2D at-ear, escaping both distance rolloffs and occlusion. Only MONO spatialises. Measured: about half the raw corpus is stereo, so half the ambience plays in-head.
 2. Every 3D voice attenuates TWICE, through X-Ray's linear fade AND OpenAL's inverse model keyed on the ogg blob's `min_distance`. A `min_distance` of 1-2 (the unset ffmpeg-era default,
    most of the raw corpus) costs -26..-31 dB at a 25-50 m placement before the linear fade even applies.
 3. Content loudness is a separate floor the distance fixes cannot reach: a genuinely quiet recording plays inaudibly even at full gain.
@@ -44,7 +44,7 @@ The fix is a set of lossless edits to each ogg's own X-Ray comment blob (audio p
   A sustained low-crest tone gets a higher ratio (0.60) and carries across its band. A sharp high-crest transient gets a lower ratio (0.40) and stays a near-field detail.
   The floor caps below `max_distance` so a real fade band survives, and never lowers an authored min. This fixes the OpenAL rolloff.
 - Loudness band (`level`). Level `base_volume` into a per-category band, both arms lossless and partial. A floor lifts a file whose delivered loudness at its placement sits below the audible target,
-  and a ceiling lowers a file above it. The targets (-30 effective for continuous beds, -36 for one-shots, with -24/-28 ceilings) come from the ear calibration,
+  and a ceiling lowers a file above it. The targets (-30 effective for continuous ambience, -36 for one-shots, with -24/-28 ceilings) come from the ear calibration,
   converted through the engine's effects master. The band computes delivered loudness from the content LUFS plus the two-rolloff gain, so it operates on what the player actually hears,
   not the raw file. A file is only ever in one arm, so floor and ceiling never fight.
 
@@ -54,7 +54,7 @@ The `audit` stage is the acceptance gate over the wired files, reporting `min/fe
 
 The floor, ceiling, cap, and ratios live as calibrated constants at the top of their stage in `merge.py`, and ear-tuning sets them. A category wanting a different feel needs a constant change, not a different mechanism.
 
-## Deduplication: waveform identity, source side only
+## Deduplication
 
 Identity is the waveform, never the filename. md5 over the file dedups byte-identical reships among the source packs. A separate audio-page hash keys the loudness/crest measurement cache,
 so a rebuild re-measures only new audio and the cache survives the blob rewrites (which change the comment page, not the audio pages). Dedup runs among the source packs only,
@@ -62,26 +62,26 @@ never against the target install.
 
 ## The five-link binding chain
 
-A bed sound reaches the player through five hand-authored links. The build owns all five, and the verifier proves each resolves.
+An ambient sound reaches the player through five hand-authored links. The build owns all five, and the verifier proves each resolves.
 
 1. Weather state. The weather mod's `weathers/w_*.ltx` sets, per time frame, `ambient = <state>` (day, morning, evening, night, rain, rain_day, rain_night, storm_day, storm_night, tuman, tuman_night,
    indoor_underground for Atmospherics). This is the join key to the sound layer.
 2. Level -> preset. `ambients/<level>.ltx` is a one-line `#include "presets\environment_<name>.ltx"` binding each map to a preset. GAMMA's extended levels (bunker_a1, collaider, grimwood, poselok_ug,
    zaton, jupiter) only exist in the Amplified spine, the reason it owns the config.
 3. Preset -> channels, per state. `presets/environment_<name>.ltx` has one section per weather state,
-   each with `sound_channels` (the continuous bed) and `sound_channels_dynamic` (the layered one-shots such as wind, birds, bugs, crows, foliage, and frogs).
+   each with `sound_channels` (the continuous background layer) and `sound_channels_dynamic` (the layered one-shots such as wind, birds, bugs, crows, foliage, and frogs).
 4. Channel -> folder. `ambient_channels/backgrounds.ltx` and `sound_channels.ltx` map each channel name to a sound-folder path.
 5. Folder -> ogg. The engineered audio files.
 
 X-Ray lowercases section names on load (`strlwr(section)`, `Xr_ini.cpp:1613`), so channel and state references resolve case-insensitively.
 
-## Config closure - the proof that everything is wired
+## Config closure
 
 The build is not a file dump. Grafting content (e.g. Audio Expansion's frogs) means authoring a channel in `backgrounds.ltx`/`sound_channels.ltx`, referencing it in the right preset sections,
 binding those presets to the right levels, and covering every weather state. A verifier proves the whole config is closed before release, emitting a ledger with six invariants.
 The build fails unless every one is clean:
 
-1. No orphan file - every deployed bed ogg sits under a folder some channel points at.
+1. No orphan file - every deployed ambient ogg sits under a folder some channel points at.
 2. No orphan channel - every defined channel is referenced by some preset (informational: unused definitions are harmless, they never load).
 3. No dangling channel ref - every channel named in a preset is defined.
 4. No missing sound path - every channel's path resolves to audio on disk.
@@ -96,9 +96,9 @@ The verifier drives invariant 3 to zero.
 
 ## Coexistence with AlifeSpooks
 
-AlifeSpooks captures the dark/horror content from the same source packs and vetoes it out of the base ambient channels at config load. AlifeAmbience owns the non-dark bed.
-Because AlifeSpooks's veto removes only its own captured sounds at the source paths, and AlifeAmbience provides the nature/weather bed those packs leave for the base, the two compose without doubling:
-the AlifeSpooks director places the horror, and the AlifeAmbience config plays the living bed. Run both.
+AlifeSpooks captures the dark/horror content from the same source packs and vetoes it out of the base ambient channels at config load. AlifeAmbience owns the non-dark ambience.
+Because AlifeSpooks's veto removes only its own captured sounds at the source paths, and AlifeAmbience provides the nature/weather ambience those packs leave for the base, the two compose without doubling:
+the AlifeSpooks director places the horror, and the AlifeAmbience config plays the living ambience. Run both.
 
 ## Content pipeline (reproducible)
 
@@ -128,7 +128,7 @@ and the pipeline never downloads, so `url` is a credit/provenance reference only
 
 ## Invariants
 
-- I1 Bed only. AlifeAmbience owns the continuous nature/weather bed. Horror one-shots are AlifeSpooks. Emission and psi-storm are their own systems, and the build never touches them.
+- I1 Ambience only. AlifeAmbience owns the continuous nature/weather ambience. Horror one-shots are AlifeSpooks. Emission and psi-storm are their own systems, and the build never touches them.
 - I2 Audible and leveled, by measurement. Three levers make a file sound: mono fold (only mono positions), a crest-inverted `min_distance` floor (the OpenAL rolloff anchor),
   and a `base_volume` loudness band (floor lifts quiet, ceiling eases hot) to an ear-calibrated target computed from delivered loudness. The game's ambient volume slider sets the overall level on top.
 - I3 Preserve the source, except where the engine forbids it. `level` rewrites only the ogg comment blob (min/max/base_volume), losslessly, leaving the audio pages byte-identical. The one exception is `fold`:
@@ -136,7 +136,7 @@ and the pipeline never downloads, so `url` is a credit/provenance reference only
 - I4 Deduplicate by waveform, source side only. Never against the target install.
 - I5 Config is closed. The six-invariant ledger passes, or the build fails. No silent map, no silent weather, no dangling ref.
 - I6 Weather-mod-bound at exactly one link. The preset state set covers the active weather mod's emitted states. Nothing else depends on the weather mod.
-- I7 Reproducible. `plan -> deploy -> config -> graft -> prune -> fold -> master -> level -> cull -> verify -> audit` (`merge.py rebuild`) regenerates the whole bed and its proofs from the packs.
+- I7 Reproducible. `plan -> deploy -> config -> graft -> prune -> fold -> master -> level -> cull -> verify -> audit` (`merge.py rebuild`) regenerates the whole soundscape and its proofs from the packs.
 - I8 Traceable. Every deployed sound resolves to its origin via `manifest.json`. The readme credits every source, and `licensing.md` clears it.
 
 ## Scripts: dependency gate, MCM, diagnostics (no gameplay)
@@ -148,10 +148,10 @@ No gameplay logic runs.
   Because it has scripts, the compatibility floor (xlibs + demonized/AOE) applies to AlifeAmbience on load, uniform with the family (`compatibility-standards.md`).
 - `aa_mcm.script` - the MCM menu, informational: a General tab with the platform/version footer, and a Development tab (log level, the "log ambient wiring on load" toggle, reset).
   There is NO master volume slider. The build levels loudness into the blob (I2), and the game's own ambient volume slider sets the overall level.
-  A per-mod slider would need a runtime ambient hook this config-only bed does not have.
+  A per-mod slider would need a runtime ambient hook this config-only mod does not have.
 - `aa_debug.script` - one xlog logger plus the `aa_debug.on()/dbg()/info()/warn()` gate, level from MCM.
 - `aa_diag.script` - the runtime wiring inspector. On load (and on demand via `aa_diag.dump()` from the console) it logs the active level, weather, and ambient state.
-  It reports the per-state dynamic channel counts of the current preset (the density picture that explains why one install fires more often than another), the active bed channel and whether it resolves,
+  It reports the per-state dynamic channel counts of the current preset (the density picture that explains why one install fires more often than another), the active background channel and whether it resolves,
   and a live dangling-ref count. Gated on DEBUG or the Development toggle.
 
 ## Deploy
