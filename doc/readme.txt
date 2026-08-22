@@ -49,9 +49,13 @@ A weather mod whose ambient states the soundscape covers (Atmospherics out of th
 MCM (optional, for the version footer and diagnostics)
 
 Install (MO2):
-1. Install this mod
-2. Load it so its ambient config wins (below other soundscape mods you are replacing)
-3. Adjust ambient loudness with the game's own sound options if needed
+1. Install xlibs
+2. Install AlifeAmbience
+3. Give it higher MO2 priority than any other ambient or soundscape mod, so its config wins
+4. Optional: MCM for the version footer and diagnostics. The game's own sound options set overall ambient loudness
+
+GAMMA players (the xlibs + Alife stack): disable the soundscape mods AlifeAmbience replaces, so nothing leaks through them:
+304- Dark Signal Weather and Ambiance Audio, 3- Soundscape Overhaul, G.A.M.M.A. Soundscape Overhaul, and G.A.M.M.A. Dark Signal Audio Lite. Run AlifeSpooks alongside for the horror layer.
 
 Uninstall (MO2):
 Disable or remove in MO2. Weather visuals are your weather mod's job and are untouched.
@@ -60,6 +64,7 @@ Compatibility:
 Runs on Anomaly and any weather mod whose ambient states the soundscape covers, Atmospherics included. It is the ambient layer: it wins the ambient sound config and plays the merged soundscape.
 It composes with AlifeSpooks, which places horror one-shots and vetoes its own sounds out of the base channels, so the living ambience and the horror never double. It does not touch weather visuals,
 emission, or psi-storm.
+Tested with Anomaly 1.5.3 and GAMMA. Install or uninstall anytime; it is config and sounds, with no save state.
 
 Credits and permission:
 AlifeAmbience draws from community soundscape packs, with thanks to their authors: Dark Signal Amplified Soundscape by Shrike, Audio Expansion by AniHVX, Immersive Ambience Expansion by Kutee,
