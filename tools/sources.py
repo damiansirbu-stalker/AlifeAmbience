@@ -18,7 +18,7 @@ SOURCES = [
     # config spine + birds (its wind/foliage are muffled/stereo and get culled)
     {"name": "Amplified", "licence": "permission", "role": "config spine + birds",
      "url": "https://www.moddb.com/mods/stalker-anomaly/addons/dark-signal-amplified-soundscape",
-     "path": "C:/Users/damian/Downloads/anomaly_audio_mods/Dark Signal Amplified Soundscape/gamedata"},
+     "path": "C:/Users/damian/Downloads/stalker_anomaly_mods/audio/Dark Signal Amplified Soundscape/gamedata"},
 
     # RETUNE/Antares family - DROPPED from the roster (RETUNE + loudness, 48% stereo, no unique craft);
     # kept in the registry for licence/provenance only, never materialized (MATERIALIZE_SKIP in merge.py).
@@ -27,22 +27,22 @@ SOURCES = [
      "path": "D:/Games/GAMMA/GAMMA/mods/457- RETUNE Ambiant Sounds - Aphrodite_child/gamedata"},
     {"name": "myRETUNE", "licence": "pending", "role": "dropped (RETUNE/Antares variant)",
      "url": None,  # AntaresWolverine 2.1; no moddb page found, confirm author before shipping
-     "path": "C:/Users/damian/Downloads/anomaly_audio_mods/myRETUNE_AntaresWolverine_2.1/myRETUNE ambience sounds ver2.1/gamedata"},
+     "path": "C:/Users/damian/Downloads/stalker_anomaly_mods/audio/myRETUNE_AntaresWolverine_2.1/myRETUNE ambience sounds ver2.1/gamedata"},
 
     # insects + frogs (distinct, loud, mono) - ships no config, grafted into the spine's channels
     {"name": "AudioExpansion", "licence": "permission", "role": "insects + frogs",
      "url": "https://www.moddb.com/mods/stalker-anomaly/addons/audio-expansion",
-     "path": "C:/Users/damian/Downloads/anomaly_audio_mods/Audio Expansion/gamedata"},
+     "path": "C:/Users/damian/Downloads/stalker_anomaly_mods/audio/Audio Expansion/gamedata"},
 
     # wind reinforcement + the helicopter (loud, mono) - ships no config, grafted
     {"name": "ImmersiveAmbience", "licence": "cc", "role": "wind + helicopter",
      "url": "https://www.moddb.com/mods/stalker-anomaly/addons/immersive-ambience-expansion",
-     "path": "C:/Users/damian/Downloads/anomaly_audio_mods/Immersive Ambience Expansion/gamedata"},
+     "path": "C:/Users/damian/Downloads/stalker_anomaly_mods/audio/Immersive Ambience Expansion/gamedata"},
 
     # interior bed (slam, interior winds) - Shrike's unreleased material; NOT materialized (0 unique md5)
     {"name": "ShrikeInterior", "licence": "permission", "role": "interior bed (skipped, redundant)",
      "url": None,  # unreleased, granted directly by Shrike
-     "path": "C:/Users/damian/Downloads/anomaly_audio_mods/Dark Signal Unused Interior - Shrike/gamedata"},
+     "path": "C:/Users/damian/Downloads/stalker_anomaly_mods/audio/Dark Signal Unused Interior - Shrike/gamedata"},
 
     # environment CORE: wind, weather, birds, foliage (best-authored - mono, present, low content-limited)
     {"name": "Soundscape", "licence": "pd", "role": "environment core (wind/weather/birds/foliage)",
