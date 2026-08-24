@@ -5,170 +5,176 @@ Changelog: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/ch
 Bugs, suggestions: https://github.com/damiansirbu-stalker/AlifeAmbience/issues
 
 Alife Collection:
+AlifeAmbience: https://github.com/damiansirbu-stalker/AlifeAmbience
 AlifeBalance: https://www.moddb.com/mods/stalker-anomaly/addons/alifebalance
+AlifeCompanions: https://github.com/damiansirbu-stalker/AlifeCompanions
 AlifeDiegetic: https://www.moddb.com/mods/stalker-anomaly/addons/diegetic-audio-control-100
 AlifeGuard: https://www.moddb.com/mods/stalker-anomaly/addons/alifeguard-1001
 AlifePlus: https://www.moddb.com/mods/stalker-anomaly/addons/alifeplus-v1-0-01
 AlifeSpooks: https://github.com/damiansirbu-stalker/AlifeSpooks
 AlifeTactics: https://www.moddb.com/mods/stalker-anomaly/addons/alifetactics
+FurnitureFuel: https://github.com/damiansirbu-stalker/FurnitureFuel
+JitProfiler: https://github.com/damiansirbu-stalker/JitProfiler
+TestZone: https://github.com/damiansirbu-stalker/TestZone
+xlibs: https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001
 
-I built AlifeAmbience for my own game. I wanted the most realistic soundscape Anomaly can carry, at the best quality the engine will play.
-Every choice in it rests on a measurement rather than on how a file happened to sound to me one evening.
+I built this for my own game. Most of the ambient audio installed in Anomaly is never heard, and fixing that takes every step of the chain:
+which packs to draw from, which sounds inside them to keep, listening to each one, the parameters written into every ogg,
+the calculation behind those parameters, and the removal of duplicates. Three of those steps are where the audio is lost.
 
-It is the ambient companion to AlifeSpooks. AlifeSpooks plays the horror one-shots and takes them out of the base channels. AlifeAmbience owns the living nature and weather ambience it leaves alone.
-Run both.
+Every ogg carries a binary struct holding min_distance, max_distance, base_volume, a game type and an AI hearing distance, and any ffmpeg pass strips it.
+Without it a file falls back to min 1 and max 300, and X-Ray's linear fade and OpenAL's inverse rolloff together put it 26 to 31 dB down at a 25 to 50 metre placement.
+Only mono plays in 3D. A stereo file force-plays 2D, listener-relative, outside the distance model and outside occlusion, and about half of what the packs ship is stereo.
+Channel count is what the engine checks, so a dual-mono file behaves as stereo.
+The same recording also travels between packs under different names and encoders, so one channel can hold three copies of it.
 
+AlifeAmbience measures every file and writes the struct against where the sound is placed. The audio pages are unchanged.
 
-1. Sources
+AlifeSpooks plays the horror one-shots and removes them from the base channels. AlifeAmbience covers the nature and weather ambience. Run both.
 
-Nearly every ambient recording in Anomaly descends from GSC's original games, reworked across two decades of standalone builds.
-Those builds are Solyanka (NS OGSR), OLR, OGSE 0693, Dead Air, Lost Alpha, NLC Improved, Prosector, and Anomaly 1.5.3 itself.
-The modern soundscape packs are what carry that material today, and this mod builds from four of them.
+------------------------------------------------------------------------------------------------------------------------------------
 
-Shrike's Dark Signal Amplified Soundscape provides the level and weather configuration along with the birds.
-It is the only pack covering all 33 levels, extended maps included, in every Atmospherics state. Solarint's Soundscape Overhaul provides the environment core: wind, weather, birds and foliage.
-AniHVX's Audio Expansion contributes the insects and the frogs, and Kutee's Immersive Ambience Expansion the wind reinforcement and the helicopter.
-Shrike also gave me the interior audio he made for Dark Signal and never released.
+Sources
 
-Merging four packs whole gives a worse soundscape than any one of them alone.
-The same wind arrives four times from four authors who each mixed it against a different bed, and you hear the pile rather than the Zone.
-Each part of the soundscape therefore takes one pack's version and drops the other three.
+Classic S.T.A.L.K.E.R. audio - nearly every ambient recording in the Zone descends from GSC's originals, reworked across two decades of standalone builds.
+Solyanka (NS OGSR), OLR, OGSE 0693, Dead Air, Lost Alpha, NLC Improved, Prosector, and Anomaly 1.5.3 itself.
+Dark Signal Amplified Soundscape, by Shrike - the level and weather configuration, and the birds. It is the only pack that covers all 33 levels,
+extended maps included, in every Atmospherics state, which is why the configuration is built on it.
+Soundscape Overhaul, by Solarint - the environment core, meaning wind, weather, birds and foliage.
+Audio Expansion, by AniHVX - the insects and the frogs, which nothing else in the set has.
+Immersive Ambience Expansion, by Kutee - wind reinforcement and the helicopter.
+Dark Signal interior audio, by Shrike - material he made for Dark Signal and never released, given for my mods.
 
+Merging the packs whole measured and sounded worse than any of them alone, because the same wind arrives four times from four authors who each mixed it against a different bed.
 
-2. How it is built
+------------------------------------------------------------------------------------------------------------------------------------
 
-The whole soundscape rebuilds from the source packs with one command, and nothing in the release is hand-edited.
-Every choice rests on a number, so loudness, distance and duplication are settled by measurement rather than by a listening session.
-A rerun reproduces the release exactly, so changing a calibration value means rebuilding and hearing the difference.
-The corrections also reach every file equally, which is the only way a few thousand sounds stay consistent with each other.
+The build
 
-The measurements come from ffmpeg. Its ebur128 filter reads integrated loudness in broadcast LUFS, and its astats filter reads crest factor and true peak.
-Those two separate a steady background sound from a sharp transient. Chromaprint's fpcalc adds an acoustic fingerprint, which recognises a recording however it was encoded.
-Those numbers feed a reconstruction of the engine's own attenuation, so the build works on the loudness that arrives at the player.
+Ear - the per-category targets come from an in-ear calibration ladder, and the packs were compared by listening before selection.
 
-None of it runs against your install. Every measurement, correction and comparison happens on my side, against the source packs. The build downloads nothing either.
-I pull the packs by hand, and a licence check stops the build on any source not cleared for release.
+The struct - version 0x0003, five fields, of which the build writes two. min_distance and base_volume are set from measurement.
+max_distance, the game type and the AI hearing distance stay exactly as the author left them.
+A file arriving with no struct at all is given one, with max taken at 100 metres, the median of the corpus, rather than the engine's 300 metre default.
 
+Mono - the fold produces a genuine single-channel file, because the engine spatialises on channel count. Left and right are summed,
+unless the pair is anti-phase, meaning side RMS more than 3 dB above mid, where summing would cancel it and the left channel is kept on its own instead.
+It is a libvorbis re-encode at quality 6, resampled to 44100, and it strips metadata, which is why the author's struct is read out and stored before the fold runs.
 
-3. Build stages, and the reason for each
+Distance - min_distance is floored against where the channel actually places the sound, and the crest factor picks the ratio.
+A hard attack takes 0.40, a sustained tone takes 0.60.
+The floor is held under 80 percent of max_distance so that a real fade band always survives between the two, and it never lowers a value an author set deliberately.
 
-Selection. Every ogg in the four packs is hashed, and one file is chosen for each path the configuration can reference.
-Where two packs ship the same path, the audible one wins, so measurement makes the choice rather than a folder pick.
+Loudness - base_volume is levelled into a band rather than pushed to a single figure. Continuous beds aim at -30 LUFS effective and one-shots at -36,
+with ceilings at -24 and -28 to bring down anything hot. The figure is computed from content loudness plus both rolloff terms, so it refers to what arrives at the placement.
+It closes 70 percent of a file's gap, so quiet recordings stay quieter than loud ones.
 
-Deployment. The chosen files and the sound routing configuration are copied out.
-The surge manager, psi-storm manager, weather graph and thunderbolt settings the packs bundle alongside are never copied, because that logic fights Atmospherics and GAMMA.
+Lossless - both corrections are written into the comment struct and nowhere else, so the audio pages come out identical to what the author encoded.
+The mono fold is the only exception, because the engine positions mono only.
 
-Repair. References that point at nothing are fixed or dropped, and the spawn distance of each category is capped.
-A reference reading wind_trong instead of wind_strong plays silence, and four such defects were shipping unheard.
-Capping wind at 130 instead of 200 stops it sitting out at a range where it reads as nothing.
+Spawn radius - the min and max in sound_channels.ltx are a different pair from the ones inside the file, and the two are easy to confuse.
+They decide where around you the scheduler drops a sound, not how loud it is once it is there.
+A sound spawned near its own max_distance is placed where the curve reaches zero. Wind was spawning to 200 and inaudible at that range, so it is capped at 130.
 
-Wiring. The chosen folders are wired into channels and into the weather sections of every preset. Two of the packs ship no configuration at all, so without this step their audio never plays.
-A channel is a pool of sounds the engine draws from at its own rate, so a preset's channel count is how much fires at you per minute.
-Almost all of the grafted content extends a pool that already exists rather than adding a channel of its own.
-Variety inside a channel goes up, the firing rate stays where it was, and the soundscape gets richer instead of busier. Adding a channel does the opposite.
-It is one more sound arriving every minute, forever, on every map that uses the preset. Only two categories had no pool to join.
-Frogs play in wetland presets at evening, night and morning, and they sit near you. The helicopter plays outdoors at any hour, as a rare distant pass.
-Each inherits its placement from an existing channel of the same character rather than getting invented numbers.
-Which presets count as wetland or forest comes from joining the level configuration against the terrain of each map, never from the preset names.
-The names lie: environment_forest belongs to a field map and environment_darkscape to Red Forest. Trusting them would have put frogs in dry country.
+Duplicates - an md5 catches the files that are byte for byte the same, and Chromaprint catches the ones a hash cannot see,
+meaning the same recording renamed or run through another encoder, which turned out to be about 1.4 percent of the corpus.
+One copy survives and every reference moves onto it, so a channel can never draw the same sound twice under two names.
 
-Acoustic deduplication. Chromaprint fingerprints every deployed file and collapses the copies of one recording a hash cannot see.
-Those are the same sound re-encoded or renamed, about 1.4 percent of the corpus.
-One copy survives and the references move onto it, so a channel can never draw the same recording twice under two names. That is what keeps a rotation sounding like a rotation instead of a loop.
+Channels - a channel is a pool the engine draws from at its own rate, so the number of channels in a preset is the number of things arriving at you per minute.
+New content goes into pools that already exist wherever it can, which raises the variety and leaves the rate alone.
+Only frogs and the helicopter had nothing to join, so only those two got channels of their own.
 
-Pruning. Every file no channel references is deleted. Most of what the packs ship was never wired into anything and never played.
+Terrain - which presets count as wetland, forest, field or urban comes from joining the level configuration against the terrain of each map.
+The names do not match the terrain. environment_forest is used by a field map and environment_darkscape by Red Forest.
 
-Mono conversion. Stereo becomes mono, for the reason in section 4.
+Culling - anything measuring at or below -60 LUFS is deleted, along with the references pointing at it. No channel is left empty.
 
-Levelling. Each file is measured once, and both corrections are written from that single measurement.
-The first raises min_distance, the value OpenAL uses to decide how fast a sound falls away with distance.
-The packs mostly leave it at 1 or 2, so the sound is gone within a few metres of where it plays.
-The build raises it to a fraction of where the channel actually places the sound, and the crest factor sets the fraction. A sustained tone takes 0.60 and carries across its area.
-A sharp transient takes 0.40 and stays a near detail, because a hard attack that carries too far reads as artificial.
-The second correction moves base_volume into a band, lifting a quiet file and easing down a hot one. The target is a level I set by ear and then converted through the engine's own gain path.
-It closes 70 percent of the gap rather than all of it, so recordings keep their differences and the result is an ecosystem instead of a wall.
-Both corrections rewrite only the comment header of the ogg, leaving the audio byte for byte what the author made.
+Repairs - the stock configuration ships four channel references that resolve to nothing, wind_trong for wind_strong among them.
 
-Culling. Files measuring at or below -60 LUFS are silence, so they go and their references go with them. A channel is never left empty.
+Coverage - 33 levels, 31 presets, 12 Atmospherics states. Every cell of that matrix has to resolve to a real channel with real audio behind it,
+and the build will not produce a release until it does.
 
-Verification. The build refuses to release unless the configuration is closed. Every file on disk belongs to a channel, and every reference resolves to a channel that exists and to audio that exists.
-Every level binds a preset, underground to underground and surface to outdoor. Every preset covers every weather state the active weather mod emits, so no map can go silent in the rain.
-That last check is the only place this mod touches your weather mod. Atmospherics and its 12 ambient states are what it targets and verifies against.
+Measurement - ffmpeg does the reading, ebur128 for integrated loudness in broadcast LUFS and astats for crest factor and true peak, with Chromaprint handling identity.
+All of it feeds a reconstruction of the two rolloffs and the effects master, so every number in the build refers to what arrives at the player.
 
-Three rules run through all of it. Density is held down, because clutter is what makes ambience read as a soundtrack rather than a place.
-Content joins existing channels, duplicates collapse to one file, unwired and dead audio is deleted, and each category is capped so it cannot spread across the map.
-A sound only enters a channel whose distance band suits its character. That is why the crest measurement decides placement, and why a file arriving far off the target is corrected instead of accepted.
-The audio itself is left alone. Every correction rewrites the ogg comment header rather than the audio pages, so what you hear is the author's recording at the author's quality.
-The one exception is the mono conversion, which has to re-encode.
+Reproducible - the whole soundscape comes back from the source packs with one command, and nothing in it is hand-edited.
+Every file in the release traces to the pack it came from and to the measurement that shaped it.
 
+Offline - none of this runs against your install, and the build downloads nothing.
+I pull the packs by hand, and a licence check stops the build on any source that is not cleared.
 
-4. Mono, and why it decides everything
+------------------------------------------------------------------------------------------------------------------------------------
 
-X-Ray places a sound in the world only when the file is mono. Hand it a stereo ogg and it plays flat at both ears at a fixed level, with no direction, no distance falloff and no occlusion.
-The sound follows you around the map instead of coming from somewhere in it. About half of the source material shipped that way.
+Engine and scripts
 
-So the build folds stereo to mono. It sums the left and right channels, unless the two are close to opposite in phase, where summing would cancel them and it keeps one channel instead.
-This is the only step that re-encodes audio, done through libvorbis at quality 6, and it resamples anything off-rate to 44100.
-The author's own distance and volume values are read out before the conversion and written back after, so nothing is lost but the second channel.
+Most of this mod is audio. The rest is engine and script work, for the parts a file cannot carry.
 
-What that buys is placement. A bird calls from a tree you can walk towards, wind arrives across a field rather than from inside your head, and a helicopter passes over and away.
-Stereo width is worth nothing in a game you turn your head in, and position is worth everything.
+Beds on first load - the engine does not render the ambient beds on a fresh run until you have saved and reloaded, which is why a new game starts quieter than it should. Fixed.
 
+Tracing - changes I made to X-Ray that report what the ambient system does while a build plays.
 
-5. Engine support
+Veto and intercept - the same work exposes the point where the engine decides to play an ambient sound, so a script can refuse or alter it before playback.
+The items below depend on it and are not reachable from configuration.
 
-The soundscape also uses changes I made to the X-Ray engine itself. They went in for tracing, so that I could watch what the ambient system was actually doing while a build played.
-Measuring a file on disk only takes you so far, and the rest of the answer sits in the engine at the moment it decides to play something.
+Throttling - planned. The ambient system fires the same sound twice in a row, or three at once.
+A minimum gap at the emitter and a short history of recent plays prevent both.
 
-That tracing is the groundwork for making the ambience react rather than repeat, and three things are planned on top of it.
-The ambient system is happy to fire the same sound twice in a row, or three sounds at once, and both give the trick away.
-A throttle at the emitter will enforce spacing, and a short memory of what just played will keep a repeat from following itself.
-Sounds that belong together should also be chosen together, so a place holds its character across several minutes. And every play of the same file at the same distance sounds like a recording.
-A small jitter on placement, a few metres either way, turns it into an event. That variation has to stay small.
-Move a sound far and you break the mix its author made, which is the whole thing this build exists to protect.
+Families - planned. Related sounds are selected together, so a location keeps a consistent character over several minutes.
 
-AlifeSpooks already hooks the sound emitter for its own placement, so this work shares that hook rather than fighting it.
+Jitter - planned. A few metres of variation on the emit distance, bounded to stay inside the author's band.
+A larger offset would undo the levelling.
 
+Shared hook - AlifeSpooks already hooks the sound emitter for its own placement, so this work shares that hook rather than adding a second one to fight it.
 
-6. Requirements
+------------------------------------------------------------------------------------------------------------------------------------
+
+Requirements
 
 Anomaly 1.5.3
-xlibs (https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001)
-A DLTX-capable engine, meaning the modded exes: themrdemonized or AOEngine
-A weather mod whose ambient states the soundscape covers, with Atmospherics covering every map and state out of the box
-MCM, optional, for the version footer and the wiring inspector
+xlibs - https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001
+Modded exes - themrdemonized or AOEngine, for DLTX
+A weather mod whose ambient states the soundscape covers. Atmospherics covers every map and state out of the box
+MCM - optional, for the version footer and the wiring inspector
 
-Install (MO2):
+Install (MO2)
+
 1. Install xlibs
 2. Install AlifeAmbience
 3. Give it higher MO2 priority than any other ambient or soundscape mod, so its configuration wins
-4. Keep a weather mod active whose ambient states AlifeAmbience covers. Atmospherics is what it is built and verified against
-5. The game's own sound options set the overall ambient level. The mod has no volume slider, because the loudness is already levelled into each file
+4. Keep a weather mod active. Atmospherics is what this is built and verified against
+5. Set the level in the game's own sound options. There is no volume slider in the mod, because loudness is already levelled into each file
 
-GAMMA players: GAMMA already ships Atmospherics, so the weather side is covered. Disable the soundscape mods AlifeAmbience replaces, so nothing leaks through.
-Those are 304- Dark Signal Weather and Ambiance Audio, 3- Soundscape Overhaul, G.A.M.M.A. Soundscape Overhaul, and G.A.M.M.A. Dark Signal Audio Lite. Run AlifeSpooks alongside for the horror layer.
+GAMMA - Atmospherics already ships, so the weather side is covered. Disable 304- Dark Signal Weather and Ambiance Audio, 3- Soundscape Overhaul,
+G.A.M.M.A. Soundscape Overhaul and G.A.M.M.A. Dark Signal Audio Lite, so that nothing leaks through. Run AlifeSpooks alongside for the horror layer.
 
-Uninstall (MO2): disable or remove it in MO2. Weather visuals belong to your weather mod and stay untouched.
+Uninstall - disable or remove it in MO2. Weather visuals belong to your weather mod and are untouched.
 
-Compatibility: it runs on Anomaly and on any weather mod whose ambient states the soundscape covers, Atmospherics included.
-It is the ambient layer, so it wins the ambient sound configuration and plays the merged soundscape.
-It composes with AlifeSpooks, which places the horror one-shots and takes its own sounds out of the base channels. The living ambience and the horror never double up.
-It does not touch weather visuals, emission or psi-storm. No gameplay script runs, and nothing polls while you play.
-Tested with Anomaly 1.5.3 and GAMMA. Install or uninstall it at any time, because it is configuration and sounds with no save state.
+Compatibility
 
+Weather mods - any whose ambient states the soundscape covers, Atmospherics included. Weather visuals, emission and psi-storm are left alone.
+Soundscape mods - this is the ambient layer, so it wins the ambient sound configuration and plays the merged soundscape.
+AlifeSpooks - composes with it. AlifeSpooks places the horror one-shots and takes its own sounds out of the base channels, so the two never double up.
+Performance - no gameplay script runs, and nothing polls while you play.
+Saves - install or remove it whenever you like, since it is configuration and sounds with no save state.
+Tested - Anomaly 1.5.3 and GAMMA.
 
-7. Credits and licence
+------------------------------------------------------------------------------------------------------------------------------------
 
-Solarint made Soundscape Overhaul, Shrike made the Dark Signal family and Amplified Soundscape, AniHVX made Audio Expansion, and Kutee made Immersive Ambience Expansion.
-Shrike also granted his unreleased Dark Signal interior audio for my mods, and it ships as exclusive content in AlifeSpooks.
-Through those packs this soundscape carries audio from the original S.T.A.L.K.E.R. games and from the standalone builds that reworked it.
-The pack authors credit those builds on their own pages: Solyanka (NS OGSR), OLR, OGSE 0693, Dead Air, Lost Alpha, NLC Improved, Prosector.
+Credits
 
-Each pack carries a free licence or its author's permission, granted for my mods rather than for one of them. licensing.md records the basis for each.
-I include only selected audio, and if an author does not want their work included, I remove it.
+Solarint made Soundscape Overhaul. Shrike made the Dark Signal family and Amplified Soundscape, and also gave me his unreleased interior audio,
+which ships as exclusive content in AlifeSpooks. AniHVX made Audio Expansion. Kutee made Immersive Ambience Expansion.
 
-Modpacks are allowed and encouraged, so long as you keep the readme and licence files. Addons, patches and integrations are allowed. Credit "AlifeAmbience by Damian Sirbu" visibly on your mod page.
-You may not reproduce the implementation in other software, even with credit. The full licence is in the LICENSE file and on GitHub.
+Through those packs this soundscape carries audio from the original S.T.A.L.K.E.R. games and from the standalone builds that reworked it,
+credited by the pack authors on their own pages. Each pack carries a free licence or its author's permission, granted for my mods rather than for one of them,
+and licensing.md records the basis for each. I include only selected audio, and if an author does not want their work included, I remove it.
 
-Issues and suggestions: open a report at https://github.com/damiansirbu-stalker/AlifeAmbience/issues/new/choose, or ask on the EFP, Anomaly and Zona Discord servers.
-Read this readme first.
+Licence
+
+Modpacks are allowed and encouraged, so long as you keep the readme and licence files. Addons, patches and integrations are allowed.
+Credit "AlifeAmbience by Damian Sirbu" visibly on your mod page. You may not reproduce the implementation in other software, even with credit.
+The full licence is in the LICENSE file and on GitHub.
+
+Issues and suggestions
+
+Open a report at https://github.com/damiansirbu-stalker/AlifeAmbience/issues/new/choose, or ask on the EFP, Anomaly and Zona Discord servers. Read this readme first.
