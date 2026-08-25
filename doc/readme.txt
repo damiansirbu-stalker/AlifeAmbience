@@ -53,7 +53,7 @@ The build
 
 Ear - the per-category targets come from an in-ear calibration ladder, and the packs were compared by listening before selection.
 
-The struct - version 0x0003, five fields, of which the build writes two. min_distance and base_volume are set from measurement.
+The struct - five fields, of which the build writes two. min_distance and base_volume are set from measurement.
 max_distance, the game type and the AI hearing distance stay exactly as the author left them.
 A file arriving with no struct at all is given one, with max taken at 100 metres, the median of the corpus, rather than the engine's 300 metre default.
 
@@ -107,24 +107,16 @@ I pull the packs by hand, and a licence check stops the build on any source that
 
 Engine and scripts
 
-Most of this mod is audio. The rest is engine and script work, for the parts a file cannot carry.
+Most of this mod is audio. The rest is engine and script work, planned, for the parts a file cannot carry.
+All of it waits on one engine change: a hook at the point where X-Ray decides to play an ambient sound, so a
+script can watch it, refuse it, or alter it first. xlibs carries the API already and it is inert until the
+engine calls it.
 
-Beds on first load - the engine does not render the ambient beds on a fresh run until you have saved and reloaded, which is why a new game starts quieter than it should. Fixed.
-
-Tracing - changes I made to X-Ray that report what the ambient system does while a build plays.
-
-Veto and intercept - the same work exposes the point where the engine decides to play an ambient sound, so a script can refuse or alter it before playback.
-The items below depend on it and are not reachable from configuration.
-
-Throttling - planned. The ambient system fires the same sound twice in a row, or three at once.
-A minimum gap at the emitter and a short history of recent plays prevent both.
-
-Families - planned. Related sounds are selected together, so a location keeps a consistent character over several minutes.
-
-Jitter - planned. A few metres of variation on the emit distance, bounded to stay inside the author's band.
-A larger offset would undo the levelling.
-
-Shared hook - AlifeSpooks already hooks the sound emitter for its own placement, so this work shares that hook rather than adding a second one to fight it.
+Beds on first load - the engine does not render the ambient beds on a fresh run until you have saved and reloaded.
+Tracing - report what the ambient system does while a build plays.
+Throttling - the ambient system fires the same sound twice in a row, or three at once. A minimum gap at the emitter and a short history of recent plays prevent both.
+Families - related sounds selected together, so a location keeps a consistent character over several minutes.
+Jitter - a few metres of variation on the emit distance, bounded to stay inside the author's band.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
