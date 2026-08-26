@@ -1,5 +1,5 @@
 AlifeAmbience: a curated, audible ambient soundscape for STALKER Anomaly, by Damian
-Version: next (xlibs required)
+Version: next (xlibs 1.8.3, demonized 20250908)
 GitHub: https://github.com/damiansirbu-stalker/AlifeAmbience
 Changelog: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/changelog
 Bugs, suggestions: https://github.com/damiansirbu-stalker/AlifeAmbience/issues
