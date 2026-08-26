@@ -39,7 +39,9 @@ A community ambient corpus sounds fine at-ear yet is near-inaudible in-game at r
 The fix is a set of lossless edits to each ogg's own X-Ray comment blob (audio pages byte-identical), keyed to an in-ear calibration ladder that fixed the target levels:
 
 - Fold to mono (`fold`). The one lossy step, unavoidable since only mono positions: sum L+R, or drop a channel for an anti-phase pair. It captures the author blob first
-  and resamples off-rate files to 44100 here.
+  and resamples off-rate files to 44100 here (the engine hard-rejects any other rate outright -
+  `SoundRender_Source_loader.cpp:79`, no runtime resampler - so the fold upsamples to salvage the file
+  rather than let it fail to play; the engine never downsamples or alters bitrate at playback).
 - Crest-inverted min-distance floor (`level`). Floor each file's `min_distance` to a ratio of its channel's felt-far placement, the ratio keyed to the sound's crest.
   A sustained low-crest tone gets a higher ratio (0.60) and carries across its band. A sharp high-crest transient gets a lower ratio (0.40) and stays a near-field detail.
   The floor caps below `max_distance` so a real fade band survives, and never lowers an authored min. This fixes the OpenAL rolloff.
