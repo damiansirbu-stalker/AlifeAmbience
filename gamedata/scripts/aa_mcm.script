@@ -24,10 +24,8 @@ end
 
 cfg, get_config, load_config = xmcm.create_config("aa", defaults, path_builder)
 
--- functor_ui receives the UI_MCM instance as trailing arg (ui_mcm.script:1435); functor would receive
--- nothing, and MCM 1.7.2fix leaves the file-local GUI nil on fresh opens, so ui_mcm.get_gui() returns
--- nil. functor_ui sidesteps that. On_Cancel (not On_Discard) closes cleanly on all exe builds; see the
--- other mods' MCM for the full rationale.
+-- functor_ui passes the UI_MCM instance, which get_gui() cannot supply on a fresh open.
+-- @src anomaly/ui_mcm.script:1435
 local function _apply_defaults(gui, msg)
     local config = axr_main.config
     for k, v in pairs(defaults) do
