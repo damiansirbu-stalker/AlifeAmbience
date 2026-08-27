@@ -153,7 +153,7 @@ AlifeAmbience provides audio and config. Its Lua is a thin diagnostic and compat
 No gameplay logic runs.
 
 - `_aa_deps.script` - the version constant (`get_version`), the xlibs + modded-exes floor asserts, the `platform_status`/`platform_functor` line, and the boot banner to `alifeambience.log`.
-  Because it has scripts, the compatibility floor (xlibs + demonized/AOE) applies to AlifeAmbience on load, uniform with the family (`compatibility-standards.md`).
+  Because it has scripts, the compatibility floor (xlibs + demonized/AOE) applies to AlifeAmbience on load, uniform with the family (`stalker-compatibility.md`).
 - `aa_mcm.script` - the MCM menu, informational: a General tab with the platform/version footer, and a Development tab (log level, the "log ambient wiring on load" toggle, reset).
   There is NO master volume slider. The build levels loudness into the blob (I2), and the game's own ambient volume slider sets the overall level.
   A per-mod slider would need a runtime ambient hook this config-only mod does not have.
