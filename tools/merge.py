@@ -1,38 +1,30 @@
-"""AlifeAmbience: build the ambient soundscape from a best-of-breed pack roster, made audible by ear.
+"""AlifeAmbience mastering mill: the hand-authored config is the source of truth; this tool
+materializes, masters, reports, and proves what the config says. It never chooses content.
 
-Two orchestrator commands (shape shared with AlifeSpooks):
-  rebuild   full, destructive: wipe the deployed audio, regenerate the whole corpus from source.
-  add       incremental: run the pipeline WITHOUT wiping (deploy skips existing, fold/level hash-cached).
-            NOTE: graft APPENDS, so `add` is not idempotent - prefer `rebuild` after any config/roster change.
-Run: python merge.py <command|stage>   (bare = add).
+The config (sound_channels.ltx, ambient_channels/*, ambients/*) is authored by hand
+(doc/architecture.md: the channel is the unit of curation). Content choices live in the config and in
+sources.py (DISPOSITIONS, DEPLOY_EXTRA). The mill's stages:
 
-Stages, in order (each reads the previous stage's output on disk):
-  plan         hash the roster packs' oggs, dedup by PATH (byte hash)                  -> manifest.json
-  deploy       copy the chosen files + the Amplified config subset (the spine)         -> gamedata/
-  config       fix stock defects, strip dead refs, cap spawn distance per category     -> gamedata/ cfg
-  graft        wire best-of-breed folders into channels + presets, add frogs/heli      -> gamedata/ cfg
-  fingerprint  acoustic dedup (Chromaprint): collapse same-recording aliases           -> gamedata/ cfg, sounds
-  prune        delete every file no channel references                                 -> gamedata/sounds
-  fold         stereo -> mono (re-encode) + resample off-rate to 44100                 -> sounds, fold_blobs
-  master       RETIRED no-op (its min floor moved into level, crest-inverted)          -> -
-  level        the two blob floors + the loudness ceiling, from one crest+LUFS pass    -> sounds, level_cache
-  cull         delete silent/dead files, strip their refs (never emptying a channel)   -> gamedata/sounds
-  verify       six-invariant config-closure ledger                                     -> ledger.tsv
-  audit        wired min/felt-far ratio + crushed share (acceptance gate)              -> stdout
+  materialize  pull exactly the referenced files from the source packs into gamedata/sounds,
+               delete deployed files nothing references (deployed set == referenced set)  -> manifest.json
+  fmt          mechanical config guard: dedup pool tokens, normalize preset lines, strip refs to
+               deleted channels/files, cap spawn distances, FAIL any pool line over LINE_CAP
+  fold         stereo -> mono (re-encode) + resample off-rate to 44100                    -> fold_blobs
+  level        crest-inverted min floor + loudness band, one crest+LUFS pass              -> level_cache
+  fingerprint  acoustic-duplicate WARNING report (Chromaprint); the curator resolves      -> stdout
+  dead         dead-audio report (content at/below DEAD_LUFS); the curator excludes       -> stdout
+  verify       the gate ledger (closure + retention + density + veto, 11 gates)           -> ledger.tsv
+  audit        wired min/felt-far ratio + crushed share (acceptance report)               -> stdout
+  stage NAME   materialize a source folder under sounds/stage/ for in-game audition
+  unstage      remove the whole stage tree
+  all          materialize -> fmt -> fold -> level -> fingerprint -> dead -> verify -> audit
 
-Design:
-  - ROSTER, not a union: best-of-breed per category (Soundscape environment, Audio Expansion insects/
-    frogs, Immersive wind/helicopter) on the Amplified config spine. RETUNE/Antares dropped.
-  - Amplified is the config spine (the only pack with a complete level/weather config). The roster packs
-    SHARE deploy paths, so best-of-breed emerges from fingerprint (drop acoustic aliases), level (lift the
-    salvageable) and cull (drop the dead), not from folder selection.
-  - Never include the bundled non-sound logic (surge/psi managers, weather graph, thunderbolts) - it fights
-    the weather mods. Keep only the ambient sound config.
-  - Audibility is an ENGINE problem, not loudness: stereo plays 2D, min 1-2 is crushed by OpenAL, quiet
-    content stays quiet. Fixed by lossless blob edits keyed to an ear calibration: fold stereo->mono; a
-    crest-inverted min-distance floor (fixes the OpenAL rolloff); and a base_volume loudness BAND (floor
-    lifts quiet content, ceiling lowers hot content) to the ear-anchored -30/-36 floors and -24/-28
-    ceilings (continuous / one-shot). See doc/library/anomaly/internals/sound-source-and-emitter.md.
+Audibility is an ENGINE problem, not loudness: stereo plays 2D, min 1-2 is crushed by OpenAL, quiet
+content stays quiet. Fixed by lossless blob edits keyed to an ear calibration: fold stereo->mono; a
+crest-inverted min-distance floor; a base_volume loudness BAND to the ear-anchored -30/-36 floors and
+-24/-28 ceilings. See doc/library/anomaly/internals/sound-source-and-emitter.md. Strike files
+(DEPLOY_EXTRA, sounds/nature/) get the fold only: the engine overrides their attenuation range per
+strike (thunderbolt.cpp:235), so blob distances do nothing there.
 """
 import os, sys, json, hashlib, shutil, re, struct, subprocess, math, statistics
 
@@ -42,41 +34,54 @@ GD = os.path.join(REPO, "gamedata")
 sys.path.insert(0, HERE)
 import sources  # noqa
 
-SPINE = "Amplified"                              # config spine: the only pack with a complete level/weather config
-MASTERS = ("Soundscape", "ImmersiveAmbience")    # roster environment winners override the spine at background beds
-# The ROSTER (2026-08-22, measured + ear-anchored): best-of-breed per category, not a union.
-#   Amplified  - config spine + birds; its wind/foliage culled (muffled/stereo, 21%/0% dead but quiet)
-#   Soundscape - environment core: wind, weather, birds, foliage (mono, present, low content-limited)
-#   Immersive  - wind reinforcement + helicopter (loud, mono)
-#   AudioExp   - insects + frogs (loud, mono, distinct)
-# registry entries kept for licence/provenance but NOT materialized:
-#   vanilla       - GSC full unpack, non-ambient, huge
-#   ShrikeInterior- proven 100% redundant (0 unique md5) by the dedup census
-#   RETUNE457 / myRETUNE - the RETUNE/Antares family; dropped (RETUNE + loudness, 48% stereo, no unique craft)
-MATERIALIZE_SKIP = {"vanilla", "ShrikeInterior", "RETUNE457", "myRETUNE"}
-# only these sound roots are the ambient bed; excludes weapons/voice/etc. under a full unpack
-AMBIENT_MARKERS = ("/sounds/ambient/", "/sounds/ambience_exp/")
+# only these sound roots are ambience-scope in a source pack; excludes weapons/voice/monsters/etc.
+# /sounds/nature/ is the engine thunderbolt strike set (vanilla paths, thunderbolts.ltx `sound=`).
+AMBIENT_MARKERS = ("/sounds/ambient/", "/sounds/ambience_exp/", "/sounds/nature/")
+# packs never swept for path resolution (huge full unpacks / proven fully redundant)
+RESOLVE_SKIP = {"vanilla", "ShrikeInterior"}
 
-# the sound-routing config subset we keep from the spine (relative to gamedata/)
-KEEP_CONFIG_DIRS = [
-    "configs/environment/ambients",             # ambients.ltx lives one level up; dir = level files + presets
-    "configs/environment/ambient_channels",     # backgrounds.ltx + blowout_channels.ltx
-]
-KEEP_CONFIG_FILES = [
-    "configs/environment/ambients.ltx",
-    "configs/environment/sound_channels.ltx",
-]
-# non-sound logic bundled in the packs that we NEVER ship (fights GAMMA/Atmospherics)
-DROP_CONFIG_RE = re.compile(
-    r"(dynamic_weather_graphs|thunderbolt|weather_effects|surge_manager|psi_storm_manager"
-    r"|mod_system_|mod_animations_settings)", re.I)
+ENV = os.path.join(GD, "configs", "environment")
+PRESETS = os.path.join(ENV, "ambients", "presets")
+LEVELS = os.path.join(ENV, "ambients")
+CHANNEL_FILES = [os.path.join(ENV, "ambient_channels", "backgrounds.ltx"),
+                 os.path.join(ENV, "ambient_channels", "blowout_channels.ltx"),
+                 os.path.join(ENV, "sound_channels.ltx")]
+SC = os.path.join(ENV, "sound_channels.ltx")
+SROOT = os.path.join(GD, "sounds")
+STAGE_DIR = "stage"                     # sounds/stage/<family>: audition staging, exempt from gates
 
-# the four stock dangling-ref defects found by the baseline audit (invariant 3)
-DEFECT_FIXES = {
-    "wind_trong": "wind_strong",   # typo
-    # branch_spook / bugs / drones_day: no valid target - drop the ref (handled in config stage)
-}
-DEFECT_DROP = {"branch_spook", "bugs", "drones_day"}
+# Atmospherics ambient-state vocabulary (the weather matrix columns)
+WEATHER_STATES = ["day", "morning", "evening", "night", "rain", "rain_day", "rain_night",
+                  "storm_day", "storm_night", "tuman", "tuman_night", "indoor_underground"]
+UNDERGROUND_STATE = "indoor_underground"
+# thunderbolt collections the active weather mod references (Atmospherics weathers sweep, 2026-08-31)
+# vs the collections the base game defines (vanilla thunderbolt_collections.ltx). Gate 10.
+COLLECTIONS_REQUIRED = {"collection_close", "collection_default", "collection_distant"}
+COLLECTIONS_BASE = {"collection_close", "collection_distant", "collection_default",
+                    "collection_stancia", "collection_surge", "collection_test"}
+
+# the engine reads each `sounds =` value into a fixed ~4096 buffer (SoundRender_Core.cpp:249,
+# r_stringZ; FS.cpp:467 asserts sz < tgt_sz). A line over the buffer is a hard CTD on config load.
+LINE_CAP = 3900
+
+# per-state density budgets (events per minute, ear-calibrated). None = report-only until the
+# calibration sessions set them (doc/architecture.md: Density).
+DENSITY_BUDGET = None
+ENTRY_BURST_MS = 15000     # a channel with period0 below this fires within the state's entry window
+
+# Gentle per-category spawn-distance cap: a category's channels should not spawn TOO far (System B felt ~
+# max_distance/2). Channel-name keyed, lower-only, guarded so max stays > min (engine assert). Applied by
+# fmt, not by hand. Values are ear-tune starting points, like the loudness floors.
+SPAWN_CAP = {"wind": 130.0}   # wind 200 -> 130 (felt ~100 -> ~65): nudge the far ones without collapsing them
+
+# AlifeSpooks static veto overlay (gate 11): DLTX `<sounds` element removals applied to OUR resolved
+# sound_channels.ltx at load. Any pool path listed there would be silently stripped in-game.
+SPOOKS_VETO = os.path.join(os.path.dirname(REPO), "AlifeSpooks", "gamedata", "configs",
+                           "environment", "mod_sound_channels_alifespooks.ltx")
+
+
+def _read(p):
+    return open(p, encoding="utf-8", errors="replace").read()
 
 
 def _hash(path):
@@ -110,456 +115,13 @@ def _save_hashes(h):
     json.dump(h, open(os.path.join(HERE, "hashes.json"), "w"))
 
 
-def cmd_plan():
-    sources.check_licences(public=False)
-    cache = _load_hashes()
-    order = [name for name, _ in sources.mods()]
-    # gather: per source, list of (rel, fullpath, md5)
-    per_source = {}
-    for name, gd in sources.mods():
-        if name in MATERIALIZE_SKIP:
-            continue
-        rows = []
-        for full, rel in _iter_oggs(gd):
-            md5 = cache.get(full)
-            if md5 is None:
-                md5 = _hash(full)
-                cache[full] = md5
-            # rel_lc = case-insensitive dedup/conflict key; rel = original-case deploy path
-            rows.append((rel.lower(), rel, full, md5))
-        per_source[name] = rows
-        print(f"  hashed {name}: {len(rows)} oggs")
-    _save_hashes(cache)
+def _tok_ok(t):
+    t = t.strip().replace("\\", "/").lower()
+    # a real sound path: has a folder separator, no key/space garbage, not the silent placeholder
+    if not t or t == "ambient/no_sound" or "=" in t or " " in t or "\t" in t or "/" not in t:
+        return None
+    return t
 
-    # dedup by PATH (the config-referenceable location), not by waveform: the config points at exact
-    # paths, and the same audio at two different paths is two distinct locations both channels may use,
-    # so each must ship. For each unique path, pick one source's file.
-    # priority: spine first (owns its paths), then masters (override spine at background beds), then rest.
-    prio = [SPINE] + [m for m in MASTERS if m != SPINE] + [n for n in order if n not in (SPINE,) + MASTERS]
-    path_choice = {}     # rel_lc -> (source, rel_orig, full, md5)
-    overrides = 0
-    for name in prio:
-        for rel_lc, rel, full, md5 in per_source.get(name, []):
-            if rel_lc not in path_choice:
-                path_choice[rel_lc] = (name, rel, full, md5)
-                continue
-            owner_name = path_choice[rel_lc][0]
-            # an audible master overrides the spine's (dead) copy at a background bed path
-            if name in MASTERS and owner_name == SPINE and "background" in rel_lc:
-                path_choice[rel_lc] = (name, rel, full, md5)
-                overrides += 1
-            # else keep the existing owner (earlier-in-priority wins)
-
-    shipped = {rel: {"source": name, "md5": md5, "full": full}
-               for (name, rel, full, md5) in path_choice.values()}
-    waveforms = len(set(md5 for (_, _, _, md5) in path_choice.values()))
-
-    manifest = {
-        "sources": [n for n in order if n not in MATERIALIZE_SKIP],
-        "spine": SPINE,
-        "masters": list(MASTERS),
-        "total_source_oggs": sum(len(v) for v in per_source.values()),
-        "unique_paths": len(path_choice),
-        "unique_waveforms": waveforms,
-        "master_overrides": overrides,
-        "shipped_paths": len(shipped),
-        "shipped": shipped,
-    }
-    json.dump(manifest, open(os.path.join(HERE, "manifest.json"), "w"), indent=1)
-    print(f"  total source oggs : {manifest['total_source_oggs']}")
-    print(f"  unique waveforms  : {manifest['unique_waveforms']}")
-    print(f"  shipped paths     : {manifest['shipped_paths']}")
-
-
-def cmd_deploy():
-    manifest = json.load(open(os.path.join(HERE, "manifest.json")))
-    # 1. audio
-    copied = skipped = 0
-    for rel, info in manifest["shipped"].items():
-        dst = os.path.join(GD, "sounds", rel.replace("/", os.sep))
-        if os.path.exists(dst):
-            skipped += 1
-            continue
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.copy2(info["full"], dst)
-        copied += 1
-    print(f"  audio: copied {copied}, skipped(existing) {skipped}")
-    # 2. config subset from the spine (dropping the non-sound logic)
-    spine_gd = dict(sources.mods())[SPINE]
-    n = 0
-    for base in KEEP_CONFIG_DIRS:
-        src = os.path.join(spine_gd.replace("/", os.sep), base.replace("/", os.sep))
-        for dp, _, fns in os.walk(src):
-            for fn in fns:
-                if not fn.lower().endswith(".ltx"):
-                    continue
-                if DROP_CONFIG_RE.search(fn):
-                    continue
-                s = os.path.join(dp, fn)
-                rel = os.path.relpath(s, spine_gd.replace("/", os.sep))
-                d = os.path.join(GD, rel)
-                os.makedirs(os.path.dirname(d), exist_ok=True)
-                shutil.copy2(s, d)
-                n += 1
-    for f in KEEP_CONFIG_FILES:
-        s = os.path.join(spine_gd.replace("/", os.sep), f.replace("/", os.sep))
-        if os.path.exists(s):
-            d = os.path.join(GD, f.replace("/", os.sep))
-            os.makedirs(os.path.dirname(d), exist_ok=True)
-            shutil.copy2(s, d)
-            n += 1
-    print(f"  config: copied {n} sound-routing ltx (dropped non-sound logic)")
-
-
-# ---- config wiring ----
-
-ENV = os.path.join(GD, "configs", "environment")
-PRESETS = os.path.join(ENV, "ambients", "presets")
-LEVELS = os.path.join(ENV, "ambients")
-CHANNEL_FILES = [os.path.join(ENV, "ambient_channels", "backgrounds.ltx"),
-                 os.path.join(ENV, "ambient_channels", "blowout_channels.ltx"),
-                 os.path.join(ENV, "sound_channels.ltx")]
-# Atmospherics ambient-state vocabulary (the weather matrix columns)
-WEATHER_STATES = ["day", "morning", "evening", "night", "rain", "rain_day", "rain_night",
-                  "storm_day", "storm_night", "tuman", "tuman_night", "indoor_underground"]
-UNDERGROUND_STATE = "indoor_underground"
-
-
-def _read(p):
-    return open(p, encoding="utf-8", errors="replace").read()
-
-
-# Gentle per-category spawn-distance cap: a category's channels should not spawn TOO far (System B felt ~
-# max_distance/2). Channel-name keyed, lower-only, guarded so max stays > min (engine assert). Applied by the
-# pipeline, not by hand. Values are ear-tune starting points, like the loudness floors.
-SPAWN_CAP = {"wind": 130.0}   # wind 200 -> 130 (felt ~100 -> ~65): nudge the far ones without collapsing them
-
-
-def _cap_spawn_distances():
-    """Cap each channel's spawn max_distance to its category cap. Only lowers a max above the cap; never
-    raises; keeps max > min. Channel-name keyed (SPAWN_CAP)."""
-    capped = 0
-    for f in CHANNEL_FILES:
-        if not os.path.exists(f):
-            continue
-        out, cap, cmin = [], None, 0.0
-        for ln in _read(f).split("\n"):
-            mh = re.match(r"\s*\[([^\]]+)\]", ln)
-            if mh:
-                nm = mh.group(1).lower()
-                cap = next((c for k, c in SPAWN_CAP.items() if k in nm), None)
-                cmin = 0.0
-            mn = re.match(r"\s*min_distance\s*=\s*([\d.]+)", ln, re.I)
-            if mn:
-                cmin = float(mn.group(1))
-            mx = re.match(r"(\s*max_distance\s*=\s*)([\d.]+)", ln, re.I)
-            if mx and cap is not None:
-                cur = float(mx.group(2))
-                lim = max(cap, cmin + 10.0)          # keep max > min (engine asserts max > min, strict)
-                if cur > lim:
-                    ln = f"{mx.group(1)}{lim:g}"
-                    capped += 1
-            out.append(ln)
-        open(f, "w", encoding="utf-8").write("\n".join(out))
-    print(f"  spawn-cap: capped {capped} channel max_distances (wind <= {SPAWN_CAP.get('wind')})")
-
-
-def cmd_config():
-    """Fix the four stock dangling-ref defects (invariant 3) in the deployed presets."""
-    fixed = {"rename": 0, "drop": 0}
-    for fn in os.listdir(PRESETS):
-        p = os.path.join(PRESETS, fn)
-        txt = _read(p)
-        orig = txt
-        # rename wind_trong -> wind_strong (whole-word)
-        txt2 = re.sub(r"\bwind_trong\b", "wind_strong", txt)
-        if txt2 != txt:
-            fixed["rename"] += txt.count("wind_trong")
-        txt = txt2
-        # drop the three undefined channels from any sound_channels/_dynamic list
-        for bad in DEFECT_DROP:
-            def _strip(m):
-                items = [c.strip() for c in re.split(r"[,;]", m.group(2)) if c.strip()]
-                items = [c for c in items if c.lower() != bad]
-                fixed["drop"] += 1
-                return m.group(1) + ", ".join(items)
-            txt = re.sub(r"(sound_channels(?:_dynamic)?\s*=\s*)([^\n]*\b" + re.escape(bad) + r"\b[^\n]*)",
-                         _strip, txt, flags=re.I)
-        if txt != orig:
-            open(p, "w", encoding="utf-8").write(txt)
-    # 5th stock defect: `aambient\...\drone32` double-a typo in sound_channels.ltx (unreachable path)
-    typo = 0
-    for f in CHANNEL_FILES:
-        if os.path.exists(f):
-            t = _read(f)
-            t2 = t.replace("aambient\\", "ambient\\").replace("aambient/", "ambient/")
-            if t2 != t:
-                typo += t.count("aambient")
-                open(f, "w", encoding="utf-8").write(t2)
-    # strip genuinely-dead channel refs: a `sounds=` entry whose file (or folder, for a random-pick
-    # ref) is absent on disk. Keeps folder refs and no_sound; guards against emptying a channel.
-    sroot = os.path.join(GD, "sounds")
-    disk = set()
-    for dp, _, fns in os.walk(sroot):
-        for fn in fns:
-            if fn.lower().endswith(".ogg"):
-                disk.add(os.path.relpath(os.path.join(dp, fn), sroot).replace("\\", "/").lower())
-    disk_dirs = {os.path.dirname(d) for d in disk}
-    dead = 0
-    for f in CHANNEL_FILES:
-        if not os.path.exists(f):
-            continue
-        out = []
-        for ln in _read(f).split("\n"):
-            m = re.match(r"(\s*sounds\d*\s*=\s*)(\S.*)$", ln, re.I)
-            if m:
-                keep = []
-                for one in re.split(r"[,;]", m.group(2)):
-                    e = one.strip()
-                    t = e.replace("\\", "/").lower()
-                    if not t:
-                        continue
-                    if t == "ambient/no_sound" or (t + ".ogg") in disk or t in disk_dirs:
-                        keep.append(e)
-                    else:
-                        dead += 1
-                if not keep:
-                    keep = ["ambient\\no_sound"]
-                ln = m.group(1) + ", ".join(keep)
-            out.append(ln)
-        open(f, "w", encoding="utf-8").write("\n".join(out))
-    print(f"  defect fix: wind_trong x{fixed['rename']}, bad-ref lists x{fixed['drop']}, "
-          f"aambient x{typo}, dead channel refs stripped x{dead}")
-    _cap_spawn_distances()
-
-
-# ---- graft: wire best-of-breed folders into the config (research-derived placement) ----
-# Placement is DERIVED, not chosen: the folder name states zone+time, the preset pattern states which
-# channel plays where, and most species already have a channel (enrich it). Evidence: environment_swamp
-# schedules bugs_swamp/birds_night by time; Audio Expansion ships insect_swamp_night, insect_morning,
-# frog_a; the channel list already defines insects/birds_night/crows/wind_*.
-
-# folder under sounds/ -> existing channel to enrich (append its files to that channel's `sounds=`)
-GRAFT_ENRICH = {
-    "ambient/trx/nature/insect": "insects",
-    "ambient/trx/nature/insect_day_long": "insects",
-    "ambient/trx/nature/insect_morning": "insects",
-    "ambient/trx/nature/flie": "insects",
-    "ambient/trx/nature/insect_night": "Insects_night",
-    "ambient/trx/nature/cricket": "bugs_night",
-    "ambient/trx/nature/insect_swamp_night": "bugs_night",
-    "ambient/trx/nature/insect_evening_long": "bugs_swamp",
-    "ambient/trx/nature/insect_swamp_day": "bugs_swamp",
-    "ambient/trx/nature/birds": "birds",
-    "ambient/trx/nature/birds_night": "birds_night",
-    "ambient/trx/nature/gull": "birds_swamp",
-    "ambient/trx/nature/crow": "crows",
-    "ambient/trx/nature/rustle": "foliage",
-    "ambient/trx/nature/whispers": "foliage_spook",
-    "ambient/trx/nature/storm": "storm",
-    "ambient/trx/nature/wind_normal": "wind_normal",
-    "ambient/trx/nature/wind_forest": "wind_forest",
-    "ambient/trx/nature/wind_gust": "wind_gust",
-    "ambient/trx/nature/wind_heavy": "wind_heavy",
-    "ambient/trx/nature/wind_tuman": "wind_normal",
-    "ambient/trx/nature/wind_dark": "wind_normal",
-    "ambient/soundscape/nature/wind_normal": "wind_normal",
-    "ambient/soundscape/nature/wind_forest": "wind_forest",
-    "ambient/soundscape/nature/wind_gust": "wind_gust",
-    "ambient/soundscape/nature/wind_heavy": "wind_heavy",
-    "ambient/soundscape/nature/wind_tuman": "wind_normal",
-    "ambient/soundscape/nature/wind_dark": "wind_normal",
-    "ambient/soundscape/insects/stereo": "insects",
-    "ambience_exp/wind_random": "wind_normal",
-    "ambience_exp/wind_random/mono": "wind_normal",
-    "ambience_exp/wind_random/stereo": "wind_normal",
-    "ambience_exp/wind_interior": "wind_urban",
-    "ambience_exp/wind_interior/stereo": "wind_urban",
-    "ambience_exp/wind_strong": "wind_strong",
-    "ambience_exp/rain": "rain_gust",
-    "ambience_exp/rain_footstep": "rain_gust",
-    "ambient/outdoors": "wind_normal",
-    "ambient/rnd_outdoor": "wind_normal",
-    "ambient/soundscape/nature": "wind_normal",
-    "ambient/soundscape/forest_night": "wind_forest",
-}
-# TERRAIN -> presets, DERIVED by joining AlifeSpooks/as_static_map.ltx (level terrain) with each
-# deployed ambients/<level>.ltx #include. The preset NAMES are misleading (environment_forest is used
-# by a FIELD level, environment_darkscape by red_forest) so terrain must come from the join, not names.
-# Confirmed vs STALKER canon: Zaton/Yantar/Marsh = wetland, Red Forest/Military = forest.
-TERRAIN_PRESETS = {
-    "swamp":  ["environment_swamp", "environment_yantar", "environment_zaton"],
-    "forest": ["environment_darkscape", "environment_field_army"],
-    "field":  ["environment_cemetary", "environment_darkvalley", "environment_field",
-               "environment_field_northalt", "environment_forest", "environment_garbage",
-               "environment_generators", "environment_jupiter"],
-    "urban":  ["environment_hospital", "environment_npp", "environment_pripyat",
-               "environment_pripyat_outskirts", "environment_rostok", "environment_rostok_wild"],
-}
-TERRAIN_PRESETS["outdoor"] = (TERRAIN_PRESETS["swamp"] + TERRAIN_PRESETS["forest"]
-                              + TERRAIN_PRESETS["field"])
-
-# new channel: (name, [folders], params-from-template, [(terrain, [states])]). The roster's two genuinely-new
-# categories - frogs (wetland at dusk/night, near placement) and the helicopter (a rare distant outdoor event).
-# Night-birds and time-insects are NOT here: the spine already has birds_night / Insects_night channels, so
-# those are enrichment (GRAFT_ENRICH), not new channels. Placement (spawn distance) comes from the template.
-GRAFT_NEW = [
-    ("frogs", ["ambient/trx/nature/frog_a", "ambient/trx/nature/frog_b", "ambient/trx/nature/frog_c"],
-     "bugs_swamp", [("swamp", ["evening", "night", "morning"])]),
-    ("helicopter", ["ambience_exp/helicopter"], "storm",
-     [("outdoor", ["day", "evening", "night", "morning"])]),
-]
-SC = os.path.join(ENV, "sound_channels.ltx")
-
-
-def _folder_files(folder):
-    """deployed sound paths (backslash, no ext) under a folder, for a `sounds=` list."""
-    d = os.path.join(GD, "sounds", folder.replace("/", os.sep))
-    out = []
-    if os.path.isdir(d):
-        for fn in sorted(os.listdir(d)):
-            if fn.lower().endswith(".ogg"):
-                out.append((folder + "/" + fn[:-4]).replace("/", "\\"))
-    return out
-
-
-def cmd_graft():
-    txt = _read(SC)
-    enriched = created = wired = 0
-    # 1. enrich existing channels: append folder files to the channel's sounds= list
-    for folder, chan in GRAFT_ENRICH.items():
-        files = _folder_files(folder)
-        if not files:
-            continue
-        # find [chan] ... sounds = <val>  (case-insensitive channel, first sounds= in the block)
-        pat = re.compile(r"(\[" + re.escape(chan) + r"\][^\[]*?\n\s*sounds\d*\s*=\s*)([^\n]*)", re.I)
-        m = pat.search(txt)
-        if not m:
-            continue
-        txt = txt[:m.end(2)] + ", " + ", ".join(files) + txt[m.end(2):]
-        enriched += 1
-    # 2. new channels: append a block cloned from a template channel's params
-    for name, folders, tmpl, _presets in GRAFT_NEW:
-        files = []
-        for f in folders:
-            files += _folder_files(f)
-        if not files:
-            continue
-        tm = re.search(r"\[" + re.escape(tmpl) + r"\]([^\[]*?)\n\s*sounds\d*\s*=", txt, re.I)
-        params = tm.group(1).rstrip() if tm else "\n        max_distance = 75\n        min_distance = 15\n        period0 = 10000\n        period1 = 30000\n        period2 = 10000\n        period3 = 30000"
-        block = f"\n[{name}]\t;grafted{params}\n        sounds                           = " + ", ".join(files) + "\n"
-        txt += block
-        created += 1
-    open(SC, "w", encoding="utf-8").write(txt)
-    # 3. wire new channels into every preset of the matching TERRAIN, for the given states
-    for name, _f, _t, terr_specs in GRAFT_NEW:
-        for terrain, states in terr_specs:
-            for preset in TERRAIN_PRESETS[terrain]:
-                pp = os.path.join(PRESETS, preset + ".ltx")
-                if not os.path.exists(pp):
-                    continue
-                pt = _read(pp)
-                for st in states:
-                    sec = re.compile(r"(\[" + st + r"\][^\[]*?sound_channels_dynamic\s*=\s*)([^\n]*)", re.I)
-                    mm = sec.search(pt)
-                    if mm and name.lower() not in mm.group(2).lower():
-                        pt = pt[:mm.end(2)] + f", {name}" + pt[mm.end(2):]
-                        wired += 1
-                open(pp, "w", encoding="utf-8").write(pt)
-    print(f"  graft: enriched {enriched} channels, created {created} new channels, wired {wired} preset slots")
-    _split_sound_lines()
-
-
-# the engine reads each `sounds =` value into a fixed ~4096 buffer (SoundRender_Core.cpp:249,
-# r_stringZ; FS.cpp:467 asserts sz < tgt_sz). Stock Amplified's longest line was 4091 -- right under
-# it. A line over the buffer is a hard CTD on config load. So SPLIT an over-long channel into
-# sub-channels (<name>__2, __3, ...), each under the cap, and reference all of them in every preset
-# that referenced the original -- NO sound is dropped, the engine just picks across the sub-channels.
-LINE_CAP = 3900
-
-
-def _split_sound_lines():
-    split_map = {}   # original channel (lower) -> [sub-channel names]
-    for f in CHANNEL_FILES:
-        if not os.path.exists(f):
-            continue
-        txt = _read(f)
-        parts = re.split(r"(?m)^(?=\[[A-Za-z0-9_]+\])", txt)
-        preamble = parts[0] if parts and not parts[0].lstrip().startswith("[") else ""
-        blocks = parts[1:] if preamble else parts
-        out = []
-        for blk in blocks:
-            hm = re.match(r"\[([A-Za-z0-9_]+)\]", blk)
-            sm = re.search(r"(?im)^(\s*sounds\d*\s*=\s*)(.+)$", blk)
-            if not hm or not sm or len((sm.group(1) + sm.group(2)).rstrip()) <= LINE_CAP:
-                out.append(blk)
-                continue
-            name, head = hm.group(1), sm.group(1)
-            items = [it.strip() for it in re.split(r"[,;]", sm.group(2)) if it.strip()]
-            chunks, cur = [], []
-            for it in items:
-                if cur and len(head + ", ".join(cur + [it])) > LINE_CAP:
-                    chunks.append(cur)
-                    cur = []
-                cur.append(it)
-            if cur:
-                chunks.append(cur)
-            pre, post = blk[:sm.start()], blk[sm.end():]   # params before / after the sounds line
-            out.append(pre + head + ", ".join(chunks[0]) + post)
-            subs = []
-            for i, ch in enumerate(chunks[1:], start=2):
-                sub = f"{name}__{i}"
-                subs.append(sub)
-                nb = re.sub(r"^\[" + re.escape(name) + r"\]", f"[{sub}]", pre, count=1)
-                out.append(nb + head + ", ".join(ch) + (post if post.strip() else "\n"))
-            split_map[name.lower()] = subs
-        open(f, "w", encoding="utf-8").write((preamble or "") + "".join(out))
-    # reference the sub-channels in every preset that referenced the original
-    if split_map:
-        def _add_subs(m):
-            key, val = m.group(1), m.group(2)
-            refs = [r.strip() for r in re.split(r"[,;]", val) if r.strip()]
-            have = {r.lower() for r in refs}
-            add = [s for r in refs for s in split_map.get(r.lower(), []) if s.lower() not in have]
-            return key + val.rstrip() + (", " + ", ".join(add) if add else "")
-        for fn in os.listdir(PRESETS):
-            pp = os.path.join(PRESETS, fn)
-            pt = re.sub(r"(?im)^(\s*sound_channels(?:_dynamic)?\s*=\s*)(.+)$", _add_subs, _read(pp))
-            open(pp, "w", encoding="utf-8").write(pt)
-    total = sum(len(v) for v in split_map.values())
-    print(f"  split: {len(split_map)} over-long channels -> +{total} sub-channels (every sound kept)")
-    _normalize_dynamic()
-
-
-def _normalize_dynamic():
-    """Preset sound_channels / _dynamic lines: some source lines end in a `;` (an ltx comment
-    terminator). Appending grafts/sub-channels AFTER the `;` buries them in a comment (ignored) and
-    the malformed `;,` can break the line. Normalize: treat every `,`/`;`-separated token as a
-    channel, dedupe, drop the `;`, rejoin -- so all channels (original + grafted) are live."""
-    fixed = 0
-    for fn in os.listdir(PRESETS):
-        pp = os.path.join(PRESETS, fn)
-        out = []
-        for ln in _read(pp).split("\n"):
-            m = re.match(r"(\s*sound_channels(?:_dynamic)?\s*=\s*)(.+)$", ln, re.I)
-            if not m:
-                out.append(ln)
-                continue
-            seen, chans = set(), []
-            for tok in re.split(r"[,;]", m.group(2)):
-                tok = tok.strip()
-                if tok and tok.lower() not in seen:
-                    seen.add(tok.lower())
-                    chans.append(tok)
-            new = m.group(1) + ", ".join(chans)
-            if new != ln:
-                fixed += 1
-            out.append(new)
-        open(pp, "w", encoding="utf-8").write("\n".join(out))
-    print(f"  normalize: fixed {fixed} preset channel lines (stripped ';' comment traps)")
-
-
-# ---- verify: six-invariant config-closure ledger ----
 
 def _defined_channels():
     ch = set()
@@ -567,14 +129,6 @@ def _defined_channels():
         if os.path.exists(f):
             ch |= {m.lower() for m in re.findall(r"^\s*\[([A-Za-z0-9_]+)\]", _read(f), re.M)}
     return ch
-
-
-def _tok_ok(t):
-    t = t.strip().replace("\\", "/").lower()
-    # a real sound path: has a folder separator, no key/space garbage, not the silent placeholder
-    if not t or t == "ambient/no_sound" or "=" in t or " " in t or "\t" in t or "/" not in t:
-        return None
-    return t
 
 
 def _channel_paths():
@@ -608,125 +162,222 @@ def _preset_refs():
     return refs
 
 
-def cmd_verify():
-    defined = _defined_channels()
-    referenced = _preset_refs()
-    chan_paths = _channel_paths()
-    # disk sound set (lowercased rel under sounds/)
-    disk = set()
-    sroot = os.path.join(GD, "sounds")
-    for dp, _, fns in os.walk(sroot):
+def _extra_targets():
+    """deploy-rel (lower) -> (source name, source rel) for the curated extra deploys (strike set)."""
+    out = {}
+    for src, src_rel, dst_rel, _reason in sources.DEPLOY_EXTRA:
+        out[dst_rel.replace("\\", "/").lower()] = (src, src_rel)
+    return out
+
+
+def _iter_deployed():
+    for dp, _, fns in os.walk(SROOT):
         for fn in fns:
             if fn.lower().endswith(".ogg"):
-                rel = os.path.relpath(os.path.join(dp, fn), sroot).replace("\\", "/").lower()
-                disk.add(rel)
-    disk_dirs = {os.path.dirname(d) for d in disk}
+                full = os.path.join(dp, fn)
+                rel = os.path.relpath(full, SROOT).replace("\\", "/")
+                yield full, rel[:-4].lower()
 
-    # inv1 orphan files: on disk, no channel path points at the file or its folder
-    def covered(rel):
-        if rel in chan_paths:
-            return True
-        return os.path.dirname(rel) in {os.path.dirname(p) for p in chan_paths}
-    orphan_files = sum(1 for d in disk if not covered(d))
-    # inv2 orphan channels: defined, never referenced
-    orphan_channels = sorted(defined - referenced)
-    # inv3 dangling refs: referenced, not defined
-    dangling = sorted(referenced - defined)
-    # inv4 missing paths: channel path with no file on disk (file OR folder)
-    def path_on_disk(p):
-        return (p + ".ogg") in disk or p in disk_dirs or any(d.startswith(p + "/") for d in disk_dirs)
-    missing_paths = sorted(p for p in chan_paths if not path_on_disk(p))
-    # inv5 level routing
-    level_bad = []
-    for fn in os.listdir(LEVELS):
-        if not fn.endswith(".ltx") or fn == "ambients.ltx":
+
+def _is_staged(rel_lc):
+    return rel_lc.startswith(STAGE_DIR + "/")
+
+
+# ---- materialize: deployed set == referenced set ---------------------------------------------------
+
+def _source_index():
+    """rel(lower) -> [(source name, full path, md5)] over all resolvable packs, registry order.
+    md5s come from the hash cache (hashes.json) and are computed lazily only on conflicts."""
+    idx = {}
+    for name, gd in sources.mods():
+        if name in RESOLVE_SKIP:
             continue
-        inc = re.search(r"presets[\\/]environment_([A-Za-z0-9_]+)", _read(os.path.join(LEVELS, fn)))
-        if not inc:
-            level_bad.append((fn, "no-include"))
+        if not os.path.isdir(gd):
             continue
-        pr = inc.group(1).lower()
-        name = fn[:-4].lower()
-        ug_name = any(t in name for t in ("bunker", "collaid", "x18", "x16", "katakomb", "sarcofag"))
-        if ug_name and "underground" not in pr:
-            level_bad.append((fn, f"underground level -> outdoor preset {pr}"))
-    # inv6 weather matrix: each preset covers its states (outdoor -> 11, underground -> indoor_underground)
-    matrix_gaps = []
-    for fn in os.listdir(PRESETS):
-        secs = {s.lower() for s in re.findall(r"^\s*\[([A-Za-z0-9_]+)\]", _read(os.path.join(PRESETS, fn)), re.M)}
-        is_ug = "underground" in fn.lower()
-        need = [UNDERGROUND_STATE] if is_ug else [s for s in WEATHER_STATES if s != UNDERGROUND_STATE]
-        miss = [s for s in need if s not in secs]
-        if miss:
-            matrix_gaps.append((fn, miss))
-
-    # (name, count, severity) - orphan channels are INFO: an unused channel definition is harmless
-    rows = [
-        ("1 orphan files (on disk, unwired)", orphan_files, "FAIL"),
-        ("2 orphan channels (defined, unreferenced)", len(orphan_channels), "INFO"),
-        ("3 dangling refs (referenced, undefined)", len(dangling), "FAIL"),
-        ("4 missing paths (channel -> no file)", len(missing_paths), "FAIL"),
-        ("5 level-routing errors", len(level_bad), "FAIL"),
-        ("6 weather-matrix gaps", len(matrix_gaps), "FAIL"),
-    ]
-    with open(os.path.join(HERE, "ledger.tsv"), "w") as fh:
-        fh.write("invariant\tcount\tseverity\n")
-        for k, v, sev in rows:
-            fh.write(f"{k}\t{v}\t{sev}\n")
-    print("  CONFIG-CLOSURE LEDGER")
-    for k, v, sev in rows:
-        status = "INFO" if sev == "INFO" else ("PASS" if v == 0 else "FAIL")
-        print(f"    {status}  {k}: {v}")
-    if dangling:
-        print("    dangling:", dangling[:12])
-    if level_bad:
-        print("    level-bad:", level_bad[:6])
-    if matrix_gaps:
-        print("    matrix-gaps:", matrix_gaps[:6])
-    # detail for the orphan graft work
-    json.dump({"orphan_channels": orphan_channels, "dangling": dangling,
-               "missing_paths": missing_paths, "level_bad": level_bad,
-               "matrix_gaps": matrix_gaps},
-              open(os.path.join(HERE, "ledger_detail.json"), "w"), indent=1)
+        for full, rel in _iter_oggs(gd):
+            idx.setdefault(rel.lower(), []).append((name, full))
+    return idx
 
 
-def cmd_prune():
-    """Delete only files that NO channel references. Keep EVERY channel definition. A channel can be
-    referenced from ambients.ltx, a per-level file, or the engine's base fallbacks (default_ambient_*)
-    that are not visible in the shipped config -- dropping one is a 'can't open section' CTD, while an
-    unused channel def is harmless. So the safe rule: a file survives iff some channel's `sounds=`
-    points at it (or its folder); channels are never dropped."""
-    keep = set()
-    for f in CHANNEL_FILES:
-        if not os.path.exists(f):
+def cmd_materialize():
+    """Deploy exactly what the config + DEPLOY_EXTRA reference; remove what nothing references.
+    A referenced path is resolved across the source packs in registry order; a path present in
+    several packs with DIFFERENT bytes is a duplicate-pick conflict, reported for the curator."""
+    sources.check_licences(public=False)
+    refs = _channel_paths()
+    extra = _extra_targets()
+    idx = _source_index()
+    cache = _load_hashes()
+
+    # expand folder refs against the source index and the deployed tree
+    want_files = set(p for p in refs if (p + ".ogg") in idx or
+                     os.path.exists(os.path.join(SROOT, p.replace("/", os.sep) + ".ogg")))
+    want_dirs = refs - want_files
+    for rel in idx:
+        d = os.path.dirname(rel[:-4] if rel.endswith(".ogg") else rel)
+        # a folder ref pulls every source ogg under it
+        if any(d == wd or d.startswith(wd + "/") for wd in want_dirs):
+            want_files.add(rel[:-4])
+    want_ogg = {p + ".ogg" for p in want_files} | set(extra.keys())
+
+    copied = conflicts = 0
+    for rel in sorted(want_ogg):
+        dst = os.path.join(SROOT, rel.replace("/", os.sep))
+        if os.path.exists(dst):
             continue
-        for m in re.findall(r"(?im)^\s*sounds\d*\s*=\s*(.+)$", _read(f)):
-            for one in re.split(r"[,;]", m):
-                t = _tok_ok(one)
-                if t:
-                    keep.add(t)
-    keep_dirs = {os.path.dirname(p) for p in keep}
-    sroot = os.path.join(GD, "sounds")
+        if rel in extra:
+            name, src_rel = extra[rel]
+            src_gd = dict(sources.mods()).get(name)
+            cand = [(name, os.path.join(src_gd, "sounds", src_rel.replace("/", os.sep)))] if src_gd else []
+        else:
+            cand = idx.get(rel, [])
+        cand = [(n, f) for n, f in cand if os.path.exists(f)]
+        if not cand:
+            continue                                   # gate 4 (missing path) will report it
+        if len(cand) > 1:
+            md5s = set()
+            for _n, f in cand:
+                if f not in cache:
+                    cache[f] = _hash(f)
+                md5s.add(cache[f])
+            if len(md5s) > 1:
+                conflicts += 1
+                print(f"  CONFLICT {rel}: differing bytes in {[n for n, _ in cand]} "
+                      f"(registry order wins: {cand[0][0]})")
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copy2(cand[0][1], dst)
+        copied += 1
+
+    # deployed set == referenced set: delete what nothing references (it stays in the packs;
+    # retention gate 7 demands a disposition for its absence). A folder keeps its files only when a
+    # channel references the FOLDER as a token (random-pick ref), never because a sibling file is
+    # referenced - that leak is how unreferenced strike claps once sat deployed invisibly.
     removed = 0
-    for dp, _, fns in os.walk(sroot):
-        for fn in fns:
-            if not fn.lower().endswith(".ogg"):
-                continue
-            full = os.path.join(dp, fn)
-            rel = os.path.relpath(full, sroot).replace("\\", "/").lower()
-            if rel not in keep and os.path.dirname(rel) not in keep_dirs:
-                os.remove(full)
-                removed += 1
-    for dp, _, _ in os.walk(sroot, topdown=False):
+    for full, rel_lc in list(_iter_deployed()):
+        if _is_staged(rel_lc):
+            continue
+        d = os.path.dirname(rel_lc)
+        if (rel_lc in want_files or rel_lc + ".ogg" in extra
+                or any(d == wd or d.startswith(wd + "/") for wd in want_dirs)):
+            continue
+        os.remove(full)
+        removed += 1
+    for dp, _, _ in os.walk(SROOT, topdown=False):
         try:
             if not os.listdir(dp):
                 os.rmdir(dp)
         except OSError:
             pass
-    print(f"  prune: removed {removed} files no channel references (all channels kept)")
+    _save_hashes(cache)
+
+    manifest = {}
+    for full, rel_lc in _iter_deployed():
+        if _is_staged(rel_lc):
+            continue
+        srcs = idx.get(rel_lc + ".ogg") or []
+        manifest[rel_lc] = {"source": srcs[0][0] if srcs else "deployed"}
+    json.dump(manifest, open(os.path.join(HERE, "manifest.json"), "w"), indent=1)
+    print(f"  materialize: copied {copied}, removed {removed} unreferenced, "
+          f"{conflicts} duplicate-pick conflicts, {len(manifest)} deployed")
 
 
-# ---- audibility: the engine facts behind the fold + the blob floors (fold stage, then floors in level) ----
+# ---- fmt: mechanical config guard ------------------------------------------------------------------
+
+def _cap_spawn_distances():
+    """Cap each channel's spawn max_distance to its category cap. Only lowers a max above the cap; never
+    raises; keeps max > min. Channel-name keyed (SPAWN_CAP)."""
+    capped = 0
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
+            continue
+        out, cap, cmin = [], None, 0.0
+        for ln in _read(f).split("\n"):
+            mh = re.match(r"\s*\[([^\]]+)\]", ln)
+            if mh:
+                nm = mh.group(1).lower()
+                cap = next((c for k, c in SPAWN_CAP.items() if k in nm), None)
+                cmin = 0.0
+            mn = re.match(r"\s*min_distance\s*=\s*([\d.]+)", ln, re.I)
+            if mn:
+                cmin = float(mn.group(1))
+            mx = re.match(r"(\s*max_distance\s*=\s*)([\d.]+)", ln, re.I)
+            if mx and cap is not None:
+                cur = float(mx.group(2))
+                lim = max(cap, cmin + 10.0)          # keep max > min (engine asserts max > min, strict)
+                if cur > lim:
+                    ln = f"{mx.group(1)}{lim:g}"
+                    capped += 1
+            out.append(ln)
+        open(f, "w", encoding="utf-8").write("\n".join(out))
+    print(f"  spawn-cap: capped {capped} channel max_distances (wind <= {SPAWN_CAP.get('wind')})")
+
+
+def _normalize_dynamic(defined):
+    """Preset sound_channels / _dynamic lines: dedupe tokens, drop `;` comment traps, strip refs to
+    channels that no longer exist (a deleted channel must not dangle in any preset)."""
+    fixed = stripped = 0
+    for fn in os.listdir(PRESETS):
+        pp = os.path.join(PRESETS, fn)
+        out = []
+        for ln in _read(pp).split("\n"):
+            m = re.match(r"(\s*sound_channels(?:_dynamic)?\s*=\s*)(.+)$", ln, re.I)
+            if not m:
+                out.append(ln)
+                continue
+            seen, chans = set(), []
+            for tok in re.split(r"[,;]", m.group(2)):
+                tok = tok.strip()
+                if not tok or tok.lower() in seen:
+                    continue
+                if tok.lower() not in defined:
+                    stripped += 1
+                    continue
+                seen.add(tok.lower())
+                chans.append(tok)
+            new = m.group(1) + ", ".join(chans)
+            if new != ln:
+                fixed += 1
+            out.append(new)
+        open(pp, "w", encoding="utf-8").write("\n".join(out))
+    print(f"  normalize: fixed {fixed} preset lines, stripped {stripped} refs to deleted channels")
+
+
+def cmd_fmt():
+    """Mechanical guard over the hand-authored config. Curation decides the sets; fmt guards the
+    strings: dedup pool tokens, normalize preset lines, strip dangling refs, cap spawn distances,
+    FAIL on any pool line over LINE_CAP (the 4096 ini buffer is a CTD)."""
+    over = []
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
+            continue
+        out = []
+        for ln in _read(f).split("\n"):
+            mm = re.match(r"(\s*sounds\d*\s*=\s*)(\S.*)$", ln, re.I)
+            if mm:
+                seen, keys = [], set()
+                for one in re.split(r"[,;]", mm.group(2)):
+                    e = one.strip()
+                    if not e:
+                        continue
+                    k = e.replace("\\", "/").lower()
+                    if k not in keys:
+                        keys.add(k)
+                        seen.append(e)
+                ln = mm.group(1) + ", ".join(seen)
+                if len(ln) > LINE_CAP:
+                    over.append((os.path.basename(f), seen[0] if seen else "?", len(ln)))
+            out.append(ln)
+        open(f, "w", encoding="utf-8").write("\n".join(out))
+    _normalize_dynamic(_defined_channels())
+    _cap_spawn_distances()
+    if over:
+        for f, first, n in over:
+            print(f"  FMT FAIL {f}: pool line {n} chars > {LINE_CAP} (starts {first}) - split the channel")
+        raise SystemExit("fmt: pool line over the engine ini buffer cap")
+    print("  fmt: pools deduped, presets normalized, all lines under cap")
+
+
+# ---- audibility: the engine facts behind the fold + the blob floors --------------------------------
 # Two engine facts (doc/library/anomaly/internals/sound-source-and-emitter.md) make most of a merged
 # ambient corpus INAUDIBLE at range even when the files sound fine at-ear:
 #   1. A STEREO ogg force-plays 2D at-ear at full volume, escaping both distance rolloffs (":258-268").
@@ -734,17 +385,12 @@ def cmd_prune():
 #   2. Every 3D voice is attenuated TWICE - X-Ray's linear fade AND OpenAL's inverse model keyed on the
 #      ogg blob's min_distance (":132-181"). min 1-2 (the unset ffmpeg-era default, ~84% of this corpus)
 #      costs -26..-31 dB at a 25-50 m placement BEFORE the linear fade. base_volume can't rescue it.
-# The fix is two stages, in order: fold every stereo file to mono (re-encode, lossy - the one place
-# byte-for-byte is impossible since the engine only positions mono), then floor each file's blob
-# min_distance to a crest-inverted ratio of its channel felt-far placement (the crest-min floor, applied in
-# level). base_volume and max_distance stay the author's. Off-rate files (!=44100) are resampled in the fold.
 
 FLOOR_MAX_FRAC = 0.8     # cap the min floor below blob max so a real fade band always survives.
 DEFAULT_MAX    = 100.0   # blob max for a blob-less file (corpus median from the survey).
 ENCODE_Q       = 6       # libvorbis -q for the mono re-encode (high quality, deterministic).
 ANTIPHASE_DB   = 3.0     # side RMS this many dB above mid -> anti-phase pair, summing cancels -> drop R.
 FOLD_BLOBS     = os.path.join(HERE, "fold_blobs.json")   # author blobs captured before the fold strips them
-SROOT          = os.path.join(GD, "sounds")
 
 # --- ported audibility floors (proven in AlifeSpooks build.py, 2026-08-22) -------------------------
 # Two lift-only, lossless blob floors, applied together after measuring content LUFS + crest:
@@ -767,7 +413,7 @@ LOUD_FARCAP      = 0.85    # keep far smooth_volume below the engine 1.0 clamp
 LOUD_FRAC        = 0.7     # close this fraction of each file's deficit (partial lift)
 LOUD_MASTER      = 0.5     # psSoundVEffects*psSoundVFactor at calibration
 LOUD_ROLLOFF     = 0.75    # psSoundRolloff (fixed, SoundRender_Core.cpp:19)
-DEAD_LUFS        = -60.0   # content LUFS at/below = silent/dead (ebur128 floors true silence at ~-70) -> cull
+DEAD_LUFS        = -60.0   # content LUFS at/below = silent/dead (ebur128 floors true silence at ~-70)
 LOUD_CEIL_BED    = -24.0   # eff ceiling, beds: lower a file delivering louder than this (mirror of the floor)
 LOUD_CEIL_1SHOT  = -28.0   # eff ceiling, one-shots: caps the hot tail (e.g. the loudest ~7% of crickets)
 LOUD_MINBV       = 0.20    # base_volume floor when LOWERING an over-loud file (never kill it)
@@ -967,6 +613,25 @@ def _channel_bands():
     return bands
 
 
+def _channel_periods():
+    """channel(lower) -> [period0..period3] in ms (missing keys -> None entries)."""
+    out = {}
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
+            continue
+        for blk in re.split(r"(?m)^(?=\[[A-Za-z0-9_]+\])", _read(f)):
+            hm = re.match(r"\[([A-Za-z0-9_]+)\]", blk)
+            if not hm:
+                continue
+            per = [None] * 4
+            for i in range(4):
+                m = re.search(rf"(?im)^\s*period{i}\s*=\s*([\d.]+)", blk)
+                if m:
+                    per[i] = float(m.group(1))
+            out[hm.group(1).lower()] = per
+    return out
+
+
 def _file_felt_far(bands):
     """token(lower, file or folder) -> the MAX felt-far of any channel that references it. Max = the
     farthest placement the file is used at (the conservative floor: audible at its farthest use)."""
@@ -981,15 +646,6 @@ def _file_felt_far(bands):
 def _felt_for(rel_lc, ff):
     """felt-far for a deployed ogg (rel, lower, no ext): its own file token, or its folder token."""
     return max(ff.get(rel_lc, 0.0), ff.get(os.path.dirname(rel_lc), 0.0))
-
-
-def _iter_deployed():
-    for dp, _, fns in os.walk(SROOT):
-        for fn in fns:
-            if fn.lower().endswith(".ogg"):
-                full = os.path.join(dp, fn)
-                rel = os.path.relpath(full, SROOT).replace("\\", "/")
-                yield full, rel[:-4].lower()
 
 
 def _stereo_method(path):
@@ -1035,9 +691,10 @@ _FFMPEG = _find_ffmpeg()
 
 def cmd_fold():
     """Fold every STEREO file to mono and resample every OFF-RATE file to 44100, in place. Captures each
-    file's author blob to fold_blobs.json BEFORE the re-encode strips it, so master can restore its
+    file's author blob to fold_blobs.json BEFORE the re-encode strips it, so level can restore its
     min/max/base_volume. Re-encode is libvorbis -q6; the audio is no longer byte-identical (unavoidable:
-    the engine only spatialises mono). Idempotent-ish: a file already mono+44100 is skipped."""
+    the engine only spatialises mono). Idempotent-ish: a file already mono+44100 is skipped. Applies to
+    ALL 3D-played audio, ambient channels and strike files alike."""
     fold_blobs = json.load(open(FOLD_BLOBS)) if os.path.exists(FOLD_BLOBS) else {}
     folded = resampled = skipped = failed = 0
     n_sum = n_drop = 0
@@ -1073,17 +730,10 @@ def cmd_fold():
           f"{skipped} already mono+44100; {failed} FAILED")
 
 
-def cmd_master():
-    """Retired: the min_distance floor moved into cmd_level, where it is crest-inverted and applied from the
-    same crest+LUFS measurement as the loudness floor (consolidated, matching AlifeSpooks build.py
-    _normalize_blobs). Kept as a no-op for pipeline-stage compatibility."""
-    print("  master: (retired - min floor now applied in level, crest-inverted)")
-
-
 def cmd_audit():
-    """Acceptance gate: over the WIRED files, report min/felt-far (the audibility ratio) and the crushed
-    share (<0.15 = whisper). Target = the crest-inverted min floor's ratio band (0.40-0.60), so the median
-    should sit ~0.4-0.5 with few crushed. Blob reads only, no ffmpeg."""
+    """Acceptance report: over the WIRED files, the min/felt-far ratio (the audibility ratio) and the
+    crushed share (<0.15 = whisper). Target = the crest-inverted min floor's ratio band (0.40-0.60), so
+    the median should sit ~0.4-0.5 with few crushed. Blob reads only, no ffmpeg."""
     ff = _file_felt_far(_channel_bands())
     ratios = []
     crushed = 0
@@ -1110,17 +760,11 @@ def cmd_audit():
 
 
 # ---- level: the two blob floors (min-distance + base_volume loudness) ---------
-# Both applied together from one crest+LUFS measurement (see the ported-floor block: _crest_ratio /
-# _loud_floor_for / _loudness_floor). The min floor fixes the OpenAL rolloff (crest-inverted: a sustained
-# tone carries, a transient stays near-field); the loudness floor lifts quiet CONTENT the min floor cannot,
-# to the ear-anchored delivered level (-30 eff beds / -36 one-shots, 2026-08-22 calibration), partial +
-# capped, never lowered. Idempotent + add-ready: floors are absolute (not a corpus median), lift-only, and
-# the measure is cached by AUDIO-page hash (stable across blob rewrites) so a rerun re-measures only new audio.
 LEVEL_CACHE    = os.path.join(HERE, "level_cache.json")   # audio-hash -> [lufs, crest, peak]
 
 
 def _hash_audio(path):
-    """md5 of the audio pages only (after ID + comment/setup), so a comment-blob rewrite (master/level)
+    """md5 of the audio pages only (after ID + comment/setup), so a comment-blob rewrite (level)
     does not invalidate the cached measure - the audio is what was measured."""
     with open(path, "rb") as f:
         pg, _ = _ogg_pages(f.read())
@@ -1149,20 +793,33 @@ def _measure_audio(path):
 
 
 def cmd_level():
-    """Apply both lossless blob floors to each wired file, from one crest+LUFS measurement (the min floor
-    moved here from master so it can be crest-inverted, matching AlifeSpooks build.py _normalize_blobs):
+    """Apply both lossless blob floors to each wired file, from one crest+LUFS measurement:
       1. min_distance -> max(author, crest-inverted ratio x felt-far), capped 0.8*max  (fixes OpenAL rolloff)
-      2. base_volume -> lifted so delivered loudness at felt-far reaches the ear floor (-30 eff beds /
-         -36 one-shots), partial + capped, never lowered  (fixes quiet content the min floor cannot)
-    Skips emission (blowout/anomaly) and unwired files. Measure cached by audio hash; lossless rewrite."""
+      2. base_volume -> the loudness band: lifted to the ear floor (-30 eff beds / -36 one-shots) or
+         lowered from above the ceiling, partial + capped  (fixes content the min floor cannot)
+    Skips emission (blowout/anomaly), strike files (the engine overrides their range per strike,
+    thunderbolt.cpp:235 - blob distances do nothing there), staged and unwired files. Measure cached by
+    audio hash; lossless rewrite."""
     cache = json.load(open(LEVEL_CACHE)) if os.path.exists(LEVEL_CACHE) else {}
     fold_blobs = json.load(open(FOLD_BLOBS)) if os.path.exists(FOLD_BLOBS) else {}
     ff = _file_felt_far(_channel_bands())
     total = wrote = floored = lifted = lowered = e_skip = u_skip = no_meas = measured = 0
     gains = []
+    restored = 0
     for full, rel_lc in _iter_deployed():
         total += 1
-        if rel_lc.startswith("ambient/blowout") or rel_lc.startswith("ambient/anomaly"):
+        if rel_lc.startswith("nature/"):
+            # strike files: no floors (the engine overrides their range per strike), but the fold
+            # strips the author blob - restore the captured one verbatim (I7: preserve the source)
+            with open(full, "rb") as fh:
+                b = _read_blob(fh.read(16384))
+            cap = fold_blobs.get(rel_lc)
+            if b is None and cap and _write_blob(full, cap[0], cap[1], cap[2]):
+                restored += 1
+            e_skip += 1
+            continue
+        if (rel_lc.startswith("ambient/blowout") or rel_lc.startswith("ambient/anomaly")
+                or _is_staged(rel_lc)):
             e_skip += 1
             continue
         felt = _felt_for(rel_lc, ff)
@@ -1211,23 +868,12 @@ def cmd_level():
     gx = max(gains) if gains else 0.0
     print(f"  level: {total} files | min-floored {floored} (crest-inverted), loudness-lifted {lifted}, "
           f"lowered {lowered} (over ceiling) (median {gm:+.1f} dB, up to {gx:+.1f} dB)")
-    print(f"         wrote {wrote} blobs | skipped {e_skip} emission, {u_skip} unwired, "
+    print(f"         wrote {wrote} blobs, restored {restored} strike author blobs | "
+          f"skipped {e_skip} emission/strike/staged, {u_skip} unwired, "
           f"{no_meas} unmeasurable | measured {measured} new, {len(cache) - measured} cached")
 
 
-# Two orchestrator commands, two guarantees (shape shared with AlifeSpooks's rebuild/add):
-#   rebuild - full, destructive, reproducible, RARE: wipes the deployed audio and regenerates the whole
-#             corpus from source (re-folds every stereo file). The clean-slate reset.
-#   add     - incremental, curation-safe, the EVERYDAY path: never wipes. deploy skips existing, and
-#             fold/master/level are hash-cached, so only NET-NEW audio is processed. Registering a new
-#             source pack in sources.py then running `add` grows the corpus without touching the rest.
-# --- acoustic dedup (Chromaprint) ------------------------------------------------------------------
-# `plan` dedups by BYTE hash (md5), so it keeps two files that are the SAME recording re-encoded or
-# renamed (different bytes, same sound) - measured ~1.4% of the corpus. This stage dedups by ACOUSTIC
-# identity: fpcalc fingerprints each file, each fingerprint group collapses to one canonical, config refs
-# to the aliases repoint to it, and the alias files drop (prune then tidies up). Runs on ORIGINAL audio,
-# before `fold` re-encodes it. Un-fingerprintable clips (very short) fall back to the byte dedup. Never
-# empties a channel or a referenced folder. Cached by audio-page hash, stable across the later blob rewrites.
+# --- acoustic-duplicate report (Chromaprint) --------------------------------------------------------
 FP_EXE   = "C:/App/PORTX/packages/chromaprint/fpcalc.exe"
 FP_CACHE = os.path.join(HERE, "fingerprint_cache.json")   # audio-page hash -> chromaprint fingerprint ("" = none)
 
@@ -1245,13 +891,14 @@ def _fingerprint(path):
 
 
 def cmd_fingerprint():
-    """Dedup by acoustic identity (Chromaprint), catching same-recording aliases the byte hash misses.
-    Keep one canonical per fingerprint group, repoint config refs to it, drop the aliases. Runs before fold
-    (original audio); un-fingerprintable short clips fall back to byte dedup; never empties a channel/folder."""
+    """Report acoustic duplicates (same recording under two deployed paths) for the CURATOR to resolve.
+    Warns only - the authored config decides which path lives; nothing is repointed or deleted here."""
     cache = json.load(open(FP_CACHE)) if os.path.exists(FP_CACHE) else {}
-    by_fp = {}                                    # fingerprint -> [rel_lc, ...]
+    by_fp = {}
     n = measured = 0
     for full, rel_lc in _iter_deployed():
+        if _is_staged(rel_lc):
+            continue
         n += 1
         h = _hash_audio(full)
         fp = cache.get(h)
@@ -1259,139 +906,332 @@ def cmd_fingerprint():
             fp = _fingerprint(full)
             cache[h] = fp
             measured += 1
-        if fp:                                    # un-fingerprintable clips skipped (byte dedup handled them)
+        if fp:
             by_fp.setdefault(fp, []).append(rel_lc)
     json.dump(cache, open(FP_CACHE, "w"))
-    alias = {}                                    # alias rel_lc -> canonical rel_lc
-    groups = 0
-    for rels in by_fp.values():
-        u = sorted(set(rels))
-        if len(u) < 2:
-            continue
-        groups += 1
-        for r in u[1:]:
-            alias[r] = u[0]
-    if not alias:
-        print(f"  fingerprint: {n} files ({measured} measured) | no acoustic aliases beyond byte dedup")
-        return
-    repointed = 0                                 # repoint individual file refs alias -> canonical, dedup, keep >=1
-    for f in CHANNEL_FILES:
-        if not os.path.exists(f):
-            continue
-        out = []
-        for ln in _read(f).split("\n"):
-            mm = re.match(r"(\s*sounds\d*\s*=\s*)(\S.*)$", ln, re.I)
-            if mm:
-                seen, keys = [], set()
-                for one in re.split(r"[,;]", mm.group(2)):
-                    e = one.strip()
-                    if not e:
-                        continue
-                    key = e.replace("\\", "/").lower()
-                    if key in alias:
-                        key = alias[key]
-                        e = key.replace("/", "\\")
-                        repointed += 1
-                    if key not in keys:
-                        keys.add(key)
-                        seen.append(e)
-                if not seen:
-                    seen = ["ambient\\no_sound"]
-                ln = mm.group(1) + ", ".join(seen)
-            out.append(ln)
-        open(f, "w", encoding="utf-8").write("\n".join(out))
-    sroot = os.path.join(GD, "sounds")            # drop alias files, but never the last ogg in a folder
-    folder_n = {}
-    for _, rel_lc in _iter_deployed():
-        d = os.path.dirname(rel_lc)
-        folder_n[d] = folder_n.get(d, 0) + 1
-    deleted = kept = 0
-    for a in sorted(alias):
-        d = os.path.dirname(a)
-        if folder_n.get(d, 0) <= 1:               # last file in a folder-referenced dir -> leave it
-            kept += 1
-            continue
-        p = os.path.join(sroot, a.replace("/", os.sep) + ".ogg")
-        if os.path.exists(p):
-            os.remove(p)
-            folder_n[d] -= 1
-            deleted += 1
-    print(f"  fingerprint: {n} files ({measured} measured) | {groups} acoustic-dup groups | "
-          f"repointed {repointed} refs, dropped {deleted} aliases (kept {kept} last-in-folder)")
+    groups = [sorted(set(v)) for v in by_fp.values() if len(set(v)) > 1]
+    for g in groups[:20]:
+        print(f"  DUP {g[0]} == {', '.join(g[1:])}")
+    if len(groups) > 20:
+        print(f"  ... {len(groups) - 20} more duplicate groups")
+    print(f"  fingerprint: {n} files ({measured} measured) | {len(groups)} acoustic-duplicate groups "
+          f"(curator resolves in config)")
 
 
-def cmd_cull():
-    """Delete DEAD deployed files (silent - the level measure found no LUFS) after the fold + floors, then
-    strip their now-absent channel refs, keeping >=1 sound per channel (never empties a bed -> would CTD).
-    Reuses the level cache, no extra ffmpeg. A quiet-but-real sound is KEPT (the loudness floor lifts it as
-    far as it can); only true silence is removed - so best-of-breed emerges by itself: dead culled, faint lifted."""
+def cmd_dead():
+    """Report DEAD deployed files (content at/below DEAD_LUFS - true silence) for the CURATOR to
+    exclude. Reuses the level cache; nothing is deleted here (a file leaves through the exclusions
+    register + config, then materialize removes it)."""
     cache = json.load(open(LEVEL_CACHE)) if os.path.exists(LEVEL_CACHE) else {}
-    removed = 0
+    dead = []
     for full, rel_lc in _iter_deployed():
-        m = cache.get(_hash_audio(full))
-        if m is not None and (m[0] is None or m[0] <= DEAD_LUFS):   # silent/dead (ebur128 floors silence ~-70)
-            os.remove(full)
-            removed += 1
-    sroot = os.path.join(GD, "sounds")                          # strip refs to now-absent files, keep >=1 per channel
-    disk = set()
-    for dp, _, fns in os.walk(sroot):
-        for fn in fns:
-            if fn.lower().endswith(".ogg"):
-                disk.add(os.path.relpath(os.path.join(dp, fn), sroot).replace("\\", "/").lower())
-    disk_dirs = {os.path.dirname(d) for d in disk}
-    stripped = 0
-    for f in CHANNEL_FILES:
-        if not os.path.exists(f):
+        if _is_staged(rel_lc):
             continue
-        out = []
-        for ln in _read(f).split("\n"):
-            mm = re.match(r"(\s*sounds\d*\s*=\s*)(\S.*)$", ln, re.I)
-            if mm:
-                keep = []
-                for one in re.split(r"[,;]", mm.group(2)):
-                    e = one.strip()
-                    t = e.replace("\\", "/").lower()
-                    if not t:
-                        continue
-                    if t == "ambient/no_sound" or (t + ".ogg") in disk or t in disk_dirs:
-                        keep.append(e)
-                    else:
-                        stripped += 1
-                if not keep:
-                    keep = ["ambient\\no_sound"]
-                ln = mm.group(1) + ", ".join(keep)
-            out.append(ln)
-        open(f, "w", encoding="utf-8").write("\n".join(out))
-    print(f"  cull: removed {removed} dead files (silent); stripped {stripped} dead channel refs (channels kept non-empty)")
+        m = cache.get(_hash_audio(full))
+        if m is not None and (m[0] is None or m[0] <= DEAD_LUFS):
+            dead.append(rel_lc)
+    for d in dead[:20]:
+        print(f"  DEAD {d}")
+    if len(dead) > 20:
+        print(f"  ... {len(dead) - 20} more")
+    print(f"  dead: {len(dead)} silent files (curator excludes; materialize then removes)")
 
 
-# Both run the same stage sequence; only the wipe differs.
-def _run_pipeline():
-    for name, fn in (("plan", cmd_plan), ("deploy", cmd_deploy), ("config", cmd_config),
-                     ("graft", cmd_graft), ("fingerprint", cmd_fingerprint), ("prune", cmd_prune),
-                     ("fold", cmd_fold), ("master", cmd_master), ("level", cmd_level), ("cull", cmd_cull),
-                     ("prune", cmd_prune), ("verify", cmd_verify), ("audit", cmd_audit)):
+# ---- stage: candidate-family audition --------------------------------------------------------------
+
+def cmd_stage():
+    """stage <source>:<folder> - materialize a source folder under sounds/stage/<folder> so the player
+    (ui_aa_player.script) can audition a candidate family in-game before it is picked. Exempt from all
+    gates; folded on the next fold run; removed by unstage."""
+    if len(sys.argv) < 3 or ":" not in sys.argv[2]:
+        raise SystemExit("usage: merge.py stage <source>:<folder-under-sounds>")
+    src_name, folder = sys.argv[2].split(":", 1)
+    gd = dict(sources.mods()).get(src_name)
+    if not gd:
+        raise SystemExit(f"unknown source {src_name} (see sources.py)")
+    src = os.path.join(gd, "sounds", folder.replace("/", os.sep))
+    if not os.path.isdir(src):
+        raise SystemExit(f"no folder {src}")
+    dst = os.path.join(SROOT, STAGE_DIR, folder.replace("/", os.sep))
+    os.makedirs(dst, exist_ok=True)
+    ncop = 0
+    for fn in sorted(os.listdir(src)):
+        if fn.lower().endswith(".ogg"):
+            shutil.copy2(os.path.join(src, fn), os.path.join(dst, fn))
+            ncop += 1
+    print(f"  stage: {ncop} files -> sounds/{STAGE_DIR}/{folder} (run fold, then audition; unstage removes)")
+
+
+def cmd_unstage():
+    d = os.path.join(SROOT, STAGE_DIR)
+    if os.path.isdir(d):
+        shutil.rmtree(d)
+        print("  unstage: stage tree removed")
+    else:
+        print("  unstage: nothing staged")
+
+
+# ---- verify: the gate ledger -----------------------------------------------------------------------
+
+def _veto_by_section():
+    """AlifeSpooks' veto as {section(lower) -> (removed paths, has_no_sound_append)}, from its static
+    DLTX overlay (`![channel]` blocks: `<sounds = <path>` removals + a trailing `>sounds =
+    ambient\\no_sound`). None if the sibling repo is not on this machine. The intersection is DESIGNED
+    coexistence (no doubling of the director's captured sounds), and the generator's no_sound append
+    keeps a fully-vetoed channel alive and silent (AlifeSpooks build.py:1065-1130 cites the
+    Environment_misc.cpp:105-108 empty-sounds load failure it prevents). The hazard gate 11 guards is
+    a touched channel WITHOUT that append."""
+    if not os.path.exists(SPOOKS_VETO):
+        return None
+    out = {}
+    cur = None
+    for ln in _read(SPOOKS_VETO).split("\n"):
+        mh = re.match(r"\s*!\[([^\]]+)\]", ln)
+        if mh:
+            cur = mh.group(1).lower()
+            out.setdefault(cur, [set(), False])
+            continue
+        mm = re.match(r"\s*<sounds\s*=\s*(.+)$", ln)
+        if mm and cur:
+            t = _tok_ok(mm.group(1))
+            if t:
+                out[cur][0].add(t)
+            continue
+        ma = re.match(r"\s*>sounds\s*=\s*(.+)$", ln)
+        if ma and cur and "no_sound" in ma.group(1).lower():
+            out[cur][1] = True
+    return out
+
+
+def _preset_state_channels():
+    """preset file -> state -> [channels] from the sound_channels_dynamic lines."""
+    out = {}
+    for fn in os.listdir(PRESETS):
+        txt = _read(os.path.join(PRESETS, fn))
+        states = {}
+        cur = None
+        for ln in txt.split("\n"):
+            mh = re.match(r"\s*\[([A-Za-z0-9_]+)\]", ln)
+            if mh:
+                cur = mh.group(1).lower()
+                continue
+            md = re.match(r"\s*sound_channels_dynamic\s*=\s*(.+)$", ln, re.I)
+            if md and cur:
+                states[cur] = [t.strip().lower() for t in re.split(r"[,;]", md.group(1)) if t.strip()]
+        out[fn] = states
+    return out
+
+
+def _retention():
+    """(unaccounted list, per-source counts). Every ambience-scope source file must be referenced by
+    the config / DEPLOY_EXTRA, or covered by a DISPOSITIONS prefix (sources.py)."""
+    refs = _channel_paths()
+    deployed = {rel_lc for _f, rel_lc in _iter_deployed()}
+    # folder tokens only (see cmd_verify): a sibling file ref never covers a whole source folder
+    folder_toks = {p for p in refs if p not in deployed}
+    extra = set(_extra_targets().keys())
+    disp = [(s, pre.replace("\\", "/").lower().rstrip("/"), verdict)
+            for s, pre, verdict, _r in sources.DISPOSITIONS]
+    unaccounted = []
+    per_source = {}
+    for name, gd in sources.mods():
+        if name in RESOLVE_SKIP or not os.path.isdir(gd):
+            continue
+        acc = {"referenced": 0, "disposed": 0, "unaccounted": 0}
+        for _full, rel in _iter_oggs(gd):
+            rl = rel.lower()
+            base = rl[:-4]
+            d = os.path.dirname(base)
+            if (base in refs or rl in extra
+                    or any(d == ft or d.startswith(ft + "/") for ft in folder_toks)):
+                acc["referenced"] += 1
+                continue
+            if any(s == name and rl.startswith(p) for s, p, _v in disp):
+                acc["disposed"] += 1
+                continue
+            acc["unaccounted"] += 1
+            if len(unaccounted) < 400:
+                unaccounted.append(f"{name}:{rel}")
+        per_source[name] = acc
+    return unaccounted, per_source
+
+
+def cmd_verify():
+    defined = _defined_channels()
+    referenced = _preset_refs()
+    chan_paths = _channel_paths()
+    extra = set(_extra_targets().keys())
+    disk = set()
+    for _full, rel_lc in _iter_deployed():
+        if not _is_staged(rel_lc):
+            disk.add(rel_lc)
+    disk_dirs = {os.path.dirname(d) for d in disk}
+    # a folder TOKEN is a channel ref that is not a deployed file (random-pick folder ref)
+    folder_toks = {p for p in chan_paths if p not in disk}
+
+    # 1 orphan files: on disk, no channel file ref, folder token, or DEPLOY_EXTRA covers it
+    def tok_covers(rel):
+        d = os.path.dirname(rel)
+        return any(d == ft or d.startswith(ft + "/") for ft in folder_toks)
+    orphan_files = sorted(d for d in disk
+                          if d not in chan_paths and not tok_covers(d)
+                          and (d + ".ogg") not in extra)
+    # 2 orphan channels: defined, never referenced (INFO: dead weight for the curator)
+    orphan_channels = sorted(defined - referenced)
+    # 3 dangling refs: referenced, not defined
+    dangling = sorted(referenced - defined)
+    # 4 missing paths: channel path with no file on disk (file OR folder)
+    def path_on_disk(p):
+        return p in disk or p in disk_dirs or any(d.startswith(p + "/") for d in disk_dirs)
+    missing_paths = sorted(p for p in chan_paths if not path_on_disk(p))
+    # 5 level routing
+    level_bad = []
+    for fn in os.listdir(LEVELS):
+        if not fn.endswith(".ltx") or fn == "ambients.ltx":
+            continue
+        inc = re.search(r"presets[\\/]environment_([A-Za-z0-9_]+)", _read(os.path.join(LEVELS, fn)))
+        if not inc:
+            level_bad.append((fn, "no-include"))
+            continue
+        pr = inc.group(1).lower()
+        name = fn[:-4].lower()
+        ug_name = any(t in name for t in ("bunker", "collaid", "x18", "x16", "katakomb", "sarcofag"))
+        if ug_name and "underground" not in pr:
+            level_bad.append((fn, f"underground level -> outdoor preset {pr}"))
+    # 6 weather matrix
+    matrix_gaps = []
+    for fn in os.listdir(PRESETS):
+        secs = {s.lower() for s in re.findall(r"^\s*\[([A-Za-z0-9_]+)\]", _read(os.path.join(PRESETS, fn)), re.M)}
+        is_ug = "underground" in fn.lower()
+        need = [UNDERGROUND_STATE] if is_ug else [s for s in WEATHER_STATES if s != UNDERGROUND_STATE]
+        miss = [s for s in need if s not in secs]
+        if miss:
+            matrix_gaps.append((fn, miss))
+    # 7 retention
+    unaccounted, per_source = _retention()
+    # 8 density (report; budget gate armed once DENSITY_BUDGET is calibrated)
+    periods = _channel_periods()
+    density_rows = []
+    burst_worst = (0, "")
+    for fn, states in _preset_state_channels().items():
+        for st, chans in states.items():
+            epm = 0.0
+            burst = 0
+            for c in chans:
+                per = periods.get(c)
+                if not per:
+                    continue
+                p2, p3 = per[2], per[3]
+                if p2 and p3 and (p2 + p3) > 0:
+                    epm += 60000.0 / ((p2 + p3) / 2.0)
+                if per[0] is not None and per[0] < ENTRY_BURST_MS:
+                    burst += 1
+            density_rows.append((fn, st, round(epm, 1), burst))
+            if burst > burst_worst[0]:
+                burst_worst = (burst, f"{fn}[{st}]")
+    over_budget = ([r for r in density_rows if DENSITY_BUDGET and r[2] > DENSITY_BUDGET]
+                   if DENSITY_BUDGET else [])
+    # 9 line cap
+    over_cap = []
+    for f in CHANNEL_FILES:
+        if os.path.exists(f):
+            for ln in _read(f).split("\n"):
+                if re.match(r"\s*sounds\d*\s*=", ln, re.I) and len(ln) > LINE_CAP:
+                    over_cap.append((os.path.basename(f), len(ln)))
+    # 10 collection coverage (static: we deploy strike audio at vanilla paths, ship no collection cfg)
+    missing_coll = sorted(COLLECTIONS_REQUIRED - COLLECTIONS_BASE)
+    # 11 veto simulation: a touched channel is a hazard only if the overlay leaves it EMPTY -
+    # the generator's `>sounds = ambient\no_sound` append normally prevents that (silenced, INFO)
+    veto = _veto_by_section()
+    veto_emptied = None
+    veto_silenced = []
+    veto_shrunk = []
+    if veto is not None:
+        veto_emptied = []
+        for ch, (_felt, toks) in _channel_bands().items():
+            pool = set(toks)
+            if not pool or ch not in veto:
+                continue
+            removed, has_guard = veto[ch]
+            after = pool - removed
+            if not after and not has_guard:
+                veto_emptied.append(ch)
+            elif not after:
+                veto_silenced.append(ch)
+            elif len(after) < len(pool):
+                veto_shrunk.append((ch, len(pool), len(after)))
+
+    rows = [
+        ("1 orphan files (on disk, unwired)", len(orphan_files), "FAIL"),
+        ("2 orphan channels (defined, unreferenced)", len(orphan_channels), "INFO"),
+        ("3 dangling refs (referenced, undefined)", len(dangling), "FAIL"),
+        ("4 missing paths (channel -> no file)", len(missing_paths), "FAIL"),
+        ("5 level-routing errors", len(level_bad), "FAIL"),
+        ("6 weather-matrix gaps", len(matrix_gaps), "FAIL"),
+        ("7 retention: unaccounted source files", len(unaccounted), "FAIL"),
+        ("8 density: states over budget", len(over_budget), "FAIL" if DENSITY_BUDGET else "INFO"),
+        ("9 pool lines over the ini buffer cap", len(over_cap), "FAIL"),
+        ("10 weather-mod collections unresolved", len(missing_coll), "FAIL"),
+        ("11 pools the AlifeSpooks veto empties WITHOUT its no_sound guard",
+         len(veto_emptied) if veto_emptied is not None else 0,
+         "FAIL" if veto_emptied is not None else "INFO"),
+    ]
+    with open(os.path.join(HERE, "ledger.tsv"), "w") as fh:
+        fh.write("invariant\tcount\tseverity\n")
+        for k, v, sev in rows:
+            fh.write(f"{k}\t{v}\t{sev}\n")
+    print("  GATE LEDGER")
+    failed = False
+    for k, v, sev in rows:
+        status = "INFO" if sev == "INFO" else ("PASS" if v == 0 else "FAIL")
+        failed = failed or (status == "FAIL")
+        print(f"    {status}  {k}: {v}")
+    if dangling:
+        print("    dangling:", dangling[:12])
+    if orphan_files:
+        print("    orphans:", orphan_files[:8])
+    if unaccounted:
+        print("    unaccounted:", unaccounted[:8])
+    if veto_emptied:
+        print("    veto-emptied pools (NO no_sound guard):", veto_emptied[:8])
+    if veto_silenced:
+        print(f"    veto-silenced channels (guarded, Spooks-owned content): {len(veto_silenced)}",
+              veto_silenced[:6])
+    if veto_shrunk:
+        worst = sorted(veto_shrunk, key=lambda r: r[2] / r[1])[:4]
+        print("    veto shrink (designed coexistence, worst): " +
+              "; ".join(f"{c} {b}->{a}" for c, b, a in worst))
+    if veto is None:
+        print("    (AlifeSpooks repo not present - veto gate skipped)")
+    dmax = max(density_rows, key=lambda r: r[2]) if density_rows else None
+    if dmax:
+        print(f"    density: max {dmax[2]} events/min at {dmax[0]}[{dmax[1]}]; "
+              f"entry-burst worst {burst_worst[0]} channels at {burst_worst[1]} "
+              f"(budget {'unset - report only' if not DENSITY_BUDGET else DENSITY_BUDGET})")
+    print("    retention per source: " +
+          "; ".join(f"{n} ref {a['referenced']} disp {a['disposed']} un {a['unaccounted']}"
+                    for n, a in per_source.items()))
+    json.dump({"orphan_files": orphan_files[:200], "orphan_channels": orphan_channels,
+               "dangling": dangling, "missing_paths": missing_paths, "level_bad": level_bad,
+               "matrix_gaps": matrix_gaps, "unaccounted": unaccounted,
+               "density": sorted(density_rows, key=lambda r: -r[2])[:40],
+               "veto_emptied": veto_emptied or [], "veto_silenced": sorted(veto_silenced),
+               "veto_shrunk": sorted(veto_shrunk)},
+              open(os.path.join(HERE, "ledger_detail.json"), "w"), indent=1)
+    if failed:
+        raise SystemExit("verify: gate ledger has failures")
+
+
+def cmd_all():
+    for name, fn in (("materialize", cmd_materialize), ("fmt", cmd_fmt), ("fold", cmd_fold),
+                     ("level", cmd_level), ("fingerprint", cmd_fingerprint), ("dead", cmd_dead),
+                     ("verify", cmd_verify), ("audit", cmd_audit)):
         print(f"== {name} ==")
         fn()
 
 
-def cmd_rebuild():
-    """Full destructive rebuild: wipe the deployed audio, regenerate everything from source. Rare."""
-    if os.path.isdir(SROOT):
-        shutil.rmtree(SROOT)
-        print(f"== wipe == removed {SROOT} (full rebuild)")
-    _run_pipeline()
-
-
-def cmd_add():
-    """Incremental grow-and-resync: run the whole pipeline WITHOUT wiping. deploy skips existing,
-    fold/master/level are cached, so only net-new source content is processed. The everyday path."""
-    _run_pipeline()
-
-
 if __name__ == "__main__":
-    stage = sys.argv[1] if len(sys.argv) > 1 else "plan"
-    {"plan": cmd_plan, "deploy": cmd_deploy, "config": cmd_config,
-     "graft": cmd_graft, "fingerprint": cmd_fingerprint, "prune": cmd_prune, "verify": cmd_verify,
-     "fold": cmd_fold, "master": cmd_master, "level": cmd_level, "cull": cmd_cull, "audit": cmd_audit,
-     "rebuild": cmd_rebuild, "add": cmd_add, "all": cmd_add}.get(stage, cmd_add)()
+    stage_arg = sys.argv[1] if len(sys.argv) > 1 else "all"
+    {"materialize": cmd_materialize, "fmt": cmd_fmt, "fold": cmd_fold, "level": cmd_level,
+     "fingerprint": cmd_fingerprint, "dead": cmd_dead, "verify": cmd_verify, "audit": cmd_audit,
+     "stage": cmd_stage, "unstage": cmd_unstage, "all": cmd_all}.get(stage_arg, cmd_all)()
