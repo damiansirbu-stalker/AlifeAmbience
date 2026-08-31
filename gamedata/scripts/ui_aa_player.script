@@ -1,0 +1,397 @@
+--- ui_aa_player: the channel review player - browse the resolved ambient channels, audition each pool
+--- entry as-wired / at-ear / at fixed distance, log ear verdicts to alifeambience_notes.txt (PageUp,
+--- MCM sound_player gate; AlifeSpooks' player keeps PageDown; doc/architecture.md: Scripts).
+
+local table_sort, string_format = table.sort, string.format
+local string_gmatch, tostring = string.gmatch, tostring
+local RegisterScriptCallback = RegisterScriptCallback
+
+local NOTES_FILE = "alifeambience_notes.txt"
+local PGUP_KEY   = 201
+local STAGE_ROOT = "stage"
+local KIND_WIRED = "wired"
+local KIND_ATEAR = "atear"
+local KIND_DIST  = "dist"
+local FRAC_MIN   = "min"
+local FRAC_FELT  = "felt"
+local FRAC_FAR   = "far"
+--- Audition modes cycled by the mode steppers: at the channel's own placement band, raw 2D, or fixed metres.
+local MODES = {
+    { label = "as wired - near",  kind = KIND_WIRED, frac = FRAC_MIN },
+    { label = "as wired - felt",  kind = KIND_WIRED, frac = FRAC_FELT },
+    { label = "as wired - far",   kind = KIND_WIRED, frac = FRAC_FAR },
+    { label = "at-ear (2D)",      kind = KIND_ATEAR },
+    { label = "10m",  kind = KIND_DIST, dist = 10 },
+    { label = "25m",  kind = KIND_DIST, dist = 25 },
+    { label = "50m",  kind = KIND_DIST, dist = 50 },
+    { label = "100m", kind = KIND_DIST, dist = 100 },
+}
+--- Placement for staged families (no channel definition yet): the wind-band values.
+local STAGE_MIN, STAGE_MAX, STAGE_HEIGHT = 30, 130, 10
+local DEFAULT_MODE = 2
+
+local _channels = nil
+local _staged   = nil
+local _row_i    = 1
+local _at_root  = true
+local _mode_i   = DEFAULT_MODE
+local _cur      = nil
+local _box      = nil
+--- RemoveAll on the empty, not-yet-attached list (the first fill) CTDs in CUIScrollView::Clear.
+local _built    = false
+
+--- Collect the channels of one resolved ini (what the engine actually plays, DLTX applied).
+local function _collect_channels(rel, bed)
+    local ini = ini_file(rel)
+    if not (ini and ini.section_for_each) then return end
+    ini:section_for_each(function(sec)
+        if not ini:line_exist(sec, "sounds") then return end
+        local pool = {}
+        local raw = ini:r_string_ex(sec, "sounds") or ""
+        for tok in string_gmatch(raw, "[^,]+") do
+            tok = tok:match("^%s*(.-)%s*$")
+            if tok ~= "" and tok ~= "ambient\\no_sound" then pool[#pool + 1] = tok end
+        end
+        _channels[#_channels + 1] = {
+            name   = sec,
+            pool   = pool,
+            min    = ini:r_float_ex(sec, "min_distance") or STAGE_MIN,
+            max    = ini:r_float_ex(sec, "max_distance") or STAGE_MAX,
+            height = ini:r_float_ex(sec, "height") or 0,
+            bed    = bed,
+        }
+    end)
+end
+
+local function _build_index()
+    _channels = {}
+    _collect_channels("environment\\sound_channels.ltx", false)
+    _collect_channels("environment\\ambient_channels\\backgrounds.ltx", true)
+    table_sort(_channels, function(left, right) return left.name < right.name end)
+    _staged = (xfs and xfs.folders and xfs.folders("$game_sounds$", STAGE_ROOT .. "\\")) or {}
+    table_sort(_staged)
+end
+
+local function _build_stage_row(name)
+    local files = (xfs and xfs.files and xfs.files("$game_sounds$", STAGE_ROOT .. "\\" .. name .. "\\", ".ogg")) or {}
+    table_sort(files)
+    local pool = {}
+    for i = 1, #files do pool[i] = STAGE_ROOT .. "\\" .. name .. "\\" .. files[i] end
+    return { name = STAGE_ROOT .. "/" .. name, pool = pool,
+             min = STAGE_MIN, max = STAGE_MAX, height = STAGE_HEIGHT, bed = false }
+end
+
+--- The browse rows at root: every channel, then every staged family.
+local function _get_rows()
+    local rows = {}
+    for i = 1, #_channels do rows[#rows + 1] = _channels[i] end
+    for i = 1, #(_staged or {}) do rows[#rows + 1] = _build_stage_row(_staged[i]) end
+    return rows
+end
+
+local function _get_row()
+    return _get_rows()[_row_i]
+end
+
+local function _get_tail(path)
+    return path:match("([^\\]+)$") or path
+end
+
+--- The actor position, or nil without an actor (never cache the pointer).
+local function _get_actor_position()
+    return db.actor and db.actor:position()
+end
+
+--- The placement point for a 3D mode: camera-forward at the given distance, lifted by the channel height.
+local function _compute_position(dist, height)
+    local apos = _get_actor_position()
+    if not apos then return nil end
+    local dir = device().cam_dir
+    local flat = vector():set(dir.x, 0, dir.z)
+    if flat:magnitude() < 0.01 then flat = vector():set(0, 0, 1) end
+    flat:normalize()
+    local pos = vector():set(apos):add(flat:mul(dist))
+    pos.y = pos.y + (height or 0)
+    return pos
+end
+
+--- Append one note line to $logs$/alifeambience_notes.txt (an investigation log; nothing parses it).
+local function _write_note(line)
+    local base = getFS and getFS():update_path("$logs$", "")
+    if not base then return false end
+    local file_handle = io.open(base .. NOTES_FILE, "a")
+    if not file_handle then return false end
+    file_handle:write(line)
+    file_handle:write("\n")
+    file_handle:flush()
+    file_handle:close()
+    return true
+end
+
+--- Open the player when the MCM sound_player toggle allows it (aa_player_wnd resolves at call time).
+local function try_open()
+    if _box and _box:IsShown() then return end
+    if not (db.actor and aa_mcm and aa_mcm.get_config and aa_mcm.get_config("sound_player")) then return end
+    _channels = nil
+    _box = aa_player_wnd()
+    _box:ShowDialog(true)
+    Register_UI("aa_player_wnd", "ui_aa_player", _box)
+end
+
+class "aa_player_wnd" (CUIScriptWnd)
+
+function aa_player_wnd:__init() super()
+    self:SetWndRect(Frect():set(0, 0, 1024, 768))
+    self:SetAutoDelete(true)
+    self:init_controls()
+    self:init_callbacks()
+    _built = false
+    if not _channels then _build_index() end
+    self:build_list()
+    self:update_view()
+end
+
+function aa_player_wnd:init_controls()
+    local xml = CScriptXmlInit()
+    xml:ParseFile("ui_aa_player.xml")
+    xml:InitStatic("background", self)
+    xml:InitStatic("hdr_player", self)
+    xml:InitStatic("line_player", self)
+    xml:InitStatic("screen", self)
+    xml:InitStatic("hdr_verdict", self)
+    xml:InitStatic("hdr_snote", self)
+    xml:InitFrame("list_frame", self)
+    self.list = xml:InitListBox("list", self)
+    self.list:ShowSelectedItem(true)
+    self:Register(self.list, "list")
+    self.lbl_path  = xml:InitStatic("lbl_path", self):TextControl()
+    self.lbl_now   = xml:InitStatic("lbl_now", self):TextControl()
+    self.lbl_pos   = xml:InitStatic("lbl_pos", self):TextControl()
+    self.status    = xml:InitStatic("status", self):TextControl()
+    self.insp_read = xml:InitStatic("insp_read", self):TextControl()
+    self.snote = xml:InitEditBox("snote", self)
+    self:Register(self.snote, "snote")
+    local buttons = { "btn_pos_down", "btn_pos_up", "btn_prior", "btn_play", "btn_stop", "btn_next",
+                      "btn_v1", "btn_v2", "btn_v3", "btn_v4", "btn_v5", "btn_note", "btn_rescan" }
+    for i = 1, #buttons do
+        self:Register(xml:Init3tButton(buttons[i], self), buttons[i])
+    end
+end
+
+function aa_player_wnd:init_callbacks()
+    self:AddCallback("list",         ui_events.LIST_ITEM_CLICKED, self.select_row,       self)
+    self:AddCallback("btn_pos_down", ui_events.BUTTON_CLICKED,    self.select_mode_prior, self)
+    self:AddCallback("btn_pos_up",   ui_events.BUTTON_CLICKED,    self.select_mode_next,  self)
+    self:AddCallback("btn_prior",    ui_events.BUTTON_CLICKED,    self.select_prior,     self)
+    self:AddCallback("btn_play",     ui_events.BUTTON_CLICKED,    self.start_current,    self)
+    self:AddCallback("btn_stop",     ui_events.BUTTON_CLICKED,    self.stop_playback,    self)
+    self:AddCallback("btn_next",     ui_events.BUTTON_CLICKED,    self.select_next,      self)
+    self:AddCallback("btn_v1", ui_events.BUTTON_CLICKED, function() self:add_note("inaudible") end, self)
+    self:AddCallback("btn_v2", ui_events.BUTTON_CLICKED, function() self:add_note("faint") end, self)
+    self:AddCallback("btn_v3", ui_events.BUTTON_CLICKED, function() self:add_note("loud") end, self)
+    self:AddCallback("btn_v4", ui_events.BUTTON_CLICKED, function() self:add_note("unfit") end, self)
+    self:AddCallback("btn_v5", ui_events.BUTTON_CLICKED, function() self:add_note("good") end, self)
+    self:AddCallback("btn_note",   ui_events.BUTTON_CLICKED, function() self:add_note(nil) end, self)
+    self:AddCallback("btn_rescan", ui_events.BUTTON_CLICKED, self.reset_index, self)
+end
+
+function aa_player_wnd:build_list()
+    if xslice then xslice.cancel("aa_player_fill") end
+    if _built then self.list:RemoveAll() end
+    _built = true
+    if _at_root then
+        local rows = _get_rows()
+        for i = 1, #rows do
+            local row = rows[i]
+            self.list:AddTextItem(string_format("%s%s  (%d)  %g-%gm",
+                row.bed and "[bed] " or "", row.name, #row.pool, row.min, row.max))
+        end
+    else
+        self:add_pool_rows(_get_row())
+    end
+end
+
+--- Fill one channel's pool rows, frame-spread by xslice so xsound.length never builds them all at once.
+function aa_player_wnd:add_pool_rows(row)
+    if not row then return end
+    self.list:AddTextItem("..")
+    local list = self.list
+    if not xslice then
+        for i = 1, #row.pool do list:AddTextItem(_get_tail(row.pool[i])) end
+        return
+    end
+    xslice.start("aa_player_fill", row.pool, { step = 15, func = function(path)
+        local ms = (xsound and xsound.length and xsound.length(path)) or 0
+        list:AddTextItem(string_format("%s    %.1fs", _get_tail(path), ms / 1000))
+        return true
+    end })
+end
+
+function aa_player_wnd:compute_wired_distance(mode)
+    local near = (_cur and _cur.min) or STAGE_MIN
+    local far = (_cur and _cur.max) or STAGE_MAX
+    if mode.frac == FRAC_MIN then return near end
+    if mode.frac == FRAC_FAR then return far * 0.9 end
+    return far / 2.0
+end
+
+--- The audition mode label; a wired mode appends the distance it resolves to for the loaded channel.
+function aa_player_wnd:format_mode()
+    local mode = MODES[_mode_i]
+    if mode.kind ~= KIND_WIRED or not _cur then return mode.label end
+    return string_format("%s (%.0fm, h%g)", mode.label, self:compute_wired_distance(mode), _cur.height or 0)
+end
+
+function aa_player_wnd:format_spot()
+    local pos = _get_actor_position()
+    if not pos then return "no actor" end
+    return string_format("%s    pos %.0f %.0f %.0f", level.name(), pos.x, pos.y, pos.z)
+end
+
+function aa_player_wnd:update_view()
+    if _at_root then
+        self.lbl_path:SetText(string_format("channels    (%d + %d staged)",
+            #(_channels or {}), #(_staged or {})))
+        self.status:SetText("click a channel to browse its pool")
+    else
+        local row = _get_row()
+        self.lbl_path:SetText(string_format("%s    (%d)  %g-%gm  h%g",
+            row and row.name or "?", row and #row.pool or 0,
+            row and row.min or 0, row and row.max or 0, row and row.height or 0))
+        self.status:SetText("click a sound to play    -    click a premade note, or type + add note")
+    end
+    self.lbl_now:SetText(_cur and ("loaded:  " .. _cur.channel .. " :: " .. _cur.name)
+        or "loaded:  (none - click a sound)")
+    self.lbl_pos:SetText("mode:  " .. self:format_mode())
+    if self.insp_read then self.insp_read:SetText(self:format_spot()) end
+end
+
+function aa_player_wnd:start_current()
+    if not (_cur and xsound) then return end
+    local mode = MODES[_mode_i]
+    if mode.kind == KIND_ATEAR then
+        xsound.play_at(_cur.path, { s2d = true, volume = 1.0 })
+        return
+    end
+    local dist = (mode.kind == KIND_DIST) and mode.dist or self:compute_wired_distance(mode)
+    local pos = _compute_position(dist, mode.kind == KIND_WIRED and _cur.height or 0)
+    if pos then xsound.play_at(_cur.path, { position = pos }) end
+end
+
+function aa_player_wnd:select_row()
+    local idx = self.list:GetSelectedIndex()
+    if not idx or idx < 0 then return end
+    if _at_root then
+        local rows = _get_rows()
+        if not rows[idx + 1] then return end
+        _row_i, _at_root = idx + 1, false
+        self:build_list()
+        self:update_view()
+        return
+    end
+    if idx == 0 then
+        _at_root = true
+        self:build_list()
+        self:update_view()
+        return
+    end
+    local row = _get_row()
+    local path = row and row.pool[idx]
+    if not path then return end
+    _cur = { channel = row.name, name = _get_tail(path), path = path,
+             min = row.min, max = row.max, height = row.height }
+    self:start_current()
+    self:update_view()
+    self.status:SetText(string_format("playing:  %s :: %s", row.name, _cur.name))
+end
+
+function aa_player_wnd:stop_playback()
+    if xsound then xsound.stop_shots() end
+    self.status:SetText("stopped")
+end
+
+--- Mode steppers cycle the audition mode ONLY (they never play - Play/click is the one trigger).
+function aa_player_wnd:select_mode_prior()
+    _mode_i = _mode_i - 1
+    if _mode_i < 1 then _mode_i = #MODES end
+    self:update_view()
+end
+
+function aa_player_wnd:select_mode_next()
+    _mode_i = _mode_i % #MODES + 1
+    self:update_view()
+end
+
+--- Step the selection to a neighbouring pool entry, move only (silent) - Prev/Next never play.
+function aa_player_wnd:select_step(delta)
+    if _at_root then return end
+    local row = _get_row()
+    if not (row and #row.pool > 0) then return end
+    local at = 1
+    if _cur and _cur.channel == row.name then
+        for k = 1, #row.pool do
+            if _get_tail(row.pool[k]) == _cur.name then at = k; break end
+        end
+    end
+    at = (at - 1 + delta) % #row.pool + 1
+    local path = row.pool[at]
+    _cur = { channel = row.name, name = _get_tail(path), path = path,
+             min = row.min, max = row.max, height = row.height }
+    self.list:SetSelectedIndex(at)
+    self:update_view()
+end
+
+function aa_player_wnd:select_prior() self:select_step(-1) end
+function aa_player_wnd:select_next()  self:select_step(1) end
+
+--- Write a sound note for the current sound (a premade preset, the typed field, or both combined).
+function aa_player_wnd:add_note(premade)
+    if not _cur then return end
+    local custom = self.snote:GetText()
+    local text
+    if premade and custom and custom ~= "" then text = premade .. " :: " .. custom
+    elseif premade then text = premade
+    else text = custom end
+    if not text or text == "" then return end
+    local apos = _get_actor_position()
+    local written = apos and _write_note(string_format(
+        "[SOUND] %s  channel=%s  mode=%s  level=%s  pos=%.1f,%.1f,%.1f  :: %s",
+        _cur.path, _cur.channel, MODES[_mode_i].label, tostring(level.name()),
+        apos.x, apos.y, apos.z, text))
+    self.snote:SetText("")
+    self.status:SetText(written and string_format("NOTE %s :: %s", _cur.name, text)
+        or "note FAILED (no actor?)")
+end
+
+--- Re-read the channel config and the stage tree (after a merge.py stage/unstage or a config edit).
+function aa_player_wnd:reset_index()
+    _build_index()
+    if _row_i > #_get_rows() then _row_i = 1 end
+    _at_root = true
+    self:build_list()
+    self:update_view()
+end
+
+--- CUIScriptWnd override (engine-called): Esc closes when the edit box has no focus.
+function aa_player_wnd:OnKeyboard(dik, action)
+    local res = CUIScriptWnd.OnKeyboard(self, dik, action)
+    if action == ui_events.WINDOW_KEY_PRESSED and not res and dik == DIK_keys.DIK_ESCAPE then
+        self:stop_player()
+        return true
+    end
+    return res
+end
+
+function aa_player_wnd:stop_player()
+    if xslice then xslice.cancel("aa_player_fill") end
+    if xsound then xsound.stop_shots() end
+    self:HideDialog()
+    Unregister_UI("aa_player_wnd")
+end
+
+--- PageUp opens the player.
+function on_game_start()
+    RegisterScriptCallback("on_key_press", function(key)
+        if key == PGUP_KEY then try_open() end
+    end)
+end

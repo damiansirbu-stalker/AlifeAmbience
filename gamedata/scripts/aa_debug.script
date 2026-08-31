@@ -1,11 +1,4 @@
---- aa_debug: the code-tracing primitives for AlifeAmbience. ONE logger, one gate, one set of formatters.
---- AlifeAmbience is a config-only ambient soundscape with no gameplay logic, so the only consumer is aa_diag
---- (the runtime wiring inspector). The module still mirrors the family shape (aa_debug.on/dbg/info/warn/
---- flush, MCM log level) so its tooling reads identically to the other mods.
----
---- Cost: dbg() and on() gate on one integer compare. Below DEBUG the off path writes nothing; for a line
---- whose arguments cost something to build, the CALLER guards the whole site with `if aa_debug.on()` so
---- the off path also marshals nothing and crosses no luabind bridge.
+--- aa_debug: the code-tracing primitives for AlifeAmbience - one logger, one gate, one set of formatters.
 
 aa_debug = aa_debug or {}
 
@@ -13,31 +6,27 @@ local xlog, RegisterScriptCallback = xlog, RegisterScriptCallback
 local log = xlog.get_logger("AA", { outfile = "alifeambience.log" })
 local DEBUG_LEVEL = 5
 local _lvl = 0
--- Level constants for the flush-on-emit flag: TRACE flushes every line, ERROR is the logger's own
--- default flush threshold (xlog buffers below it). See aa_debug.refresh.
+-- TRACE flushes every line, ERROR is the logger's own default flush threshold (xlog buffers below it).
 local _levels = xlog.get_levels()
 
---- Re-read the log level from MCM - call on actor first update and on every option change. Sets the one
---- gate every module's tracing reads, so a level change takes hold mod-wide from a single site.
-function aa_debug.refresh()
+--- Re-read the log level from MCM (actor first update + every option change).
+function aa_debug.update()
     log.set_level(aa_mcm.get_config("log_level") or "WARN")
     _lvl = log.get_level() or 0
     log._logger.flush_on_level = aa_mcm.get_config("log_flush") and _levels.TRACE or _levels.ERROR
 end
 
---- True when DEBUG tracing is live - the guard a caller puts in front of an expensive trace line so the
---- off path never builds its arguments.
-function aa_debug.on()
+--- True when DEBUG tracing is live - the caller's guard in front of an expensive trace site.
+function aa_debug.is_on()
     return _lvl >= DEBUG_LEVEL
 end
 
---- A DEBUG line: what the code did, verbose. Noops below DEBUG. A cheap line calls this directly; an
---- expensive one gates its whole site on aa_debug.on() first.
+--- A DEBUG line; noops below DEBUG.
 function aa_debug.dbg(fmt, ...)
     if _lvl >= DEBUG_LEVEL then log.debug(fmt, ...) end
 end
 
---- An INFO line: a milestone the log should carry whenever tracing is on at all.
+--- An INFO line: a milestone the log carries whenever tracing is on at all.
 function aa_debug.info(fmt, ...)
     log.info(fmt, ...)
 end
@@ -52,10 +41,9 @@ function aa_debug.flush()
     log.flush()
 end
 
--- aa_debug owns the log level for the whole mod: one refresh on first update and on every option change,
--- so no module manages a logger or a _dbg boolean of its own.
+--- aa_debug owns the log level for the whole mod: one update per option change, no per-module loggers.
 function on_game_start()
-    RegisterScriptCallback("actor_on_first_update",      aa_debug.refresh)
-    RegisterScriptCallback("on_option_change",           aa_debug.refresh)
-    RegisterScriptCallback("mcm_option_restore_default", aa_debug.refresh)
+    RegisterScriptCallback("actor_on_first_update",      aa_debug.update)
+    RegisterScriptCallback("on_option_change",           aa_debug.update)
+    RegisterScriptCallback("mcm_option_restore_default", aa_debug.update)
 end

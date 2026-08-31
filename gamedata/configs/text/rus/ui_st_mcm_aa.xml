@@ -1,71 +1,69 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <string_table>
-    <string id="ui_mcm_menu_aa">
-        <text>AlifeAmbience</text>
-    </string>
-
-    <string id="ui_mcm_menu_general">
-        <text>Общее</text>
-    </string>
-    <string id="ui_mcm_menu_development">
-        <text>Разработка</text>
-    </string>
-
-    <string id="ui_mcm_aa_title">
-        <text>AlifeAmbience</text>
-    </string>
-
-    <string id="ui_mcm_aa_general_desc">
-        <text>AlifeAmbience: подобранная подложка природного и погодного эмбиента для Зоны. Она объединяет лучшее эмбиентное содержимое из нескольких звуковых сборок в один набор, согласует маршрутизацию по уровням и погоде так, чтобы на каждой карте в каждом состоянии погоды звучала живая слышимая подложка, и оставляет пугающие одиночные звуки для AlifeSpooks. Мод содержит только звук и конфигурацию; игровых настроек здесь нет. Громкостью управляет системный ползунок громкости эмбиента.</text>
-    </string>
-
-    <string id="ui_mcm_aa_development_desc">
-        <text>Инструменты диагностики для проверки разводки эмбиента. Повысьте уровень логирования или включите переключатель диагностики эмбиента, чтобы при загрузке записать в alifeambience.log текущий уровень, погоду и состояние эмбиента, число динамических каналов по каждому состоянию текущего пресета, активный канал подложки и любую висячую ссылку на канал.</text>
-    </string>
-
-    <string id="ui_mcm_aa_hdr_logging">
-        <text>Логирование</text>
-    </string>
-    <string id="ui_mcm_aa_development_log_level">
-        <text>Уровень логирования</text>
-    </string>
-    <string id="ui_mcm_aa_development_log_level_desc">
-        <text>Управляет подробностью alifeambience.log. ERROR записывает только сбои. WARN добавляет непредвиденные ситуации. INFO добавляет запуск и строку платформы. DEBUG добавляет полный дамп числа каналов по состояниям. По умолчанию WARN тихий в обычной игре; DEBUG предназначен для настройки или отчетов об ошибках.</text>
-    </string>
-    <string id="aa_development_log_level_lst_error">
-        <text>Ошибка</text>
-    </string>
-    <string id="aa_development_log_level_lst_warn">
-        <text>Предупреждение</text>
-    </string>
-    <string id="aa_development_log_level_lst_info">
-        <text>Информация</text>
-    </string>
-    <string id="aa_development_log_level_lst_debug">
-        <text>Отладка</text>
-    </string>
-
-    <string id="ui_mcm_aa_hdr_diagnostics">
-        <text>Диагностика</text>
-    </string>
-    <string id="ui_mcm_aa_development_diag_ambient">
-        <text>Логировать разводку эмбиента при загрузке</text>
-    </string>
-    <string id="ui_mcm_aa_development_diag_ambient_desc">
-        <text>Записывает блок разводки эмбиента в alifeambience.log после каждой загрузки сохранения: уровень, погоду, текущее состояние, число динамических каналов по состояниям, активный канал подложки и любую висячую ссылку. Не зависит от уровня логирования. Вызовите aa_diag.dump() из консоли, чтобы запустить проверку в любой момент.</text>
-    </string>
-
-    <string id="ui_mcm_aa_development_btn_reset_all">
-        <text>Сбросить к значениям по умолчанию</text>
-    </string>
-    <string id="ui_mcm_aa_development_btn_reset_all_desc">
-        <text>Восстановить все настройки MCM AlifeAmbience к заводским значениям. Используйте после обновления с версии с другой структурой MCM (старые настройки остаются осиротевшими ключами в файле хранилища MCM, но больше не применяются).</text>
-    </string>
-    <string id="ui_mcm_aa_development_reset_warning">
-        <text>Внимание: сначала сохраните или отмените несохраненные изменения MCM; иначе они переопределят сброс при следующем применении.</text>
-    </string>
-
-    <string id="st_aa_reset_all_done">
-        <text>AlifeAmbience: все настройки сброшены к значениям по умолчанию.</text>
-    </string>
+  <string id="ui_mcm_menu_aa">
+    <text>AlifeAmbience</text>
+  </string>
+  <string id="ui_mcm_menu_general">
+    <text>Общее</text>
+  </string>
+  <string id="ui_mcm_menu_development">
+    <text>Разработка</text>
+  </string>
+  <string id="ui_mcm_aa_title">
+    <text>AlifeAmbience</text>
+  </string>
+  <string id="ui_mcm_aa_general_desc">
+    <text>AlifeAmbience: подобранная подложка природного и погодного эмбиента для Зоны. Она объединяет лучшее эмбиентное содержимое из нескольких звуковых сборок в один набор, согласует маршрутизацию по уровням и погоде так, чтобы на каждой карте в каждом состоянии погоды звучала живая слышимая подложка, и оставляет пугающие одиночные звуки для AlifeSpooks. Мод содержит только звук и конфигурацию; игровых настроек здесь нет. Громкостью управляет системный ползунок громкости эмбиента.</text>
+  </string>
+  <string id="ui_mcm_aa_development_desc">
+    <text>Инструменты диагностики для проверки разводки эмбиента. Повысьте уровень логирования или включите переключатель диагностики эмбиента, чтобы при загрузке записать в alifeambience.log текущий уровень, погоду и состояние эмбиента, число динамических каналов по каждому состоянию текущего пресета, активный канал подложки и любую висячую ссылку на канал.</text>
+  </string>
+  <string id="ui_mcm_aa_hdr_logging">
+    <text>Логирование</text>
+  </string>
+  <string id="ui_mcm_aa_development_log_level">
+    <text>Уровень логирования</text>
+  </string>
+  <string id="ui_mcm_aa_development_log_level_desc">
+    <text>Управляет подробностью alifeambience.log. ERROR записывает только сбои. WARN добавляет непредвиденные ситуации. INFO добавляет запуск и строку платформы. DEBUG добавляет полный дамп числа каналов по состояниям. По умолчанию WARN тихий в обычной игре; DEBUG предназначен для настройки или отчетов об ошибках.</text>
+  </string>
+  <string id="aa_development_log_level_lst_error">
+    <text>Ошибка</text>
+  </string>
+  <string id="aa_development_log_level_lst_warn">
+    <text>Предупреждение</text>
+  </string>
+  <string id="aa_development_log_level_lst_info">
+    <text>Информация</text>
+  </string>
+  <string id="aa_development_log_level_lst_debug">
+    <text>Отладка</text>
+  </string>
+  <string id="ui_mcm_aa_hdr_diagnostics">
+    <text>Диагностика</text>
+  </string>
+  <string id="ui_mcm_aa_development_diag_ambient">
+    <text>Логировать разводку эмбиента при загрузке</text>
+  </string>
+  <string id="ui_mcm_aa_development_diag_ambient_desc">
+    <text>Записывает блок разводки эмбиента в alifeambience.log после каждой загрузки сохранения: уровень, погоду, текущее состояние, число динамических каналов по состояниям, активный канал подложки и любую висячую ссылку. Не зависит от уровня логирования. Вызовите aa_diag.log_wiring() из консоли, чтобы запустить проверку в любой момент.</text>
+  </string>
+  <string id="ui_mcm_aa_development_sound_player">
+    <text>Enable the sound player (PageUp)</text>
+  </string>
+  <string id="ui_mcm_aa_development_sound_player_desc">
+    <text>Opens the channel review player on PageUp: browse every ambient channel and its pool, audition each sound at the channel's own placement, at-ear, or a fixed distance, and log listening notes to alifeambience_notes.txt. A curation tool; leave off in normal play.</text>
+  </string>
+  <string id="ui_mcm_aa_development_btn_reset_all">
+    <text>Сбросить к значениям по умолчанию</text>
+  </string>
+  <string id="ui_mcm_aa_development_btn_reset_all_desc">
+    <text>Восстановить все настройки MCM AlifeAmbience к заводским значениям. Используйте после обновления с версии с другой структурой MCM (старые настройки остаются осиротевшими ключами в файле хранилища MCM, но больше не применяются).</text>
+  </string>
+  <string id="ui_mcm_aa_development_reset_warning">
+    <text>Внимание: сначала сохраните или отмените несохраненные изменения MCM; иначе они переопределят сброс при следующем применении.</text>
+  </string>
+  <string id="st_aa_reset_all_done">
+    <text>AlifeAmbience: все настройки сброшены к значениям по умолчанию.</text>
+  </string>
 </string_table>

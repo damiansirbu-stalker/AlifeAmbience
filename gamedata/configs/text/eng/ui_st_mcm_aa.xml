@@ -52,7 +52,14 @@
         <text>Log ambient wiring on load</text>
     </string>
     <string id="ui_mcm_aa_development_diag_ambient_desc">
-        <text>Writes the ambient wiring block to alifeambience.log after each save load: level, weather, current state, per-state dynamic channel counts, the active bed channel, and any dangling reference. Independent of log level. Call aa_diag.dump() from the console to re-run it at any time.</text>
+        <text>Writes the ambient wiring block to alifeambience.log after each save load: level, weather, current state, per-state dynamic channel counts, the active bed channel, and any dangling reference. Independent of log level. Call aa_diag.log_wiring() from the console to re-run it at any time.</text>
+    </string>
+
+    <string id="ui_mcm_aa_development_sound_player">
+        <text>Enable the sound player (PageUp)</text>
+    </string>
+    <string id="ui_mcm_aa_development_sound_player_desc">
+        <text>Opens the channel review player on PageUp: browse every ambient channel and its pool, audition each sound at the channel's own placement, at-ear, or a fixed distance, and log listening notes to alifeambience_notes.txt. A curation tool; leave off in normal play.</text>
     </string>
 
     <string id="ui_mcm_aa_development_btn_reset_all">

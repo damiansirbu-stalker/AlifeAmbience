@@ -1,11 +1,7 @@
---- aa_mcm: MCM configuration for AlifeAmbience
-
--- AlifeAmbience is a config-only ambient soundscape: it has no runtime gameplay knobs, so the menu is
--- informational (the platform/version footer) plus the shared Development tab (log level + the ambient
--- diagnostics toggle + reset). Structure and helpers are identical to the other mods so the tooling
--- (xmcm.create_config, the platform footer, the reset button) reads the same everywhere.
+--- aa_mcm: MCM configuration for AlifeAmbience - informational General tab plus the Development tab.
 defaults = {
     diag_ambient = false,
+    sound_player = false,
     log_level = "WARN",
 }
 
@@ -13,23 +9,24 @@ local RegisterScriptCallback = RegisterScriptCallback
 
 local _key_to_tab = {
     diag_ambient  = "development",
+    sound_player  = "development",
     log_level     = "development",
     btn_reset_all = "development",
 }
 
-local function path_builder(key)
+local function build_path(key)
     local tab = _key_to_tab[key] or "general"
     return "aa/" .. tab .. "/" .. key
 end
 
-cfg, get_config, load_config = xmcm.create_config("aa", defaults, path_builder)
+cfg, get_config, load_config = xmcm.create_config("aa", defaults, build_path)
 
 -- functor_ui passes the UI_MCM instance, which get_gui() cannot supply on a fresh open.
 -- @src anomaly/ui_mcm.script:1435
 local function _apply_defaults(gui, msg)
     local config = axr_main.config
     for k, v in pairs(defaults) do
-        config:w_value("mcm", path_builder(k), v)
+        config:w_value("mcm", build_path(k), v)
     end
     config:save()
     load_config()
@@ -46,11 +43,7 @@ local function _apply_defaults(gui, msg)
     end
 end
 
-function btn_reset_all(gui)
-    _apply_defaults(gui, game.translate_string("st_aa_reset_all_done"))
-end
-
-local function _tab_header(desc_id)
+local function _build_header(desc_id)
     return {
         { id = "title", type = "slide", link = "aa_mcm_banner",
             text = "ui_mcm_aa_title", size = {512, 50}, spacing = 20 },
@@ -59,12 +52,18 @@ local function _tab_header(desc_id)
     }
 end
 
-local function _with_header(desc_id, entries)
-    local gr = _tab_header(desc_id)
+local function _merge_header(desc_id, entries)
+    local gr = _build_header(desc_id)
     for i = 1, #entries do gr[#gr + 1] = entries[i] end
     return gr
 end
 
+--- MCM reset functor (Development tab).
+function btn_reset_all(gui)
+    _apply_defaults(gui, game.translate_string("st_aa_reset_all_done"))
+end
+
+--- The MCM menu tree.
 function on_mcm_load()
     return {
         id = "aa",
@@ -72,7 +71,7 @@ function on_mcm_load()
             {
                 id = "general",
                 sh = true,
-                gr = _with_header("ui_mcm_aa_general_desc", {
+                gr = _merge_header("ui_mcm_aa_general_desc", {
                     { id = "div_footer", type = "line" },
                     { id = "platform", type = "desc", text = "ui_mcm_xmcm_footer",
                         ui_hook_functor = { _aa_deps.platform_functor() }, clr = {255, 212, 201, 168} },
@@ -81,7 +80,7 @@ function on_mcm_load()
             {
                 id = "development",
                 sh = true,
-                gr = _with_header("ui_mcm_aa_development_desc", {
+                gr = _merge_header("ui_mcm_aa_development_desc", {
                     { id = "hdr_logging", type = "desc", text = "ui_mcm_aa_hdr_logging", clr = {255, 200, 200, 200} },
                     { id = "log_level", type = "list", val = 0, def = "WARN",
                         content = {
@@ -94,6 +93,7 @@ function on_mcm_load()
                     { id = "div_diagnostics", type = "line" },
                     { id = "hdr_diagnostics", type = "desc", text = "ui_mcm_aa_hdr_diagnostics", clr = {255, 200, 200, 200} },
                     { id = "diag_ambient", type = "check", val = 1, def = false },
+                    { id = "sound_player", type = "check", val = 1, def = false },
                     { id = "div_reset", type = "line" },
                     { id = "warn_reset", type = "desc", text = "ui_mcm_aa_development_reset_warning", clr = {255, 240, 200, 80} },
                     { id = "btn_reset_all", type = "button", functor_ui = { btn_reset_all } },
@@ -103,6 +103,7 @@ function on_mcm_load()
     }
 end
 
+--- Load the config once and follow every option change.
 function on_game_start()
     load_config()
     RegisterScriptCallback("on_option_change", load_config)
