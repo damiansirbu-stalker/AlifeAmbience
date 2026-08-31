@@ -1,7 +1,7 @@
 # AlifeAmbience: a curated, audible ambient soundscape for STALKER Anomaly
 
 An ambient soundscape built from the original GSC games, the standalone builds that reworked them (Solyanka, OGSR, OGSE, Dead Air, Lost Alpha) and the major soundscape packs, with every file corrected to be audible at the distance the engine places it.
-A measured build pipeline folds every file to mono, sets its distance and loudness from ffmpeg and Chromaprint measurements, collapses duplicates and covers every map in every weather state.
+The channels and their pools are curated by hand, one recording family per voice, and a mastering pipeline folds every file to mono, sets its distance and loudness from ffmpeg measurements, and proves every map plays in every weather state.
 
 [Releases](https://github.com/damiansirbu-stalker/AlifeAmbience/releases) | [Bugs, suggestions](https://github.com/damiansirbu-stalker/AlifeAmbience/issues)
 
