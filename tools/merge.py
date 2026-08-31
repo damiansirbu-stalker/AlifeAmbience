@@ -183,6 +183,61 @@ def _is_staged(rel_lc):
     return rel_lc.startswith(STAGE_DIR + "/")
 
 
+# ---- import: one-time baseline from the spine's own config (the old deploy stage's config half) ----
+# The sound-routing config subset a baseline import copies, and the bundled non-sound logic it NEVER
+# copies (thunderbolt/weather/surge configs fight the weather mod). Import is a mechanical copy of the
+# spine author's OWN wiring; curation then owns the result. Explicit-only, never part of `all`, and it
+# refuses to touch an existing config.
+IMPORT_SOURCE = "Amplified"
+KEEP_CONFIG_DIRS = [
+    "configs/environment/ambients",
+    "configs/environment/ambient_channels",
+]
+KEEP_CONFIG_FILES = [
+    "configs/environment/ambients.ltx",
+    "configs/environment/sound_channels.ltx",
+]
+DROP_CONFIG_RE = re.compile(
+    r"(dynamic_weather_graphs|thunderbolt|weather_effects|surge_manager|psi_storm_manager"
+    r"|mod_system_|mod_animations_settings)", re.I)
+
+
+def cmd_import():
+    """import [source] - bootstrap the config baseline from a source pack's own sound-routing config
+    (default: the Amplified spine). Refuses if any config file already exists: the authored config is
+    the source of truth and an import must never overwrite curation."""
+    src_name = sys.argv[2] if len(sys.argv) > 2 else IMPORT_SOURCE
+    gd_src = dict(sources.mods()).get(src_name)
+    if not gd_src or not os.path.isdir(gd_src):
+        raise SystemExit(f"unknown or absent source {src_name} (see sources.py)")
+    existing = [f for f in CHANNEL_FILES + [os.path.join(ENV, "ambients.ltx")] if os.path.exists(f)]
+    if existing or os.path.isdir(PRESETS):
+        raise SystemExit("import: config already exists - the authored config is the source of truth; "
+                         "remove it deliberately before re-importing")
+    copied = 0
+    src_root = gd_src.replace("/", os.sep)
+    for base in KEEP_CONFIG_DIRS:
+        src = os.path.join(src_root, base.replace("/", os.sep))
+        for dp, _dirs, fns in os.walk(src):
+            for fn in fns:
+                if not fn.lower().endswith(".ltx") or DROP_CONFIG_RE.search(fn):
+                    continue
+                full = os.path.join(dp, fn)
+                rel = os.path.relpath(full, src_root)
+                dst = os.path.join(GD, rel)
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(full, dst)
+                copied += 1
+    for rel in KEEP_CONFIG_FILES:
+        full = os.path.join(src_root, rel.replace("/", os.sep))
+        if os.path.exists(full) and not DROP_CONFIG_RE.search(os.path.basename(full)):
+            dst = os.path.join(GD, rel.replace("/", os.sep))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copy2(full, dst)
+            copied += 1
+    print(f"  import: {copied} sound-routing ltx copied from {src_name}; the config is now yours to curate")
+
+
 # ---- materialize: deployed set == referenced set ---------------------------------------------------
 
 def _source_index():
@@ -1232,6 +1287,6 @@ def cmd_all():
 
 if __name__ == "__main__":
     stage_arg = sys.argv[1] if len(sys.argv) > 1 else "all"
-    {"materialize": cmd_materialize, "fmt": cmd_fmt, "fold": cmd_fold, "level": cmd_level,
-     "fingerprint": cmd_fingerprint, "dead": cmd_dead, "verify": cmd_verify, "audit": cmd_audit,
-     "stage": cmd_stage, "unstage": cmd_unstage, "all": cmd_all}.get(stage_arg, cmd_all)()
+    {"import": cmd_import, "materialize": cmd_materialize, "fmt": cmd_fmt, "fold": cmd_fold,
+     "level": cmd_level, "fingerprint": cmd_fingerprint, "dead": cmd_dead, "verify": cmd_verify,
+     "audit": cmd_audit, "stage": cmd_stage, "unstage": cmd_unstage, "all": cmd_all}.get(stage_arg, cmd_all)()
