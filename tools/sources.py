@@ -9,7 +9,7 @@ Licence values mirror doc/licensing.md:
   game       - GSC original-game audio, community-tolerated (vanilla, standalone builds)
   pd         - Public Domain, credit only
   cc         - Creative Commons, credit only
-  permission - author granted for AlifeSpooks; must be EXTENDED to AlifeAmbience before public release
+  permission - the author granted it for my S.T.A.L.K.E.R. mods (doc/licensing.md records each grant)
   pending    - not located / unconfirmed; do not ship until resolved
 """
 
@@ -58,10 +58,10 @@ SOURCES = [
 # licences cleared to build/ship.
 #   PRIVATE build: personal use of legitimately-downloaded packs is unrestricted, so everything we
 #     hold locally is allowed - including `pending` (terms unknown but private use needs no grant).
-#   PUBLIC release: only free licences; `permission` grants were scoped to AlifeSpooks and must be
-#     extended to AlifeAmbience first, and `pending` must be resolved. (see doc/licensing.md)
+#   PUBLIC release: free licences and recorded permission grants (doc/licensing.md); only `pending`
+#     blocks, until the author is located and confirmed.
 CLEARED_PRIVATE = {"game", "pd", "cc", "permission", "pending"}
-CLEARED_PUBLIC = {"game", "pd", "cc"}
+CLEARED_PUBLIC = {"game", "pd", "cc", "permission"}
 
 
 # ---- curation registers (doc/architecture.md: retention, gate 7) ----------------------------------
@@ -125,8 +125,8 @@ def mods():
 
 
 def check_licences(public=False):
-    """Stop the build on any source not cleared. `public=True` requires permission grants to be
-    extended to AlifeAmbience (drops the provisional `permission` clearance)."""
+    """Stop the build on any source not cleared. `public=True` additionally blocks `pending`
+    sources (author not located/confirmed; see doc/licensing.md)."""
     cleared = CLEARED_PUBLIC if public else CLEARED_PRIVATE
     blocked = [s["name"] for s in SOURCES if s["licence"] not in cleared]
     if blocked:
