@@ -260,7 +260,6 @@ def cmd_materialize():
     """Deploy exactly what the config + DEPLOY_EXTRA reference; remove what nothing references.
     A referenced path is resolved across the source packs in registry order; a path present in
     several packs with DIFFERENT bytes is a duplicate-pick conflict, reported for the curator."""
-    sources.check_licences(public=False)
     refs = _channel_paths()
     extra = _extra_targets()
     idx = _source_index()

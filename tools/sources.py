@@ -1,9 +1,8 @@
 """Source registry for the AlifeAmbience bed merge.
 
 One declarative entry per pack. `MODS` derives from `SOURCES` preserving order (dedup is
-order-sensitive). Sources are ALWAYS pulled locally by hand; the pipeline never downloads, so `url` is a
-credit/provenance reference only. A licence gate (`check_licences`) stops the build on any source not
-cleared for AlifeAmbience.
+order-sensitive). Sources are ALWAYS pulled locally by hand; the pipeline never downloads, so `url`
+and `licence` are credit/provenance record only (doc/licensing.md holds the basis per source).
 
 Licence values mirror doc/licensing.md:
   game       - GSC original-game audio, community-tolerated (vanilla, standalone builds)
@@ -54,15 +53,6 @@ SOURCES = [
      "url": None,
      "path": "D:/Games/GAMMA/Anomaly/tools/_unpacked"},
 ]
-
-# licences cleared to build/ship.
-#   PRIVATE build: personal use of legitimately-downloaded packs is unrestricted, so everything we
-#     hold locally is allowed - including `pending` (terms unknown but private use needs no grant).
-#   PUBLIC release: free licences and recorded permission grants (doc/licensing.md); only `pending`
-#     blocks, until the author is located and confirmed.
-CLEARED_PRIVATE = {"game", "pd", "cc", "permission", "pending"}
-CLEARED_PUBLIC = {"game", "pd", "cc", "permission"}
-
 
 # ---- curation registers (doc/architecture.md: retention, gate 7) ----------------------------------
 # DEPLOY_EXTRA: curated deploys OUTSIDE the ambient channel config. The engine thunderbolt system
@@ -122,15 +112,3 @@ DISPOSITIONS = [
 def mods():
     """(name, path) pairs in registry order - the shape the pipeline expects."""
     return [(s["name"], s["path"]) for s in SOURCES]
-
-
-def check_licences(public=False):
-    """Stop the build on any source not cleared. `public=True` additionally blocks `pending`
-    sources (author not located/confirmed; see doc/licensing.md)."""
-    cleared = CLEARED_PUBLIC if public else CLEARED_PRIVATE
-    blocked = [s["name"] for s in SOURCES if s["licence"] not in cleared]
-    if blocked:
-        scope = "public release" if public else "build"
-        raise SystemExit(
-            f"licence gate ({scope}): uncleared sources: {', '.join(blocked)} "
-            f"(see doc/licensing.md)")

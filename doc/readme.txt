@@ -100,7 +100,7 @@ Reproducible - the whole soundscape comes back from the source packs with one co
 Every file in the release traces to the pack it came from and to the measurement that shaped it.
 
 Offline - none of this runs against your install, and the build downloads nothing.
-I pull the packs by hand, and a licence check stops the build on any source that is not cleared.
+I pull the packs by hand, and licensing.md records the basis for every source.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 

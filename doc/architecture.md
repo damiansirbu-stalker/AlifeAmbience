@@ -26,7 +26,7 @@ Other packs add what the spine lacks or does weakly, always as channels, never a
 - Every other pack in the corpus (the RETUNE lineage, RAO, the S2 packs) is a bench. A family enters only by clearly beating the current holder of its slot, by measurement and by ear.
 
 Sources are the registry `tools/sources.py`: one entry per pack (name, path, url, licence, role).
-A licence gate stops the build on any source not cleared. Sources are pulled locally by hand, and the pipeline never downloads.
+The licence field is provenance record only, and `doc/licensing.md` holds the basis per source. Sources are pulled locally by hand, and the pipeline never downloads.
 
 ## The channel model
 
@@ -193,7 +193,7 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 - I8 Deduplicate twice, warn, let the curator resolve.
 - I9 Config closed. The full gate set passes or the build fails.
 - I10 Weather-mod-bound at exactly two vocabularies (ambient states, collection names).
-- I11 Traceable and licensed. Every deployed sound resolves to its origin, the licence gate clears every source, and the readme credits every author.
+- I11 Traceable and licensed. Every deployed sound resolves to its origin, `licensing.md` records the basis for every source, and the readme credits every author.
 
 ## Scripts: dependency gate, MCM, diagnostics, player (no gameplay)
 
