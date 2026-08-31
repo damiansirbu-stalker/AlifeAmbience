@@ -17,6 +17,8 @@ sources.py (DISPOSITIONS, DEPLOY_EXTRA). The mill's stages:
   audit        wired min/felt-far ratio + crushed share (acceptance report)               -> stdout
   stage NAME   materialize a source folder under sounds/stage/ for in-game audition
   unstage      remove the whole stage tree
+  import [SRC] one-time config baseline from a source pack's own sound-routing config (explicit only,
+               refuses over an existing config; default source: the Amplified spine)
   all          materialize -> fmt -> fold -> level -> fingerprint -> dead -> verify -> audit
 
 Audibility is an ENGINE problem, not loudness: stereo plays 2D, min 1-2 is crushed by OpenAL, quiet

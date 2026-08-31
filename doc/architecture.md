@@ -172,6 +172,8 @@ The AlifeSpooks director places the horror, and the AlifeAmbience config plays t
   The run is incremental. The audio-page-hash caches re-master only new files, and the working deployment is edited channel by channel, never wiped.
 - master: `fold` and `level`, per the scoped rules above.
 - stage / unstage: materialize a candidate family under `sounds/stage/` so the player can audition it in-game before it is picked.
+- import: the one-time config baseline from a source pack's own sound-routing config (default: the Amplified spine), the bootstrap for a fresh variant.
+  It is a mechanical copy of the pack author's wiring, never part of `all`, and it refuses over an existing config so it cannot overwrite curation.
 - fmt: the mechanical guard for the config strings. It dedups pool tokens, normalizes preset lines, strips refs to deleted channels, caps spawn distances, and fails any pool line over the cap.
   Curation decides the sets, and `fmt` guards the strings.
 - report: `fingerprint` (duplicate warnings) and `dead` (silent files), both for the curator.

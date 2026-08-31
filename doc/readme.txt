@@ -124,7 +124,7 @@ Anomaly 1.5.3
 xlibs - https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001
 Modded exes - themrdemonized or AOEngine, for DLTX
 A weather mod whose ambient states the soundscape covers. Atmospherics covers every map and state out of the box
-MCM - optional, for the version footer and the wiring inspector
+MCM - optional, for the version footer, the wiring inspector, and the sound player toggle
 
 Install (MO2)
 
