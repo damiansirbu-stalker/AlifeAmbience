@@ -104,7 +104,8 @@ All blob edits are lossless (audio pages byte-identical). The fold is the only r
 
 Thunder has two homes, matching the engine's two systems:
 
-1. Distant rumble: ambient channels in pre_storm/rain/storm states (`thunder_far`), curated and mastered like any voice.
+1. Distant rumble: ambient channels in the rain/storm states (`thunder_far`), curated and mastered like any voice.
+   The `pre_storm` sections carry it too, but no stock or Atmospherics keyframe emits that state (see The five-link binding chain).
 2. Strike claps: the engine thunderbolt system.
    The weather mod (Atmospherics) drives timing per weather cycle (`thunderbolt_collection`, `thunderbolt_period`, `thunderbolt_duration` in `weathers/w_*.ltx`).
    The collections resolve to sections in `thunderbolts.ltx`, and each section's `sound =` names a path under `sounds\nature\`.
@@ -124,8 +125,11 @@ In the authored-config model both run as warners. A duplicate pick is reported f
 
 An ambient sound reaches the player through five links, and the verifier proves each resolves:
 
-1. Weather state: the weather mod's `weathers/w_*.ltx` sets `ambient = <state>` per time frame.
-   Atmospherics emits day, morning, evening, night, rain, rain_day, rain_night, storm_day, storm_night, tuman, tuman_night, and indoor_underground.
+1. Weather state: the active weather set's `weathers/w_*.ltx` sets `ambient = <state>` per time frame.
+   The vocabulary is the AtmosFear set: day, morning, evening, night, rain, rain_day, rain_night, storm_day, storm_night, tuman, tuman_night, and indoor_underground.
+   Stock Anomaly 1.5.3 and Atmospherics emit exactly this set (both weather trees swept 2026-09-03), so the mod runs on either with no variant.
+   The presets also carry `pre_storm` and `tuman_day` sections, the vanilla preset shape. No stock or Atmospherics keyframe emits them, so they stay inert until a weather mod uses those states.
+   Weather mechanics of record: `stalker-dev/doc/library/anomaly/internals/weather-system.md`.
 2. Level to preset: `ambients/<level>.ltx` is a one-line `#include` binding each map to a preset.
 3. Preset to channels, per state: one section per weather state with `sound_channels` (the bed) and `sound_channels_dynamic` (the layers).
 4. Channel to pool: `ambient_channels/backgrounds.ltx` and `sound_channels.ltx`.
@@ -155,6 +159,15 @@ The links below those two are weather-mod-independent. Variants for other weathe
     The veto generator appends `>sounds = ambient\no_sound` to every touched channel (AlifeSpooks `build.py:1065-1130`), so a fully-vetoed channel plays silence.
     A System A bed with no `sounds` key is a load failure (`Environment_misc.cpp:105-108`), which is exactly what that guard prevents.
     The gate FAILs only if a touched channel lacks the guard, and it reports fully-silenced channels as the Spooks-owned boundary picture.
+12. Level coverage: every playable base-game level (`LEVELS_BASE`, the `game_maps_single.ltx` set minus `fake_start`) binds an `ambients/<level>.ltx`.
+    An unbound level plays vanilla wiring through the MO2 VFS (the 9 labs, found 2026-09-03) or a bare `ambients.ltx` fallback with zero dynamic layers (`y04_pole`).
+    Bindings outside the base set (extended maps) are reported, not failed.
+13. Bed load asserts: every channel any preset or `ambients.ltx` names as a bed satisfies `SSndChannel::load` (`Environment_misc.cpp:88-108`):
+    `max_distance > min_distance` strict, `period0 <= period1`, `period2 <= period3`, non-empty `sounds`. A violation is a CTD on level load.
+14. Dynamic completeness: every channel named in any `sound_channels_dynamic` defines all 4 periods and both distances, or `sound_ambient.script` nil-errors and breaks that hour's rotation.
+15. Indoor routing: no `indoor = true` channel is wired into an outdoor state, where the System B volume table (`sound_ambient.script:147-165`) plays it at 0.0.
+    Outdoor channels inside underground states (played at 0.3) are reported, not failed.
+16. Strike palette (informational): of the bolt sounds reachable through the collections the weathers reference, how many carry our deploy vs vanilla audio.
 
 ## Coexistence with AlifeSpooks
 
@@ -192,7 +205,7 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 - I7 Preserve the source except where the engine forbids it. Blob-only edits, audio pages byte-identical, the fold as the one re-encode.
 - I8 Deduplicate twice, warn, let the curator resolve.
 - I9 Config closed. The full gate set passes or the build fails.
-- I10 Weather-mod-bound at exactly two vocabularies (ambient states, collection names).
+- I10 Weather-mod-bound at exactly two vocabularies (ambient states, collection names). Stock Anomaly and Atmospherics share both. Other weather mods need a two-vocabulary sweep first.
 - I11 Traceable and licensed. Every deployed sound resolves to its origin, `licensing.md` records the basis for every source, and the readme credits every author.
 
 ## Scripts: dependency gate, MCM, diagnostics, player (no gameplay)

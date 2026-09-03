@@ -34,6 +34,28 @@ AlifeSpooks plays the horror one-shots and removes them from the base channels. 
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
+Every ambience ogg of every pack in this space was probed for channel count and sample rate.
+A stereo file plays 2D at the ear, and a file off 44100 plays as silence, with one warning line in the log as the only trace.
+
+  pack                         oggs   stereo       silent-rate   levels/presets
+  AlifeAmbience                2125   0 (0%)       0             33 / 31
+  Dark Signal Amplified        3374   1661 (49%)   19            33 / 31
+  DS Weather and Ambiance      1406   134 (9%)     4             28 / 21
+  Soundscape Overhaul          1025   57 (5%)      2             28 / 21
+  RETUNE family, 3 variants    1508   730 (48%)    0             28 / 21
+  Audio Expansion              1511   704 (46%)    0             no config
+  Immersive Ambience Exp        147   0 (0%)       0             no config
+  S.T.A.L.K.E.R. 2 Ambience    1289   399 (30%)    0             28 / 21
+
+The fold produces true mono at 44100 for every file, and the release gates on both counts staying at zero. Every file here sits in the world and every file plays.
+Loudness is measured per file and written into the struct, where the other packs ship each recording as it came.
+The configuration is the widest of the table, 33 levels and 31 presets, and every cell of the weather matrix resolves to real audio.
+The content is the best of 7 packs in one: Dark Signal structure and birds, Soundscape Overhaul wind, Audio Expansion insects and frogs, Immersive Ambience helicopter.
+Thunder plays as rumble in the storm states and as claps at the vanilla strike paths, positioned and delay-corrected by the engine, with the weather mod timing untouched.
+Duplicates are resolved across all the sources, every exclusion is written down, and the licence basis is recorded per source.
+
+------------------------------------------------------------------------------------------------------------------------------------
+
 Sources
 
 Classic S.T.A.L.K.E.R. audio - nearly every ambient recording in the Zone descends from GSC's originals, reworked across two decades of standalone builds.
@@ -90,14 +112,14 @@ Culling - anything measuring at or below -60 LUFS leaves through the exclusions 
 
 Repairs - the stock configuration ships four channel references that resolve to nothing, wind_trong for wind_strong among them.
 
-Coverage - 33 levels, 31 presets, 12 Atmospherics states.
+Coverage - 33 levels, 31 presets, 12 ambient states, the same set under stock Anomaly weather and under Atmospherics.
 Every cell of that matrix has to resolve to a real channel with real audio behind it, and the build will not produce a release until it does.
 
 Measurement - ffmpeg does the reading, ebur128 for integrated loudness in broadcast LUFS and astats for crest factor and true peak, with Chromaprint handling identity.
 All of it feeds a reconstruction of the two rolloffs and the effects master, so every number in the build refers to what arrives at the player.
 
 Reproducible - the whole soundscape comes back from the source packs with one command, and nothing in it is hand-edited.
-Every file in the release traces to the pack it came from and to the measurement that shaped it.
+Every file in the release traces back to its source pack and the measurement that shaped it.
 
 Offline - none of this runs against your install, and the build downloads nothing.
 I pull the packs by hand, and licensing.md records the basis for every source.
@@ -123,7 +145,7 @@ Requirements
 Anomaly 1.5.3
 xlibs - https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001
 Modded exes - themrdemonized or AOEngine, for DLTX
-A weather mod whose ambient states the soundscape covers. Atmospherics covers every map and state out of the box
+No weather mod is required. Stock Anomaly weather and Atmospherics emit the same ambient states, and the soundscape covers all of them
 MCM - optional, for the version footer, the wiring inspector, and the sound player toggle
 
 Install (MO2)
@@ -131,7 +153,7 @@ Install (MO2)
 1. Install xlibs
 2. Install AlifeAmbience
 3. Give it higher MO2 priority than any other ambient or soundscape mod, so its configuration wins
-4. Keep a weather mod active. Atmospherics is what this is built and verified against
+4. A weather mod is optional. Stock Anomaly weather works as is. Atmospherics is what this is built and verified against
 5. Set the level in the game's own sound options. There is no volume slider in the mod, because loudness is already levelled into each file
 
 GAMMA - Atmospherics already ships, so the weather side is covered. Disable 304- Dark Signal Weather and Ambiance Audio, 3- Soundscape Overhaul,
@@ -141,7 +163,8 @@ Uninstall - disable or remove it in MO2. Weather visuals belong to your weather 
 
 Compatibility
 
-Weather mods - any whose ambient states the soundscape covers, Atmospherics included. Weather visuals, emission and psi-storm are left alone.
+Weather mods - none required. Stock Anomaly and Atmospherics use the same ambient state names, and the soundscape covers them all.
+Another weather mod works if its ambient states are covered. Weather visuals, emission and psi-storm are left alone.
 Soundscape mods - this is the ambient layer, so it wins the ambient sound configuration and plays the merged soundscape.
 AlifeSpooks - composes with it. AlifeSpooks places the horror one-shots and takes its own sounds out of the base channels. The two never double up.
 Performance - no gameplay script runs, and nothing polls while you play.
