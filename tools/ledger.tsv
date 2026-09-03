@@ -10,3 +10,8 @@ invariant	count	severity
 9 pool lines over the ini buffer cap	0	FAIL
 10 weather-mod collections unresolved	0	FAIL
 11 pools the AlifeSpooks veto empties WITHOUT its no_sound guard	0	FAIL
+12 base levels without an ambient binding	0	FAIL
+13 bed channels violating the engine load asserts	0	FAIL
+14 dynamic channels with incomplete definitions	0	FAIL
+15 indoor channels wired into outdoor states	0	FAIL
+16 reachable strike sounds still on vanilla audio	18	INFO

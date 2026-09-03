@@ -13,7 +13,7 @@ sources.py (DISPOSITIONS, DEPLOY_EXTRA). The mill's stages:
   level        crest-inverted min floor + loudness band, one crest+LUFS pass              -> level_cache
   fingerprint  acoustic-duplicate WARNING report (Chromaprint); the curator resolves      -> stdout
   dead         dead-audio report (content at/below DEAD_LUFS); the curator excludes       -> stdout
-  verify       the gate ledger (closure + retention + density + veto, 11 gates)           -> ledger.tsv
+  verify       the gate ledger (closure + retention + density + veto + load rules, 16 gates) -> ledger.tsv
   audit        wired min/felt-far ratio + crushed share (acceptance report)               -> stdout
   stage NAME   materialize a source folder under sounds/stage/ for in-game audition
   unstage      remove the whole stage tree
@@ -52,15 +52,34 @@ SC = os.path.join(ENV, "sound_channels.ltx")
 SROOT = os.path.join(GD, "sounds")
 STAGE_DIR = "stage"                     # sounds/stage/<family>: audition staging, exempt from gates
 
-# Atmospherics ambient-state vocabulary (the weather matrix columns)
+# The AtmosFear ambient-state vocabulary (the weather matrix columns). Stock Anomaly 1.5.3 and
+# Atmospherics both emit exactly this set (both weather trees swept 2026-09-03).
 WEATHER_STATES = ["day", "morning", "evening", "night", "rain", "rain_day", "rain_night",
                   "storm_day", "storm_night", "tuman", "tuman_night", "indoor_underground"]
 UNDERGROUND_STATE = "indoor_underground"
+# The System B volume table (sound_ambient.script:147-165): an `indoor` channel plays at 0.0 in an
+# outdoor state, an outdoor channel at 0.3 in an underground one. Gate 15 uses the state split.
+UNDERGROUND_STATES = {"indoor_underground", "indoor", "indoor_x8"}
 # thunderbolt collections the active weather mod references (Atmospherics weathers sweep, 2026-08-31)
 # vs the collections the base game defines (vanilla thunderbolt_collections.ltx). Gate 10.
 COLLECTIONS_REQUIRED = {"collection_close", "collection_default", "collection_distant"}
 COLLECTIONS_BASE = {"collection_close", "collection_distant", "collection_default",
                     "collection_stancia", "collection_surge", "collection_test"}
+
+# The base game's playable level set (game_maps_single.ltx sections carrying a `weathers` key,
+# vanilla 1.5.3 sweep 2026-09-03). Gate 12: every one must bind an ambients/<level>.ltx, else the
+# level plays vanilla wiring through the MO2 VFS (the 9 labs, found 2026-09-03) or a bare
+# ambients.ltx fallback with zero dynamic layers (y04_pole).
+LEVELS_BASE = {
+    "jupiter", "k00_marsh", "k01_darkscape", "k02_trucks_cemetery", "l01_escape",
+    "l02_garbage", "l03_agroprom", "l03u_agr_underground", "l04_darkvalley", "l04u_labx18",
+    "l05_bar", "l06_rostok", "l07_military", "l08_yantar", "l08u_brainlab",
+    "l09_deadcity", "l10_limansk", "l10_radar", "l10u_bunker", "l10_red_forest",
+    "l11_hospital", "l11_pripyat", "l12_stancia", "l12_stancia_2", "l13_generators",
+    "l12u_sarcofag", "l12u_control_monolith", "l13u_warlab", "zaton", "jupiter_underground",
+    "pripyat", "labx8", "fake_start", "y04_pole",
+}
+LEVELS_EXEMPT = {"fake_start"}   # the menu background level; never played
 
 # the engine reads each `sounds =` value into a fixed ~4096 buffer (SoundRender_Core.cpp:249,
 # r_stringZ; FS.cpp:467 asserts sz < tgt_sz). A line over the buffer is a hard CTD on config load.
@@ -688,6 +707,46 @@ def _channel_periods():
     return out
 
 
+def _channel_defs():
+    """channel(lower) -> {min_distance, max_distance, period0..3, sounds_n, indoor} for the
+    load-rule gates (13-15). Same block scan as _channel_periods, all keys at once."""
+    out = {}
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
+            continue
+        for blk in re.split(r"(?m)^(?=\[[A-Za-z0-9_]+\])", _read(f)):
+            hm = re.match(r"\[([A-Za-z0-9_]+)\]", blk)
+            if not hm:
+                continue
+            d = {}
+            for k in ("min_distance", "max_distance", "period0", "period1", "period2", "period3"):
+                m = re.search(rf"(?im)^\s*{k}\s*=\s*([\d.]+)", blk)
+                d[k] = float(m.group(1)) if m else None
+            m = re.search(r"(?im)^\s*sounds\d*\s*=\s*(\S.*)$", blk)
+            d["sounds_n"] = len([t for t in re.split(r"[,;]", m.group(1)) if t.strip()]) if m else 0
+            m = re.search(r"(?im)^\s*indoor\s*=\s*(\w+)", blk)
+            d["indoor"] = bool(m and m.group(1).lower() in ("true", "1", "yes", "on"))
+            out[hm.group(1).lower()] = d
+    return out
+
+
+def _preset_beds():
+    """Channel names referenced as System A BEDS (the `sound_channels =` lines of the presets and
+    ambients.ltx). These load through SSndChannel::load, so the engine asserts apply to them."""
+    beds = set()
+    files = [os.path.join(PRESETS, fn) for fn in os.listdir(PRESETS)]
+    amb = os.path.join(ENV, "ambients.ltx")
+    if os.path.exists(amb):
+        files.append(amb)
+    for pp in files:
+        for m in re.findall(r"(?im)^\s*sound_channels\s*=\s*(.+)$", _read(pp)):
+            for one in re.split(r"[,;]", m):
+                one = one.strip().lower()
+                if one and "=" not in one and " " not in one:
+                    beds.add(one)
+    return beds
+
+
 def _file_felt_far(bands):
     """token(lower, file or folder) -> the MAX felt-far of any channel that references it. Max = the
     farthest placement the file is used at (the conservative floor: audible at its farthest use)."""
@@ -1217,6 +1276,81 @@ def cmd_verify():
             elif len(after) < len(pool):
                 veto_shrunk.append((ch, len(pool), len(after)))
 
+    # 12 level coverage: every playable base-game level binds an ambients/<level>.ltx
+    bound = {fn[:-4].lower() for fn in os.listdir(LEVELS) if fn.endswith(".ltx") and fn != "ambients.ltx"}
+    unbound_levels = sorted(LEVELS_BASE - LEVELS_EXEMPT - bound)
+    extra_bindings = sorted(bound - LEVELS_BASE)
+    # 13 bed load asserts (SSndChannel::load: strict max>min, ordered periods, non-empty sounds)
+    defs = _channel_defs()
+    bed_bad = []
+    for b in sorted(_preset_beds()):
+        d = defs.get(b)
+        if not d:
+            continue                                    # gate 3 owns the missing definition
+        per = [d[f"period{i}"] for i in range(4)]
+        if (d["min_distance"] is None or d["max_distance"] is None
+                or not d["max_distance"] > d["min_distance"]
+                or None in per or per[0] > per[1] or per[2] > per[3]
+                or d["sounds_n"] == 0):
+            bed_bad.append(b)
+    # 14 dynamic completeness (the sound_ambient.script nil rule: 4 periods + both distances)
+    dyn = set()
+    for _fn, states in _preset_state_channels().items():
+        for _st, chs in states.items():
+            dyn.update(chs)
+    dyn_bad = []
+    for c in sorted(dyn):
+        d = defs.get(c)
+        if not d:
+            continue
+        per = [d[f"period{i}"] for i in range(4)]
+        if None in per or d["min_distance"] is None or d["max_distance"] is None:
+            dyn_bad.append(c)
+    # 15 indoor routing: an indoor channel in an outdoor state plays at volume 0.0 (never heard);
+    # an outdoor channel in an underground state plays at 0.3 (reported, a design choice)
+    indoor_out = set()
+    outdoor_in = 0
+    for fn, states in _preset_state_channels().items():
+        for st, chs in states.items():
+            for c in chs:
+                d = defs.get(c)
+                if not d:
+                    continue
+                if d["indoor"] and st not in UNDERGROUND_STATES:
+                    indoor_out.add(f"{c}@{fn}[{st}]")
+                if not d["indoor"] and st in UNDERGROUND_STATES:
+                    outdoor_in += 1
+    # 16 strike palette (INFO): reachable bolt sounds carrying our deploy vs vanilla audio.
+    # Reachable = named by a bolt section inside a collection the weathers reference (gate 10 set).
+    strike_ours = strike_reach = None
+    van = dict(sources.mods()).get("vanilla")
+    tb_p = van and os.path.join(van, "configs", "environment", "thunderbolts.ltx")
+    tc_p = van and os.path.join(van, "configs", "environment", "thunderbolt_collections.ltx")
+    if tb_p and os.path.exists(tb_p) and os.path.exists(tc_p):
+        sec_sound = {}
+        sect = None
+        for ln in _read(tb_p).split("\n"):
+            mh = re.match(r"\s*\[([A-Za-z0-9_\-]+)\]", ln)
+            if mh:
+                sect = mh.group(1).lower()
+                continue
+            ms = re.match(r"\s*sound\s*=\s*(\S+)", ln)
+            if ms and sect:
+                sec_sound[sect] = ms.group(1).replace("\\", "/").lower()
+        reach = set()
+        cur = None
+        for ln in _read(tc_p).split("\n"):
+            mh = re.match(r"\s*\[([A-Za-z0-9_]+)\]", ln)
+            if mh:
+                cur = mh.group(1).lower()
+                continue
+            mk = re.match(r"\s*([A-Za-z0-9_\-]+)\s*(=|$)", ln)
+            if mk and cur in COLLECTIONS_REQUIRED:
+                reach.add(mk.group(1).lower())
+        reach_sounds = {sec_sound[s] for s in reach if s in sec_sound}
+        strike_reach = len(reach_sounds)
+        strike_ours = len(reach_sounds & {k[:-4] for k in extra})
+
     rows = [
         ("1 orphan files (on disk, unwired)", len(orphan_files), "FAIL"),
         ("2 orphan channels (defined, unreferenced)", len(orphan_channels), "INFO"),
@@ -1231,6 +1365,12 @@ def cmd_verify():
         ("11 pools the AlifeSpooks veto empties WITHOUT its no_sound guard",
          len(veto_emptied) if veto_emptied is not None else 0,
          "FAIL" if veto_emptied is not None else "INFO"),
+        ("12 base levels without an ambient binding", len(unbound_levels), "FAIL"),
+        ("13 bed channels violating the engine load asserts", len(bed_bad), "FAIL"),
+        ("14 dynamic channels with incomplete definitions", len(dyn_bad), "FAIL"),
+        ("15 indoor channels wired into outdoor states", len(indoor_out), "FAIL"),
+        ("16 reachable strike sounds still on vanilla audio",
+         (strike_reach - strike_ours) if strike_reach is not None else 0, "INFO"),
     ]
     with open(os.path.join(HERE, "ledger.tsv"), "w") as fh:
         fh.write("invariant\tcount\tseverity\n")
@@ -1259,6 +1399,23 @@ def cmd_verify():
               "; ".join(f"{c} {b}->{a}" for c, b, a in worst))
     if veto is None:
         print("    (AlifeSpooks repo not present - veto gate skipped)")
+    if unbound_levels:
+        print("    unbound levels:", unbound_levels)
+    if extra_bindings:
+        print(f"    bindings outside the base level set (inert on a base install): "
+              f"{len(extra_bindings)} {extra_bindings[:6]}")
+    if bed_bad:
+        print("    bed assert violations:", bed_bad[:8])
+    if dyn_bad:
+        print("    incomplete dynamics:", dyn_bad[:8])
+    if indoor_out:
+        print("    indoor-in-outdoor:", sorted(indoor_out)[:8])
+    if outdoor_in:
+        print(f"    outdoor channels inside underground states (play at 0.3): {outdoor_in}")
+    if strike_reach is not None:
+        print(f"    strike palette: {strike_ours}/{strike_reach} reachable bolt sounds carry our deploy")
+    else:
+        print("    (vanilla configs not present - strike palette gate skipped)")
     dmax = max(density_rows, key=lambda r: r[2]) if density_rows else None
     if dmax:
         print(f"    density: max {dmax[2]} events/min at {dmax[0]}[{dmax[1]}]; "
@@ -1272,7 +1429,9 @@ def cmd_verify():
                "matrix_gaps": matrix_gaps, "unaccounted": unaccounted,
                "density": sorted(density_rows, key=lambda r: -r[2])[:40],
                "veto_emptied": veto_emptied or [], "veto_silenced": sorted(veto_silenced),
-               "veto_shrunk": sorted(veto_shrunk)},
+               "veto_shrunk": sorted(veto_shrunk),
+               "unbound_levels": unbound_levels, "extra_bindings": extra_bindings,
+               "bed_bad": bed_bad, "dyn_bad": dyn_bad, "indoor_out": sorted(indoor_out)},
               open(os.path.join(HERE, "ledger_detail.json"), "w"), indent=1)
     if failed:
         raise SystemExit("verify: gate ledger has failures")
