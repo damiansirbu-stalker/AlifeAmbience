@@ -196,7 +196,7 @@ function aa_player_wnd:init_callbacks()
 end
 
 function aa_player_wnd:build_list()
-    if xslice then xslice.cancel("aa_player_fill") end
+    if xslice then xslice.stop_queue("aa_player_fill") end
     if _built then self.list:RemoveAll() end
     _built = true
     if _at_root then
@@ -383,7 +383,7 @@ function aa_player_wnd:OnKeyboard(dik, action)
 end
 
 function aa_player_wnd:stop_player()
-    if xslice then xslice.cancel("aa_player_fill") end
+    if xslice then xslice.stop_queue("aa_player_fill") end
     if xsound then xsound.stop_shots() end
     self:HideDialog()
     Unregister_UI("aa_player_wnd")
