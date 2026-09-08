@@ -5,7 +5,7 @@ The channels and their pools are curated by hand, one recording family per voice
 
 [Releases](https://github.com/damiansirbu-stalker/AlifeAmbience/releases) | [Bugs, suggestions](https://github.com/damiansirbu-stalker/AlifeAmbience/issues)
 
-Requires: Anomaly 1.5.3, modded exes (themrdemonized or AOEngine), [xlibs](https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001), and a weather mod whose ambient states it covers (Atmospherics out of the box). Exact versions in [readme.txt](doc/readme.txt).
+Requires: Anomaly 1.5.3, modded exes (themrdemonized or AOEngine), [xlibs](https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001). No weather mod is required: stock Anomaly weather and Atmospherics emit the same ambient states, both covered. Exact versions in [readme.txt](doc/readme.txt).
 
 ## Alife Collection
 

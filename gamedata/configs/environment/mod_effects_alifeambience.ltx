@@ -1,0 +1,36 @@
+; AlifeAmbience: pin the ambient effect sounds to recordings that exist.
+; The effect sections (effect_0..9) fire from the preset `effects` lists: a particle burst, a wind
+; blast, and one sound (Environment_misc.cpp create_effect; GamePersistent.cpp WeathersUpdate).
+; Vanilla points them at the trx wind_gust set below. Atmospherics' effects.ltx re-points all ten
+; at nature\wind_01..10, files that exist in no db archive and no mod, so its effect sounds play
+; as silence. This overlay wins over whichever effects.ltx is active and restores the vanilla map.
+
+![effect_0]
+sound = ambient\trx\nature\wind_gust\wind_gust_01
+
+![effect_1]
+sound = ambient\trx\nature\wind_gust\wind_gust_02
+
+![effect_2]
+sound = ambient\trx\nature\wind_gust\wind_gust_03
+
+![effect_3]
+sound = ambient\trx\nature\wind_gust\wind_gust_04
+
+![effect_4]
+sound = ambient\trx\nature\wind_gust\wind_gust_05
+
+![effect_5]
+sound = ambient\trx\nature\wind_gust\wind_gust_06
+
+![effect_6]
+sound = ambient\trx\nature\wind_gust\rnd_wind_1
+
+![effect_7]
+sound = ambient\trx\nature\wind_gust\rnd_wind_1
+
+![effect_8]
+sound = ambient\trx\nature\wind_gust\rnd_wind_2
+
+![effect_9]
+sound = ambient\trx\nature\wind_gust\rnd_wind_3

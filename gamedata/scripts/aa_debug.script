@@ -10,9 +10,14 @@ local _lvl = 0
 local _levels = xlog.get_levels()
 
 --- Re-read the log level from MCM (actor first update + every option change).
+--- The diag_ambient toggle floors the level at INFO while on, per its MCM tooltip.
 function aa_debug.update()
     log.set_level(aa_mcm.get_config("log_level") or "WARN")
     _lvl = log.get_level() or 0
+    if aa_mcm.get_config("diag_ambient") and _lvl < _levels.INFO then
+        log.set_level("INFO")
+        _lvl = log.get_level() or 0
+    end
     log._logger.flush_on_level = aa_mcm.get_config("log_flush") and _levels.TRACE or _levels.ERROR
 end
 
@@ -22,7 +27,7 @@ function aa_debug.is_on()
 end
 
 --- A DEBUG line; noops below DEBUG.
-function aa_debug.dbg(fmt, ...)
+function aa_debug.debug(fmt, ...)
     if _lvl >= DEBUG_LEVEL then log.debug(fmt, ...) end
 end
 

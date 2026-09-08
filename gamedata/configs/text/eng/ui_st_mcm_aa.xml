@@ -16,7 +16,7 @@
     </string>
 
     <string id="ui_mcm_aa_general_desc">
-        <text>AlifeAmbience is a curated nature-and-weather ambient bed for the Zone. It merges the strongest ambient content from several soundscape packs into one set, reconciles the per-level and per-weather routing so every map in every weather state plays an audible living bed, and leaves the dread one-shots to AlifeSpooks. It ships only sound and configuration; there are no gameplay settings to tune here. The game's own ambient volume slider controls its loudness.</text>
+        <text>AlifeAmbience is a curated ambient soundscape for the Zone: nature, weather, and its own dread layer of distant screams, spooks and dark ambience. It merges the strongest ambient content from several soundscape packs into one set and reconciles the per-level and per-weather routing so every map in every weather state plays an audible living bed. AlifeSpooks is optional on top for the directed horror one-shots. It ships only sound and configuration; there are no gameplay settings to tune here. The game's own ambient volume slider controls its loudness.</text>
     </string>
 
     <string id="ui_mcm_aa_development_desc">

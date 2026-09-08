@@ -13,7 +13,7 @@ sources.py (DISPOSITIONS, DEPLOY_EXTRA). The mill's stages:
   level        crest-inverted min floor + loudness band, one crest+LUFS pass              -> level_cache
   fingerprint  acoustic-duplicate WARNING report (Chromaprint); the curator resolves      -> stdout
   dead         dead-audio report (content at/below DEAD_LUFS); the curator excludes       -> stdout
-  verify       the gate ledger (closure + retention + density + veto + load rules, 16 gates) -> ledger.tsv
+  verify       the gate ledger (closure + retention + density + veto + load rules, 18 gates) -> ledger.tsv
   audit        wired min/felt-far ratio + crushed share (acceptance report)               -> stdout
   stage NAME   materialize a source folder under sounds/stage/ for in-game audition
   unstage      remove the whole stage tree
@@ -80,6 +80,14 @@ LEVELS_BASE = {
     "pripyat", "labx8", "fake_start", "y04_pole",
 }
 LEVELS_EXEMPT = {"fake_start"}   # the menu background level; never played
+
+# The effect-id vocabulary (the third weather coupling next to ambient states and collections).
+# effect_0..9 are defined by vanilla effects.ltx AND Atmospherics' (both swept 2026-09-03);
+# blowout_effect_01..48 come from vanilla blowout_effects.ltx via the effects.ltx include (both
+# editions). An `effects =` ref outside this set is a CTD: create_effect reads life_time with a
+# throwing r_float (Environment_misc.cpp:119-146). Gate 17.
+EFFECTS_BASE = ({f"effect_{i}" for i in range(10)}
+                | {f"blowout_effect_{i:02d}" for i in range(1, 49)})
 
 # the engine reads each `sounds =` value into a fixed ~4096 buffer (SoundRender_Core.cpp:249,
 # r_stringZ; FS.cpp:467 asserts sz < tgt_sz). A line over the buffer is a hard CTD on config load.
@@ -1238,7 +1246,10 @@ def cmd_verify():
                     continue
                 p2, p3 = per[2], per[3]
                 if p2 and p3 and (p2 + p3) > 0:
-                    epm += 60000.0 / ((p2 + p3) / 2.0)
+                    # the round-robin evaluates ONE channel per tick (~1 s), so a channel cannot
+                    # fire more often than once per len(chans) seconds regardless of its periods
+                    mean_ms = (p2 + p3) / 2.0
+                    epm += 60000.0 / max(mean_ms, len(chans) * 1000.0)
                 if per[0] is not None and per[0] < ENTRY_BURST_MS:
                     burst += 1
             density_rows.append((fn, st, round(epm, 1), burst))
@@ -1306,8 +1317,9 @@ def cmd_verify():
         per = [d[f"period{i}"] for i in range(4)]
         if None in per or d["min_distance"] is None or d["max_distance"] is None:
             dyn_bad.append(c)
-    # 15 indoor routing: an indoor channel in an outdoor state plays at volume 0.0 (never heard);
-    # an outdoor channel in an underground state plays at 0.3 (reported, a design choice)
+    # 15 indoor routing (INFO): an indoor channel in an outdoor state plays at 0.0 while the player
+    # is in the open and at 1.0 inside safe cover - the vanilla shelter mechanism (inside_noise in
+    # environment_forest). Reported so the wiring is deliberate, never a FAIL.
     indoor_out = set()
     outdoor_in = 0
     for fn, states in _preset_state_channels().items():
@@ -1351,6 +1363,35 @@ def cmd_verify():
         strike_reach = len(reach_sounds)
         strike_ours = len(reach_sounds & {k[:-4] for k in extra})
 
+    # 17 effect vocabulary: every effect id any preset or ambients.ltx wires must exist in the
+    # base effect set, or CEnvAmbient::load CTDs on the missing section
+    eff_refs = set()
+    eff_files = [os.path.join(PRESETS, fn) for fn in os.listdir(PRESETS)]
+    amb_p = os.path.join(ENV, "ambients.ltx")
+    if os.path.exists(amb_p):
+        eff_files.append(amb_p)
+    for pp in eff_files:
+        for m in re.findall(r"(?im)^\s*effects\s*=\s*(\S.*)$", _read(pp)):
+            for one in re.split(r"[,;]", m):
+                one = one.strip().lower()
+                if one and "=" not in one and " " not in one:
+                    eff_refs.add(one)
+    eff_unknown = sorted(eff_refs - EFFECTS_BASE)
+
+    # 18 effect sound paths: every sound = in the effect override must resolve to a file on disk, or
+    # the effect plays silent - GamePersistent WeathersUpdate skips a null handle with no other trace.
+    # No channel reads the override, so gate 4 never sees these paths (silent-ship found 2026-09-07).
+    eff_snd_missing = []
+    eff_override = os.path.join(ENV, "mod_effects_alifeambience.ltx")
+    if os.path.exists(eff_override):
+        for m in re.findall(r"(?im)^\s*sound\s*=\s*(\S+)", _read(eff_override)):
+            p = m.strip().lower().replace("\\", "/")
+            if p.endswith(".ogg"):
+                p = p[:-4]
+            if not path_on_disk(p):
+                eff_snd_missing.append(p)
+    eff_snd_missing = sorted(set(eff_snd_missing))
+
     rows = [
         ("1 orphan files (on disk, unwired)", len(orphan_files), "FAIL"),
         ("2 orphan channels (defined, unreferenced)", len(orphan_channels), "INFO"),
@@ -1368,9 +1409,11 @@ def cmd_verify():
         ("12 base levels without an ambient binding", len(unbound_levels), "FAIL"),
         ("13 bed channels violating the engine load asserts", len(bed_bad), "FAIL"),
         ("14 dynamic channels with incomplete definitions", len(dyn_bad), "FAIL"),
-        ("15 indoor channels wired into outdoor states", len(indoor_out), "FAIL"),
+        ("15 indoor channels in outdoor states (shelter-only)", len(indoor_out), "INFO"),
         ("16 reachable strike sounds still on vanilla audio",
          (strike_reach - strike_ours) if strike_reach is not None else 0, "INFO"),
+        ("17 effect ids outside the base effect set", len(eff_unknown), "FAIL"),
+        ("18 effect sounds with no file on disk", len(eff_snd_missing), "FAIL"),
     ]
     with open(os.path.join(HERE, "ledger.tsv"), "w") as fh:
         fh.write("invariant\tcount\tseverity\n")
@@ -1416,6 +1459,8 @@ def cmd_verify():
         print(f"    strike palette: {strike_ours}/{strike_reach} reachable bolt sounds carry our deploy")
     else:
         print("    (vanilla configs not present - strike palette gate skipped)")
+    if eff_unknown:
+        print("    unknown effect ids:", eff_unknown[:10])
     dmax = max(density_rows, key=lambda r: r[2]) if density_rows else None
     if dmax:
         print(f"    density: max {dmax[2]} events/min at {dmax[0]}[{dmax[1]}]; "

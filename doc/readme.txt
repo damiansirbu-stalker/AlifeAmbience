@@ -30,7 +30,9 @@ The same recording also travels between packs under different names and encoders
 
 AlifeAmbience measures every file and writes the struct against where the sound is placed. The audio pages are unchanged.
 
-AlifeSpooks plays the horror one-shots and removes them from the base channels. AlifeAmbience covers the nature and weather ambience. Run both.
+The soundscape carries its own dread. The distant screams, the night spooks and the dark ambience play with no other mod installed.
+AlifeSpooks is optional on top: a director that places dynamic horror one-shots where and when they hurt most.
+When both run, AlifeSpooks takes its captured sounds out of the base channels at load, so the two never double.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
@@ -53,6 +55,12 @@ The configuration is the widest of the table, 33 levels and 31 presets, and ever
 The content is the best of 7 packs in one: Dark Signal structure and birds, Soundscape Overhaul wind, Audio Expansion insects and frogs, Immersive Ambience helicopter.
 Thunder plays as rumble in the storm states and as claps at the vanilla strike paths, positioned and delay-corrected by the engine, with the weather mod timing untouched.
 Duplicates are resolved across all the sources, every exclusion is written down, and the licence basis is recorded per source.
+
+The engine also carries a weather-effect layer: gusts of wind with fog wisps and one recording, fired on a timer in every outdoor state.
+That layer is dead in the whole lineage.
+The Dark Signal configs strip its keys, and the Atmospherics effects file points all ten sounds at files that exist in no archive, so the presets that kept the keys play them silent.
+Here the ten effects fire in every outdoor state, and their sounds are pinned to recordings proven present, on stock Anomaly and under Atmospherics alike.
+During emissions the four vanilla surge bed channels play again, where the ancestors of this configuration had muted them.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
@@ -157,7 +165,7 @@ Install (MO2)
 5. Set the level in the game's own sound options. There is no volume slider in the mod, because loudness is already levelled into each file
 
 GAMMA - Atmospherics already ships, so the weather side is covered. Disable 304- Dark Signal Weather and Ambiance Audio, 3- Soundscape Overhaul,
-G.A.M.M.A. Soundscape Overhaul and G.A.M.M.A. Dark Signal Audio Lite, so that nothing leaks through. Run AlifeSpooks alongside for the horror layer.
+G.A.M.M.A. Soundscape Overhaul and G.A.M.M.A. Dark Signal Audio Lite, so that nothing leaks through. AlifeSpooks is optional, for the directed horror layer.
 
 Uninstall - disable or remove it in MO2. Weather visuals belong to your weather mod and are untouched.
 
@@ -166,7 +174,8 @@ Compatibility
 Weather mods - none required. Stock Anomaly and Atmospherics use the same ambient state names, and the soundscape covers them all.
 Another weather mod works if its ambient states are covered. Weather visuals, emission and psi-storm are left alone.
 Soundscape mods - this is the ambient layer, so it wins the ambient sound configuration and plays the merged soundscape.
-AlifeSpooks - composes with it. AlifeSpooks places the horror one-shots and takes its own sounds out of the base channels. The two never double up.
+AlifeSpooks - optional. AlifeAmbience plays its own spook sounds standalone. Install AlifeSpooks for the directed, dynamic horror on top.
+It takes its captured sounds out of the base channels, and the two never double up.
 Performance - no gameplay script runs, and nothing polls while you play.
 Saves - install or remove it whenever you like, since it is configuration and sounds with no save state.
 Tested - Anomaly 1.5.3 and GAMMA.

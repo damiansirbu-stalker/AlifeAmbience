@@ -1,6 +1,4 @@
---- ui_aa_player: the channel review player - browse the resolved ambient channels, audition each pool
---- entry as-wired / at-ear / at fixed distance, log ear verdicts to alifeambience_notes.txt (PageUp,
---- MCM sound_player gate; AlifeSpooks' player keeps PageDown; doc/architecture.md: Scripts).
+--- ui_aa_player: browse resolved ambient channels, audition each pool entry as-wired / at-ear / at distance (PageUp, MCM sound_player gate).
 
 local table_sort, string_format = table.sort, string.format
 local string_gmatch, tostring = string.gmatch, tostring

@@ -1,6 +1,6 @@
 invariant	count	severity
 1 orphan files (on disk, unwired)	0	FAIL
-2 orphan channels (defined, unreferenced)	55	INFO
+2 orphan channels (defined, unreferenced)	17	INFO
 3 dangling refs (referenced, undefined)	0	FAIL
 4 missing paths (channel -> no file)	0	FAIL
 5 level-routing errors	0	FAIL
@@ -13,5 +13,7 @@ invariant	count	severity
 12 base levels without an ambient binding	0	FAIL
 13 bed channels violating the engine load asserts	0	FAIL
 14 dynamic channels with incomplete definitions	0	FAIL
-15 indoor channels wired into outdoor states	0	FAIL
+15 indoor channels in outdoor states (shelter-only)	13	INFO
 16 reachable strike sounds still on vanilla audio	18	INFO
+17 effect ids outside the base effect set	0	FAIL
+18 effect sounds with no file on disk	0	FAIL

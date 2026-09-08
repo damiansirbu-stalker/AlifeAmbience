@@ -4,8 +4,8 @@ AlifeAmbience is the atmosphere soundscape for S.T.A.L.K.E.R. Anomaly: every map
 It is a curated work. The config is the source of truth, authored by hand: the channels, their pools, the presets, the level bindings.
 The pipeline (`tools/merge.py`) is a mastering mill. It materializes, masters, reports, and proves what the config says. It never chooses content.
 
-It is the counterpart to AlifeSpooks. AlifeSpooks owns the horror one-shots and statically vetoes them out of the base ambient channels.
-AlifeAmbience owns the continuous nature/weather ambience and the storm thunder. The two never overlap.
+The soundscape carries its own dread layer: distant mutant cries, far gunfire, spooks and dark ambience play standalone.
+AlifeSpooks is optional on top. Its director places dynamic horror one-shots, and its static veto takes the captured sounds out of the base channels at load, so the two never double.
 
 ## Content model
 
@@ -34,7 +34,7 @@ The channel is the unit of curation.
 One channel is one voice: one coherent recording family with its own placement (`min_distance`, `max_distance`, `height`) and its own cadence (`period0..3`).
 
 - Pools are single-source by default: one pack's folder, files mastered together.
-  Coherence is a verified property, never an inherited one.
+  Coherence is a verified property, established per pool.
   The packs' own folders are internally inconsistent, which is why the audibility pass exists.
   Every pool therefore passes a spread check (crest, spectral shape, noise floor) and the ear regardless of origin.
   Cross-pack pooling is a flagged exception, allowed only when measurement says the families are compatible and the ear confirms.
@@ -115,11 +115,33 @@ Thunder has two homes, matching the engine's two systems:
    (`thunderbolt.cpp:235`: `snd.play_no_feedback(0, 0, dist / 300.f, &pos, 0, 0, &Fvector2().set(dist / 2, dist * 2.f))`).
    That is why strike files need selection and loudness only, and no placement engineering.
 
+## The effect layer
+
+System A carries a second output besides the bed: ambient EFFECTS, a particle burst plus a wind blast plus one recording, fired outdoors on the preset's `min/max_effect_period` timer.
+`CEnvAmbient::load` reads the `effects =` key, and the play block in `CGamePersistent::WeathersUpdate` is gated on outdoor luminocity.
+Vanilla wires `effect_0..9` into every outdoor state: fog wisps and gust particles with the trx `wind_gust` recordings.
+
+The layer is dead across the AtmosFear-lineage packs (found 2026-09-03).
+The Dark Signal configs strip the `effects` keys from every preset, and Atmospherics' `effects.ltx` re-points all ten sounds at `nature\wind_01..10`, files that exist in no db archive and no mod.
+Where the keys survive (the 304 field preset), the sounds play as silence.
+
+AlifeAmbience restores both halves.
+Every outdoor state of every preset wires `effect_0..9`.
+The DLTX overlay `mod_effects_alifeambience.ltx` points the ten `sound =` keys at vanilla's proven trx recordings, winning over whichever `effects.ltx` is active.
+Those recordings are the same class of repair as the surge beds.
+Their only source is vanilla, which the channel resolver skips, and no channel reads the override.
+So `DEPLOY_EXTRA` rows (`tools/sources.py`) carry the nine `ambient\trx\nature\wind_gust` files the override names.
+Underground presets keep empty `effects` (the play block never fires indoors, vanilla parity).
+
+The surge beds are the same class of repair.
+`blowout_channels.ltx` inherited `blowout_impacts`, `blowout_rumble`, `blowout_ambient` and `blowout_flare` muted, because their only source is vanilla itself, which the resolver skips.
+Explicit `DEPLOY_EXTRA` rows (`tools/sources.py`) now pull the 21 vanilla `ambient\trx\blowout` recordings and the four pools play again during emissions.
+
 ## Deduplication
 
 Deduplication runs twice, both on our side, never against the target install. A byte hash collapses identical reships.
 fpcalc (Chromaprint) fingerprints the deployed audio and reports same-recording aliases the byte hash cannot see. Short clips fall back to the byte hash.
-In the authored-config model both run as warners. A duplicate pick is reported for the curator to resolve, never auto-repointed.
+In the authored-config model both run as warners. A duplicate pick is reported for the curator to resolve by hand.
 
 ## The five-link binding chain
 
@@ -136,8 +158,8 @@ An ambient sound reaches the player through five links, and the verifier proves 
 5. Pool to ogg: the mastered audio files.
 
 X-Ray lowercases section names on load (`strlwr(section)`, `Xr_ini.cpp:1613`), so references resolve case-insensitively.
-The weather mod couples at exactly two vocabularies: the ambient state names (link 1) and the thunderbolt collection names (Thunder, home 2).
-The links below those two are weather-mod-independent. Variants for other weather mods re-cover both vocabularies.
+The weather layer couples at exactly three vocabularies: the ambient state names (link 1), the thunderbolt collection names (Thunder, home 2), and the effect ids (The effect layer).
+The links below those three are weather-mod-independent. Variants for other weather mods re-cover all three vocabularies.
 
 ## Verification
 
@@ -168,6 +190,10 @@ The links below those two are weather-mod-independent. Variants for other weathe
 15. Indoor routing: no `indoor = true` channel is wired into an outdoor state, where the System B volume table (`sound_ambient.script:147-165`) plays it at 0.0.
     Outdoor channels inside underground states (played at 0.3) are reported, not failed.
 16. Strike palette (informational): of the bolt sounds reachable through the collections the weathers reference, how many carry our deploy vs vanilla audio.
+17. Effect vocabulary: every effect id any preset or `ambients.ltx` wires exists in the base effect set (`effect_0..9` + `blowout_effect_01..48`).
+    An unknown id is a CTD: `create_effect` reads `life_time` with a throwing `r_float` (`Environment_misc.cpp:119-146`).
+18. Effect sound paths: every `sound =` in the effect override resolves to a file on disk.
+    No channel reads the override, so gate 4 never sees these paths. A dangling one plays silent, since `WeathersUpdate` skips a null handle, with no other trace.
 
 ## Coexistence with AlifeSpooks
 
@@ -175,7 +201,8 @@ AlifeSpooks captures the dark/horror content from the shared source packs into i
 It removes the captured paths with a generated static DLTX overlay: `mod_sound_channels_alifespooks.ltx`, individual `<sounds` removals per channel plus a `>sounds = ambient\no_sound` guard.
 DLTX applies that overlay to OUR resolved `sound_channels.ltx`.
 A captured path in one of our pools is stripped at load, a fully-captured channel plays silence, and gate 11 proves the composition stays safe.
-The AlifeSpooks director places the horror, and the AlifeAmbience config plays the living ambience. Run both.
+The AlifeSpooks director places the horror, and the AlifeAmbience config plays the living ambience.
+Standalone, nothing is vetoed and the full dread layer plays. With AlifeSpooks installed, the directed layer replaces the captured subset.
 
 ## The mastering mill
 
@@ -186,7 +213,7 @@ The AlifeSpooks director places the horror, and the AlifeAmbience config plays t
 - master: `fold` and `level`, per the scoped rules above.
 - stage / unstage: materialize a candidate family under `sounds/stage/` so the player can audition it in-game before it is picked.
 - import: the one-time config baseline from a source pack's own sound-routing config (default: the Amplified spine), the bootstrap for a fresh variant.
-  It is a mechanical copy of the pack author's wiring, never part of `all`, and it refuses over an existing config so it cannot overwrite curation.
+  It is a mechanical copy of the pack author's wiring, excluded from `all`, and it refuses over an existing config so it cannot overwrite curation.
 - fmt: the mechanical guard for the config strings. It dedups pool tokens, normalizes preset lines, strips refs to deleted channels, caps spawn distances, and fails any pool line over the cap.
   Curation decides the sets, and `fmt` guards the strings.
 - report: `fingerprint` (duplicate warnings) and `dead` (silent files), both for the curator.
@@ -196,7 +223,7 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 
 ## Invariants
 
-- I1 Scope. Continuous nature/weather ambience and storm thunder. Horror one-shots are AlifeSpooks. Emission and psi-storm are their own systems. Strike timing belongs to the weather mod.
+- I1 Scope. Nature/weather ambience, the ambient dread layer, storm thunder. Directed one-shots are AlifeSpooks. Emission and psi-storm are their own systems. Strike timing is the weather mod's.
 - I2 The config is authored. Machines master, report, and prove. They never choose content.
 - I3 Spine completeness. Every ambience-scope file of the spine, across all its sound systems, is accounted for. Nothing dies silently.
 - I4 One channel, one voice. Single-source pools by default, coherence verified, 15-25 target, 40 cap, roles-menu admission.
@@ -205,7 +232,7 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 - I7 Preserve the source except where the engine forbids it. Blob-only edits, audio pages byte-identical, the fold as the one re-encode.
 - I8 Deduplicate twice, warn, let the curator resolve.
 - I9 Config closed. The full gate set passes or the build fails.
-- I10 Weather-mod-bound at exactly two vocabularies (ambient states, collection names). Stock Anomaly and Atmospherics share both. Other weather mods need a two-vocabulary sweep first.
+- I10 Weather-mod-bound at three vocabularies (ambient states, collection names, effect ids). Stock Anomaly and Atmospherics share all three. Other weather mods need a sweep of all three first.
 - I11 Traceable and licensed. Every deployed sound resolves to its origin, `licensing.md` records the basis for every source, and the readme credits every author.
 
 ## Scripts: dependency gate, MCM, diagnostics, player (no gameplay)

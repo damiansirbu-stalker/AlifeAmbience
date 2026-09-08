@@ -70,6 +70,30 @@ DEPLOY_EXTRA = [("Amplified", "nature/" + n + ".ogg", "nature/" + n + ".ogg", _S
     "thundernew1", "thundernew2", "thundernew3", "thundernew5",
 )]
 
+# The vanilla surge bed pools (blowout_channels.ltx: blowout_impacts/rumble/ambient/flare).
+# Amplified never shipped these recordings and vanilla sits in RESOLVE_SKIP, so the four channels
+# were muted for lack of a source (found 2026-09-03). Explicit rows restore them without opening
+# the vanilla tree to full path resolution or retention.
+_SURGE = "vanilla surge bed pool (blowout_channels.ltx)"
+DEPLOY_EXTRA += [("vanilla", "ambient/trx/blowout/" + n + ".ogg", "ambient/trx/blowout/" + n + ".ogg", _SURGE) for n in (
+    "blowout_boom_01", "blowout_boom_02", "blowout_boom_03", "blowout_boom_04", "blowout_boom_05",
+    "blowout_ambient_rumble_01", "blowout_ambient_rumble_02", "blowout_ambient_rumble_03", "blowout_ambient_rumble_04",
+    "blowout_amb_01", "blowout_amb_02", "blowout_amb_03", "blowout_amb_04", "blowout_amb_05",
+    "blowout_amb_06", "blowout_amb_07", "blowout_amb_08", "blowout_amb_09",
+    "blowout_flare_01", "blowout_flare_02", "blowout_flare_03",
+)]
+
+# The vanilla ambient EFFECT sounds (effects.ltx effect_0..9 -> trx wind_gust wind_gust_01..06 +
+# rnd_wind_1..3). Same case as the surge beds: their only source is vanilla, which sits in
+# RESOLVE_SKIP, and the effect override (mod_effects_alifeambience.ltx) is read by no channel, so
+# nothing pulled them. The override pointed sound= at the vanilla names while nothing deployed them,
+# so the restored effect layer played silent (found 2026-09-07). Explicit rows carry the 9 files.
+_EFFECT = "vanilla ambient effect sound (effects.ltx effect_0..9, mod_effects_alifeambience.ltx)"
+DEPLOY_EXTRA += [("vanilla", "ambient/trx/nature/wind_gust/" + n + ".ogg", "ambient/trx/nature/wind_gust/" + n + ".ogg", _EFFECT) for n in (
+    "wind_gust_01", "wind_gust_02", "wind_gust_03", "wind_gust_04", "wind_gust_05", "wind_gust_06",
+    "rnd_wind_1", "rnd_wind_2", "rnd_wind_3",
+)]
+
 # DISPOSITIONS: every ambience-scope source file NOT referenced by the config / DEPLOY_EXTRA must be
 # covered by a row here, else verify gate 7 FAILs the build. Verdicts: excluded (a decided no, with
 # the reason), deferred (a signed decision to decide in a named later pass). Referenced files never

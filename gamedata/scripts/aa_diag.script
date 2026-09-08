@@ -1,5 +1,4 @@
---- aa_diag: the runtime wiring inspector - logs the active ambient wiring after load and on demand
---- (console: run_string aa_diag.log_wiring()). Debug-only, no gameplay.
+--- aa_diag: the runtime wiring inspector - logs the active ambient wiring after load and on demand (console: aa_diag.log_wiring()). Debug-only.
 
 local ini_file, parse_list, tostring = ini_file, parse_list, tostring
 local RegisterScriptCallback = RegisterScriptCallback
@@ -24,13 +23,14 @@ local function _get_dangling_count(chans, ini_snd)
     return total
 end
 
---- One DEBUG line per covered state: dynamic channel count, dangling count, ACTIVE marker.
+--- One INFO line per covered state: dynamic channel count, dangling count, ACTIVE marker.
+--- INFO not DEBUG, so the diag_ambient toggle prints it whenever on (aa_debug.update floors INFO).
 local function _log_states(ini_lvl, ini_snd, active)
     for i = 1, #WEATHER_STATES do
         local st = WEATHER_STATES[i]
         local chans = ini_lvl:section_exist(st) and parse_list(ini_lvl, st, "sound_channels_dynamic")
         if chans then
-            aa_debug.dbg("[DIAG]   %-16s dyn=%d dangling=%d%s",
+            aa_debug.info("[DIAG]   %-16s dyn=%d dangling=%d%s",
                 st, #chans, _get_dangling_count(chans, ini_snd), (st == active) and "   <== ACTIVE" or "")
         end
     end
