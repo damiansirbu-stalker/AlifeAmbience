@@ -135,7 +135,7 @@ Engine and scripts
 
 Most of this mod is audio. The rest is engine and script work, planned, for the parts a file cannot carry.
 All of it waits on one engine change: a hook at the point where X-Ray decides to play an ambient sound, so a script can inspect the pick before it plays.
-xlibs carries the API already, and it is inert until the engine calls it.
+xlibs carries the API, and the trace consumer is built, both inert until a public engine ships the hook.
 
 Beds on first load - the engine does not render the ambient beds on a fresh run until you have saved and reloaded.
 Tracing - report what the ambient system does while a build plays.

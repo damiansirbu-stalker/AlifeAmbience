@@ -7,6 +7,12 @@ local RegisterScriptCallback = RegisterScriptCallback
 local WEATHER_STATES = { "day", "morning", "evening", "night", "rain", "rain_day", "rain_night",
                          "storm_day", "storm_night", "tuman", "tuman_night", "indoor_underground" }
 local CHANNELS_FILE = "environment\\sound_channels.ltx"
+local BACKGROUNDS_FILE = "environment\\ambient_channels\\backgrounds.ltx"
+local INDEX_FILES = { CHANNELS_FILE, BACKGROUNDS_FILE }
+
+-- The runtime trace's file -> channel map, plus the transient targets the section walk writes through.
+local _file_index = nil
+local _index_target, _index_ini
 
 local function _is_enabled()
     return (aa_debug and aa_debug.is_on())
@@ -23,16 +29,18 @@ local function _get_dangling_count(chans, ini_snd)
     return total
 end
 
---- One INFO line per covered state: dynamic channel count, dangling count, ACTIVE marker.
+--- One INFO line for a covered state: dynamic channel count, dangling count, ACTIVE marker.
+local function _log_state(st, ini_lvl, ini_snd, active)
+    local chans = ini_lvl:section_exist(st) and parse_list(ini_lvl, st, "sound_channels_dynamic")
+    if not chans then return end
+    local mark = (st == active) and "   <== ACTIVE" or ""
+    aa_debug.info("[DIAG]   %-16s dyn=%d dangling=%d%s", st, #chans, _get_dangling_count(chans, ini_snd), mark)
+end
+
 --- INFO not DEBUG, so the diag_ambient toggle prints it whenever on (aa_debug.update floors INFO).
 local function _log_states(ini_lvl, ini_snd, active)
     for i = 1, #WEATHER_STATES do
-        local st = WEATHER_STATES[i]
-        local chans = ini_lvl:section_exist(st) and parse_list(ini_lvl, st, "sound_channels_dynamic")
-        if chans then
-            aa_debug.info("[DIAG]   %-16s dyn=%d dangling=%d%s",
-                st, #chans, _get_dangling_count(chans, ini_snd), (st == active) and "   <== ACTIVE" or "")
-        end
+        _log_state(WEATHER_STATES[i], ini_lvl, ini_snd, active)
     end
 end
 
@@ -44,6 +52,81 @@ local function _log_background(ini_lvl, ini_snd, state)
         aa_debug.info("[DIAG] active background: %s (defined=%s)",
             tostring(first), tostring(ini_snd:section_exist(first)))
     end
+end
+
+--- Normalize a sound path to a lookup key: lowercase, backslashes, no extension.
+local function _get_key(path)
+    if not path then return nil end
+    return (tostring(path):lower():gsub("/", "\\"):gsub("%.ogg$", ""))
+end
+
+--- Section-walk handler (a named local, never a closure in a loop): map each pool file to its channel.
+local function _collect_sounds(sec)
+    if not _index_ini:line_exist(sec, "sounds") then return end
+    for tok in (_index_ini:r_string_ex(sec, "sounds") or ""):gmatch("[^,]+") do
+        local k = _get_key(tok:match("^%s*(.-)%s*$"))
+        if k and k ~= "" then _index_target[k] = sec end
+    end
+end
+
+--- Walk one channel config into the index.
+local function _read_channels(rel)
+    local ini = ini_file(rel)
+    if not (ini and ini.section_for_each) then return end
+    _index_ini = ini
+    ini:section_for_each(_collect_sounds)
+end
+
+--- Build the file -> channel map once from the resolved channel configs.
+local function _build_file_index()
+    _file_index = {}
+    _index_target = _file_index
+    for i = 1, #INDEX_FILES do
+        _read_channels(INDEX_FILES[i])
+    end
+end
+
+--- The channel a fired file belongs to, or "?" when it is not one of ours.
+local function _get_channel(file)
+    if not _file_index then _build_file_index() end
+    return _file_index[_get_key(file)] or "?"
+end
+
+-- The 6 demonized sound callbacks reach these through the xlibs seam registry (inert without the profiler exe).
+-- Each gates on aa_debug.is_on() so the off path is one boolean, and returns nil (observe only, never a veto).
+local function _log_bed(section, file)
+    if aa_debug.is_on() then aa_debug.info("[TRACE] bed     ch=%s file=%s", tostring(section), tostring(file)) end
+end
+
+local function _log_script(file)
+    if aa_debug.is_on() then aa_debug.info("[TRACE] script  ch=%s file=%s", _get_channel(file), tostring(file)) end
+end
+
+local function _log_effect(file)
+    if aa_debug.is_on() then aa_debug.info("[TRACE] effect  file=%s", tostring(file)) end
+end
+
+local function _log_thunder(file, distance)
+    if aa_debug.is_on() then aa_debug.info("[TRACE] thunder file=%s dist=%s", tostring(file), tostring(distance)) end
+end
+
+local function _log_rain(file)
+    if aa_debug.is_on() then aa_debug.info("[TRACE] rain    file=%s", tostring(file)) end
+end
+
+local function _log_music(file)
+    if aa_debug.is_on() then aa_debug.info("[TRACE] music   file=%s", tostring(file)) end
+end
+
+--- Subscribe the trace to the engine sound callbacks. A no-op when xlibs or the profiler exe is absent.
+local function _register_trace()
+    if not (xsound and xsound.register_ambient_listener) then return end
+    xsound.register_ambient_listener("on_before_play_ambient_bed", _log_bed)
+    xsound.register_ambient_listener("on_before_play_script_sound", _log_script)
+    xsound.register_ambient_listener("on_before_play_ambient_effect", _log_effect)
+    xsound.register_ambient_listener("on_before_play_thunderbolt", _log_thunder)
+    xsound.register_ambient_listener("on_before_play_rain", _log_rain)
+    xsound.register_ambient_listener("on_before_play_level_music", _log_music)
 end
 
 --- Log the active ambient wiring block (console-safe: run_string aa_diag.log_wiring()).
@@ -69,7 +152,8 @@ function log_wiring()
     aa_debug.flush()
 end
 
---- One wiring block per save load.
+--- One wiring block per save load, and the runtime sound trace subscribed once.
 function on_game_start()
     RegisterScriptCallback("actor_on_first_update", log_wiring)
+    _register_trace()
 end

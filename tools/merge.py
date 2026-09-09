@@ -93,9 +93,19 @@ EFFECTS_BASE = ({f"effect_{i}" for i in range(10)}
 # r_stringZ; FS.cpp:467 asserts sz < tgt_sz). A line over the buffer is a hard CTD on config load.
 LINE_CAP = 3900
 
-# per-state density budgets (events per minute, ear-calibrated). None = report-only until the
-# calibration sessions set them (doc/architecture.md: Density).
-DENSITY_BUDGET = None
+# per-state density budgets (events per minute), keyed by state class. Armed 2026-09-09 as LOUD
+# regression ceilings (roughly 1.8x the measured round-robin-capped max per class), a guard against
+# a future density blowout - NOT the tight ear-calibrated budget (doc/architecture.md: Density). The
+# ear tightens these once the player calibration sets real values. {} = report-only.
+# NOTE the epm sum still counts no_sound channels (a known over-count); the ceilings are loose enough
+# that it cannot false-fail. Tighten only after the epm sum is fixed to exclude silent channels.
+DENSITY_BUDGET = {
+    "storm_day": 80, "storm_night": 80, "pre_storm": 75,
+    "night": 65, "evening": 65, "morning": 65, "day": 65,
+    "rain": 60, "rain_day": 60, "rain_night": 60,
+    "tuman": 60, "tuman_day": 60, "tuman_night": 60,
+    "indoor": 40, "indoor_underground": 40, "indoor_x8": 40,
+}
 ENTRY_BURST_MS = 15000     # a channel with period0 below this fires within the state's entry window
 
 # Gentle per-category spawn-distance cap: a category's channels should not spawn TOO far (System B felt ~
@@ -1255,8 +1265,8 @@ def cmd_verify():
             density_rows.append((fn, st, round(epm, 1), burst))
             if burst > burst_worst[0]:
                 burst_worst = (burst, f"{fn}[{st}]")
-    over_budget = ([r for r in density_rows if DENSITY_BUDGET and r[2] > DENSITY_BUDGET]
-                   if DENSITY_BUDGET else [])
+    over_budget = [r for r in density_rows
+                   if DENSITY_BUDGET.get(r[1]) is not None and r[2] > DENSITY_BUDGET[r[1]]]
     # 9 line cap
     over_cap = []
     for f in CHANNEL_FILES:
@@ -1465,7 +1475,7 @@ def cmd_verify():
     if dmax:
         print(f"    density: max {dmax[2]} events/min at {dmax[0]}[{dmax[1]}]; "
               f"entry-burst worst {burst_worst[0]} channels at {burst_worst[1]} "
-              f"(budget {'unset - report only' if not DENSITY_BUDGET else DENSITY_BUDGET})")
+              f"(budget {'unset - report only' if not DENSITY_BUDGET else 'per-class regression ceilings'})")
     print("    retention per source: " +
           "; ".join(f"{n} ref {a['referenced']} disp {a['disposed']} un {a['unaccounted']}"
                     for n, a in per_source.items()))

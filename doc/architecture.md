@@ -173,7 +173,7 @@ The links below those three are weather-mod-independent. Variants for other weat
 6. Weather matrix full: every preset defines a section for every state the active weather mod emits.
 7. Retention: every spine ambience-scope file and every file of an adopted folder is referenced or covered by a dispositions row.
    All other corpus content carries folder-level dispositions. Anything unaccounted is a FAIL.
-8. Density: per state, the events-per-minute budget holds and the entry-burst stagger holds. The budget numbers arm the gate once the calibration sessions set them.
+8. Density: per state, the events-per-minute budget holds and the entry-burst stagger holds. Armed 2026-09-09 with per-state-class DENSITY_BUDGET (merge.py) as loud regression ceilings, a guard against a future blowout, not the tight ear-calibrated budget. The epm sum uses the round-robin cap (60000/mean(period0..3), one channel per tick) but still counts no_sound channels, a known over-count the loose ceilings tolerate; tighten only after the sum excludes silent channels and the ear calibrates real values.
 9. Line cap: no `sounds =` line approaches the 4096-byte ini buffer (`LINE_CAP = 3900`).
 10. Collection coverage: every thunderbolt collection name the active weather mod references resolves in the base game's collection set.
 11. Veto simulation: no channel that the AlifeSpooks veto touches may end EMPTY at load.
@@ -234,13 +234,14 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 - I9 Config closed. The full gate set passes or the build fails.
 - I10 Weather-mod-bound at three vocabularies (ambient states, collection names, effect ids). Stock Anomaly and Atmospherics share all three. Other weather mods need a sweep of all three first.
 - I11 Traceable and licensed. Every deployed sound resolves to its origin, `licensing.md` records the basis for every source, and the readme credits every author.
+- I12 No audible sound is dropped before the user auditions it. Measurement only FLAGS a drop candidate (too long, off-character, past a spectral or loudness bound); it never excludes an audible file on its own. The flagged list is loaded into `ui_aa_player` as a playlist, the user auditions it, and only then does a file get a DISPOSITIONS `excluded` row. The sole mechanical removals are files that cannot be auditioned: dead-silent (below the LUFS floor), off sample rate, corrupt, or an anti-phase pair that folds to silence. This invariant is shared verbatim with AlifeSpooks.
 
 ## Scripts: dependency gate, MCM, diagnostics, player (no gameplay)
 
 - `_aa_deps.script` holds the version constant, the xlibs + modded-exes floor asserts, the platform line, and the boot banner.
 - `aa_mcm.script` is the informational MCM. There is no master volume slider: the build levels loudness into the blob, and the game's ambient slider sets the overall level.
 - `aa_debug.script` holds the xlog logger and the level gate.
-- `aa_diag.script` is the runtime wiring inspector: active level, weather, ambient state, per-state channel counts, and a live dangling-ref count.
+- `aa_diag.script` is the runtime wiring inspector (active level, weather, ambient state, per-state channel counts, live dangling-ref count) AND the runtime sound trace. The trace subscribes through the xlibs seam registry to the 6 demonized sound callbacks (bed, script-sound, effect, thunderbolt, rain, level-music) and logs each fire with its resolved channel and file, gated on `aa_debug.is_on()`. It is a no-op on a stock exe (the seam returns false and never attaches) and observe-only (returns nil, never a veto). This is the runtime counterpart to the static wiring dump, and the ground truth for the density and repetition rulings.
 - `ui_aa_player.script` is the curation instrument, mirroring the AlifeSpooks player's shape.
   It is a keyboard-owning modal on PageUp (AlifeSpooks keeps PageDown), gated by the MCM sound_player toggle.
   It browses BY CHANNEL from the resolved `sound_channels.ltx` and auditions as-wired at the channel's real placement, at-ear, and at fixed distances.
