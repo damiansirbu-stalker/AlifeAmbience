@@ -18,8 +18,9 @@ JitProfiler: https://github.com/damiansirbu-stalker/JitProfiler
 TestZone: https://github.com/damiansirbu-stalker/TestZone
 xlibs: https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001
 
-I built this for my own game. Most of the ambient audio installed in Anomaly is never heard, and fixing that takes every step of the chain:
+Most of the ambient audio installed in Anomaly is never heard, and fixing that takes every step of the chain:
 which packs to draw from, which sounds inside them to keep, listening to each one, the parameters written into every ogg, the calculation behind those parameters, and the removal of duplicates.
+A lot of the sounds worth hearing are old, from the original games and the standalone builds that came after, and I wanted those in the Zone too.
 The audio is lost in the struct parameters, in the stereo channel count, and in the duplicates.
 
 Every ogg carries a binary struct holding min_distance, max_distance, base_volume, a game type and an AI hearing distance, and any ffmpeg pass strips it.
@@ -31,27 +32,22 @@ The same recording also travels between packs under different names and encoders
 AlifeAmbience measures every file and writes the struct against where the sound is placed. The audio pages are unchanged.
 
 The soundscape carries its own dread. The distant screams, the night spooks and the dark ambience play with no other mod installed.
-AlifeSpooks is optional on top: a director that places dynamic horror one-shots where and when they hurt most.
+AlifeSpooks is optional on top. Its director places dynamic horror sounds where and when they hurt most.
 When both run, AlifeSpooks takes its captured sounds out of the base channels at load, so the two never double.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
-Every ambience ogg of every pack in this space was probed for channel count and sample rate.
-A stereo file plays 2D at the ear, and a file off 44100 plays as silence, with one warning line in the log as the only trace.
+Every ambient pack in this space was checked for channel count and sample rate.
+Across them, 5 to 49 percent of files are stereo, which the engine plays flat at the ear with no distance falloff, and some sit at the wrong sample rate and play as silence.
+Every file here is mono at 44100, and the release does not build unless both counts stay at 0.
 
-  pack                         oggs   stereo       silent-rate   levels/presets
-  AlifeAmbience                2125   0 (0%)       0             33 / 31
-  Dark Signal Amplified        3374   1661 (49%)   19            33 / 31
-  DS Weather and Ambiance      1406   134 (9%)     4             28 / 21
-  Soundscape Overhaul          1025   57 (5%)      2             28 / 21
-  RETUNE family, 3 variants    1508   730 (48%)    0             28 / 21
-  Audio Expansion              1511   704 (46%)    0             no config
-  Immersive Ambience Exp        147   0 (0%)       0             no config
-  S.T.A.L.K.E.R. 2 Ambience    1289   399 (30%)    0             28 / 21
-
-The fold produces true mono at 44100 for every file, and the release gates on both counts staying at zero. Every file here sits in the world and every file plays.
+The packs each cover part of the problem.
+The biggest has the most sounds and the widest level coverage. Its beds play too quiet, and about half its files are stereo.
+Another plays loud enough. It covers fewer levels.
+None of them rewrite the per-file audio settings that decide whether a sound is heard.
+AlifeAmbience takes sounds from several of these packs and does that audio work, so each one plays loud enough to hear across a wide set of levels.
 Loudness is measured per file and written into the struct, where the other packs ship each recording as it came.
-The configuration is the widest of the table, 33 levels and 31 presets, and every cell of the weather matrix resolves to real audio.
+The configuration covers the most levels here, 33 levels and 31 presets, and every cell of the weather matrix resolves to real audio.
 The content is the best of 7 packs in one: Dark Signal structure and birds, Soundscape Overhaul wind, Audio Expansion insects and frogs, Immersive Ambience helicopter.
 Thunder plays as rumble in the storm states and as claps at the vanilla strike paths, positioned and delay-corrected by the engine, with the weather mod timing untouched.
 Duplicates are resolved across all the sources, every exclusion is written down, and the licence basis is recorded per source.
@@ -95,7 +91,7 @@ Distance - min_distance is floored against where the channel actually places the
 A hard attack takes 0.40, a sustained tone takes 0.60.
 The floor is held under 80 percent of max_distance so that a real fade band always survives between the two, and it never lowers a value an author set deliberately.
 
-Loudness - base_volume is levelled into a band with a floor and a ceiling. Continuous beds aim at -30 LUFS effective and one-shots at -36, with ceilings at -24 and -28 to bring down anything hot.
+Loudness - base_volume is levelled into a band with a floor and a ceiling. Continuous beds aim at -30 LUFS effective and single sounds at -36, with ceilings at -24 and -28 to bring down anything hot.
 The figure is computed from content loudness plus both rolloff terms, so it refers to what arrives at the placement.
 It closes 70 percent of a file's gap, so quiet recordings stay quieter than loud ones.
 
@@ -126,7 +122,8 @@ Every cell of that matrix has to resolve to a real channel with real audio behin
 Measurement - ffmpeg does the reading, ebur128 for integrated loudness in broadcast LUFS and astats for crest factor and true peak, with Chromaprint handling identity.
 All of it feeds a reconstruction of the two rolloffs and the effects master, so every number in the build refers to what arrives at the player.
 
-Reproducible - the whole soundscape comes back from the source packs with one command, and nothing in it is hand-edited.
+Reproducible - I choose the channels and the files by hand, and the config records those choices.
+One command pulls those files from the packs and masters them, so the audio comes out the same every time.
 Every file in the release traces back to its source pack and the measurement that shaped it.
 
 Offline - none of this runs against your install, and the build downloads nothing.
