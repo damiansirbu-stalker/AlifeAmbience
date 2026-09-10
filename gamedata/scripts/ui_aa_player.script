@@ -1,18 +1,21 @@
---- ui_aa_player: browse resolved ambient channels, audition each pool entry as-wired / at-ear / at distance (PageUp, MCM sound_player gate).
+--- ui_aa_player: audition the soundscape for curation on PageUp (MCM gate); browse channels or a loaded playlist, verdicts to the notes file.
 
-local table_sort, string_format = table.sort, string.format
+local table_sort, string_format, table_concat = table.sort, string.format, table.concat
 local string_gmatch, tostring = string.gmatch, tostring
 local RegisterScriptCallback = RegisterScriptCallback
 
 local NOTES_FILE = "alifeambience_notes.txt"
 local PGUP_KEY   = 201
 local STAGE_ROOT = "stage"
+local LOGS_MOUNT = "$logs$"
+local PLAYLIST_ROW = "[load playlist]"
 local KIND_WIRED = "wired"
 local KIND_ATEAR = "atear"
 local KIND_DIST  = "dist"
 local FRAC_MIN   = "min"
 local FRAC_FELT  = "felt"
 local FRAC_FAR   = "far"
+local VIEW_ROOT, VIEW_POOL, VIEW_FSDIR = "root", "pool", "fsdir"
 --- Audition modes cycled by the mode steppers: at the channel's own placement band, raw 2D, or fixed metres.
 local MODES = {
     { label = "as wired - near",  kind = KIND_WIRED, frac = FRAC_MIN },
@@ -24,14 +27,17 @@ local MODES = {
     { label = "50m",  kind = KIND_DIST, dist = 50 },
     { label = "100m", kind = KIND_DIST, dist = 100 },
 }
---- Placement for staged families (no channel definition yet): the wind-band values.
+--- Placement for staged families and playlist entries that resolve to no channel: the wind-band values.
 local STAGE_MIN, STAGE_MAX, STAGE_HEIGHT = 30, 130, 10
 local DEFAULT_MODE = 2
 
 local _channels = nil
 local _staged   = nil
-local _row_i    = 1
-local _at_root  = true
+local _by_path  = nil
+local _view     = VIEW_ROOT
+local _row      = nil
+local _from_fs  = false
+local _fs_dir   = ""
 local _mode_i   = DEFAULT_MODE
 local _cur      = nil
 local _box      = nil
@@ -61,11 +67,28 @@ local function _collect_channels(rel, bed)
     end)
 end
 
+--- Add one channel's pool paths to the reverse index, each keyed lowercase to its channel name.
+local function _add_channel_paths(ch)
+    for k = 1, #ch.pool do
+        local key = ch.pool[k]:lower()
+        _by_path[key] = _by_path[key] or {}
+        local hit = _by_path[key]
+        hit[#hit + 1] = ch.name
+    end
+end
+
+--- Build the reverse index path -> channel names so a playlist entry plays channel-exact.
+local function _build_path_index()
+    _by_path = {}
+    for i = 1, #_channels do _add_channel_paths(_channels[i]) end
+end
+
 local function _build_index()
     _channels = {}
     _collect_channels("environment\\sound_channels.ltx", false)
     _collect_channels("environment\\ambient_channels\\backgrounds.ltx", true)
     table_sort(_channels, function(left, right) return left.name < right.name end)
+    _build_path_index()
     _staged = (xfs and xfs.read_folders and xfs.read_folders("$game_sounds$", STAGE_ROOT .. "\\")) or {}
     table_sort(_staged)
 end
@@ -80,6 +103,7 @@ local function _build_stage_row(name)
 end
 
 --- The browse rows at root: every channel, then every staged family.
+--- The [load playlist] entry is list index 0, so list index i (1-based) maps to rows[i].
 local function _get_rows()
     local rows = {}
     for i = 1, #_channels do rows[#rows + 1] = _channels[i] end
@@ -87,12 +111,22 @@ local function _get_rows()
     return rows
 end
 
-local function _get_row()
-    return _get_rows()[_row_i]
-end
-
 local function _get_tail(path)
     return path:match("([^\\]+)$") or path
+end
+
+--- The channel(s) a playlist path belongs to, first match, for channel-exact play.
+--- Returns the joined channel names plus that channel's min, max, and height; an unmatched path gets the stage band.
+local function _resolve_channel(path)
+    local hit = _by_path and _by_path[path:lower()]
+    if not hit or #hit == 0 then return nil, STAGE_MIN, STAGE_MAX, STAGE_HEIGHT end
+    for i = 1, #_channels do
+        if _channels[i].name == hit[1] then
+            local ch = _channels[i]
+            return table_concat(hit, "+"), ch.min, ch.max, ch.height
+        end
+    end
+    return table_concat(hit, "+"), STAGE_MIN, STAGE_MAX, STAGE_HEIGHT
 end
 
 --- The actor position, or nil without an actor (never cache the pointer).
@@ -115,7 +149,7 @@ end
 
 --- Append one note line to $logs$/alifeambience_notes.txt (an investigation log; nothing parses it).
 local function _write_note(line)
-    local base = getFS and getFS():update_path("$logs$", "")
+    local base = getFS and getFS():update_path(LOGS_MOUNT, "")
     if not base then return false end
     local file_handle = io.open(base .. NOTES_FILE, "a")
     if not file_handle then return false end
@@ -124,6 +158,27 @@ local function _write_note(line)
     file_handle:flush()
     file_handle:close()
     return true
+end
+
+--- Read a playlist .txt from the logs dir into a POOL row, one sound path per line.
+--- Blank lines and ';' comments are skipped and each path is normalized, so a slightly-off line still plays.
+local function _load_playlist(name)
+    local base = getFS and getFS():update_path(LOGS_MOUNT, "")
+    if not base then return nil end
+    local rel = _fs_dir:gsub("/", "\\")
+    local handle = io.open(base .. rel .. name .. ".txt", "r")
+    if not handle then return nil end
+    local pool = {}
+    for line in handle:lines() do
+        local path = line:match("^%s*(.-)%s*$")
+        if path ~= "" and path:sub(1, 1) ~= ";" then
+            path = path:gsub("/", "\\"):gsub("%.ogg$", "")
+            pool[#pool + 1] = path
+        end
+    end
+    handle:close()
+    return { name = "playlist: " .. name, pool = pool,
+             min = STAGE_MIN, max = STAGE_MAX, height = STAGE_HEIGHT, bed = false, playlist = true }
 end
 
 --- Open the player when the MCM sound_player toggle allows it (aa_player_wnd resolves at call time).
@@ -144,6 +199,7 @@ function aa_player_wnd:__init() super()
     self:init_controls()
     self:init_callbacks()
     _built = false
+    _view, _row, _from_fs, _fs_dir = VIEW_ROOT, nil, false, ""
     if not _channels then _build_index() end
     self:build_list()
     self:update_view()
@@ -164,7 +220,8 @@ function aa_player_wnd:init_controls()
     self:Register(self.list, "list")
     self.lbl_path  = xml:InitStatic("lbl_path", self):TextControl()
     self.lbl_now   = xml:InitStatic("lbl_now", self):TextControl()
-    self.lbl_pos   = xml:InitStatic("lbl_pos", self):TextControl()
+    self.lbl_place = xml:InitStatic("lbl_place", self):TextControl()
+    self.lbl_loud  = xml:InitStatic("lbl_loud", self):TextControl()
     self.status    = xml:InitStatic("status", self):TextControl()
     self.insp_read = xml:InitStatic("insp_read", self):TextControl()
     self.snote = xml:InitEditBox("snote", self)
@@ -193,34 +250,60 @@ function aa_player_wnd:init_callbacks()
     self:AddCallback("btn_rescan", ui_events.BUTTON_CLICKED, self.reset_index, self)
 end
 
+--- FSDIR list entries in a fixed order: ".." then subfolders then .txt files.
+--- The order is fixed so the click index maps back deterministically in select_row.
+function aa_player_wnd:read_fs_entries()
+    local dir = _fs_dir
+    local folders = (xfs and xfs.read_folders and xfs.read_folders(LOGS_MOUNT, dir)) or {}
+    local files   = (xfs and xfs.read_files and xfs.read_files(LOGS_MOUNT, dir, ".txt")) or {}
+    table_sort(folders)
+    table_sort(files)
+    return folders, files
+end
+
 function aa_player_wnd:build_list()
     if xslice then xslice.stop_queue("aa_player_fill") end
     if _built then self.list:RemoveAll() end
     _built = true
-    if _at_root then
+    if _view == VIEW_ROOT then
+        self.list:AddTextItem(PLAYLIST_ROW)
         local rows = _get_rows()
         for i = 1, #rows do
             local row = rows[i]
             self.list:AddTextItem(string_format("%s%s  (%d)  %g-%gm",
                 row.bed and "[bed] " or "", row.name, #row.pool, row.min, row.max))
         end
+    elseif _view == VIEW_FSDIR then
+        self.list:AddTextItem("..")
+        local folders, files = self:read_fs_entries()
+        for i = 1, #folders do self.list:AddTextItem(folders[i] .. "\\") end
+        for i = 1, #files do self.list:AddTextItem(files[i]) end
     else
-        self:add_pool_rows(_get_row())
+        self:add_pool_rows(_row)
     end
 end
 
---- Fill one channel's pool rows, frame-spread by xslice so xsound.length never builds them all at once.
+--- Fill one row's pool, frame-spread by xslice so xsound.length never builds them all at once.
+--- A playlist row also shows each entry's resolved channel, so the sound's context stays visible.
 function aa_player_wnd:add_pool_rows(row)
     if not row then return end
     self.list:AddTextItem("..")
     local list = self.list
+    local pl = row.playlist
+    local function format_label(path)
+        local ms = (xsound and xsound.length and xsound.length(path)) or 0
+        if pl then
+            local ch = _resolve_channel(path)
+            return string_format("%s  [%s]  %.1fs", _get_tail(path), ch or "no channel", ms / 1000)
+        end
+        return string_format("%s    %.1fs", _get_tail(path), ms / 1000)
+    end
     if not xslice then
-        for i = 1, #row.pool do list:AddTextItem(_get_tail(row.pool[i])) end
+        for i = 1, #row.pool do list:AddTextItem(format_label(row.pool[i])) end
         return
     end
     xslice.start("aa_player_fill", row.pool, { step = 15, func = function(path)
-        local ms = (xsound and xsound.length and xsound.length(path)) or 0
-        list:AddTextItem(string_format("%s    %.1fs", _get_tail(path), ms / 1000))
+        list:AddTextItem(format_label(path))
         return true
     end })
 end
@@ -233,7 +316,7 @@ function aa_player_wnd:compute_wired_distance(mode)
     return far / 2.0
 end
 
---- The audition mode label; a wired mode appends the distance it resolves to for the loaded channel.
+--- The audition mode label; a wired mode appends the distance it resolves to for the loaded sound.
 function aa_player_wnd:format_mode()
     local mode = MODES[_mode_i]
     if mode.kind ~= KIND_WIRED or not _cur then return mode.label end
@@ -246,22 +329,54 @@ function aa_player_wnd:format_spot()
     return string_format("%s    pos %.0f %.0f %.0f", level.name(), pos.x, pos.y, pos.z)
 end
 
+--- The placement line: the exact settings the current play uses (mode, resolved distance, band, height).
+function aa_player_wnd:format_place()
+    if not _cur then return "place:  (none)" end
+    local mode = MODES[_mode_i]
+    local dist = (mode.kind == KIND_DIST) and mode.dist
+        or (mode.kind == KIND_WIRED) and self:compute_wired_distance(mode) or 0
+    return string_format("place:  %s | %.0fm | band %g-%gm | h%g",
+        mode.label, dist, _cur.min or 0, _cur.max or 0, _cur.height or 0)
+end
+
+--- The loudness line: base_volume, measured LUFS, and a delivered-dB estimate once the data file exists.
+--- A placeholder until then; the module is not named yet, since a bare global reference would auto-load it.
+function aa_player_wnd:format_loud()
+    if not _cur then return "loud:   (none)" end
+    return "loud:   est. dB pending the loudness data file"
+end
+
 function aa_player_wnd:update_view()
-    if _at_root then
-        self.lbl_path:SetText(string_format("channels    (%d + %d staged)",
+    if _view == VIEW_ROOT then
+        self.lbl_path:SetText(string_format("channels    (%d + %d staged)  -  [load playlist]",
             #(_channels or {}), #(_staged or {})))
-        self.status:SetText("click a channel to browse its pool")
+        self.status:SetText("click a channel, or [load playlist] to browse the logs dir")
+    elseif _view == VIEW_FSDIR then
+        self.lbl_path:SetText(string_format("logs\\%s    (browse a .txt playlist)", _fs_dir))
+        self.status:SetText("click a folder to open it, a .txt to load it, or .. to go up")
     else
-        local row = _get_row()
         self.lbl_path:SetText(string_format("%s    (%d)  %g-%gm  h%g",
-            row and row.name or "?", row and #row.pool or 0,
-            row and row.min or 0, row and row.max or 0, row and row.height or 0))
+            _row and _row.name or "?", _row and #_row.pool or 0,
+            _row and _row.min or 0, _row and _row.max or 0, _row and _row.height or 0))
         self.status:SetText("click a sound to play    -    click a premade note, or type + add note")
     end
-    self.lbl_now:SetText(_cur and ("loaded:  " .. _cur.channel .. " :: " .. _cur.name)
-        or "loaded:  (none - click a sound)")
-    self.lbl_pos:SetText("mode:  " .. self:format_mode())
+    self.lbl_now:SetText(_cur and ("now:    " .. _cur.channel .. " :: " .. _cur.name)
+        or "now:    (none - click a sound)")
+    self.lbl_place:SetText(self:format_place())
+    self.lbl_loud:SetText(self:format_loud())
     if self.insp_read then self.insp_read:SetText(self:format_spot()) end
+end
+
+--- Load a sound into _cur from a row and pool path, resolving its placement band.
+--- A playlist entry gets its channel-exact band; a channel or staged entry uses the row's own.
+function aa_player_wnd:load_cur(row, path)
+    if row.playlist then
+        local ch, mn, mx, h = _resolve_channel(path)
+        _cur = { channel = ch or "no channel", name = _get_tail(path), path = path, min = mn, max = mx, height = h }
+    else
+        _cur = { channel = row.name, name = _get_tail(path), path = path,
+                 min = row.min, max = row.max, height = row.height }
+    end
 end
 
 function aa_player_wnd:start_current()
@@ -279,28 +394,58 @@ end
 function aa_player_wnd:select_row()
     local idx = self.list:GetSelectedIndex()
     if not idx or idx < 0 then return end
-    if _at_root then
-        local rows = _get_rows()
-        if not rows[idx + 1] then return end
-        _row_i, _at_root = idx + 1, false
-        self:build_list()
-        self:update_view()
-        return
-    end
+    if _view == VIEW_ROOT then self:select_root(idx)
+    elseif _view == VIEW_FSDIR then self:select_fsdir(idx)
+    else self:select_pool(idx) end
+end
+
+--- ROOT click: index 0 opens the logs-dir browser; any other index drills into that row's pool.
+function aa_player_wnd:select_root(idx)
     if idx == 0 then
-        _at_root = true
-        self:build_list()
-        self:update_view()
+        _view, _fs_dir = VIEW_FSDIR, ""
+        self:build_list(); self:update_view()
         return
     end
-    local row = _get_row()
-    local path = row and row.pool[idx]
+    local row = _get_rows()[idx]
+    if not row then return end
+    _row, _from_fs, _view = row, false, VIEW_POOL
+    self:build_list(); self:update_view()
+end
+
+--- FSDIR click: index 0 goes up (or back to root), a folder descends, a .txt loads as a playlist.
+function aa_player_wnd:select_fsdir(idx)
+    if idx == 0 then
+        if _fs_dir == "" then _view = VIEW_ROOT else _fs_dir = _fs_dir:gsub("[^\\]+\\$", "") end
+        self:build_list(); self:update_view()
+        return
+    end
+    local folders, files = self:read_fs_entries()
+    if idx <= #folders then
+        _fs_dir = _fs_dir .. folders[idx] .. "\\"
+        self:build_list(); self:update_view()
+        return
+    end
+    local name = files[idx - #folders]
+    local pl = name and _load_playlist(name)
+    if not pl then self.status:SetText("could not read playlist: " .. tostring(name)); return end
+    _row, _from_fs, _view = pl, true, VIEW_POOL
+    self:build_list(); self:update_view()
+    self.status:SetText(string_format("loaded playlist %s  (%d entries)", name, #pl.pool))
+end
+
+--- POOL click: index 0 returns (to the logs browser if a playlist, else root); any other index plays.
+function aa_player_wnd:select_pool(idx)
+    if idx == 0 then
+        _view = _from_fs and VIEW_FSDIR or VIEW_ROOT
+        self:build_list(); self:update_view()
+        return
+    end
+    local path = _row and _row.pool[idx]
     if not path then return end
-    _cur = { channel = row.name, name = _get_tail(path), path = path,
-             min = row.min, max = row.max, height = row.height }
+    self:load_cur(_row, path)
     self:start_current()
     self:update_view()
-    self.status:SetText(string_format("playing:  %s :: %s", row.name, _cur.name))
+    self.status:SetText(string_format("playing:  %s :: %s", _cur.channel, _cur.name))
 end
 
 function aa_player_wnd:stop_playback()
@@ -320,21 +465,20 @@ function aa_player_wnd:select_mode_next()
     self:update_view()
 end
 
+--- The list index of the currently loaded pool entry, or 1 when none is loaded.
+function aa_player_wnd:find_pool_index()
+    if not _cur then return 1 end
+    for k = 1, #_row.pool do
+        if _get_tail(_row.pool[k]) == _cur.name then return k end
+    end
+    return 1
+end
+
 --- Step the selection to a neighbouring pool entry, move only (silent) - Prev/Next never play.
 function aa_player_wnd:select_step(delta)
-    if _at_root then return end
-    local row = _get_row()
-    if not (row and #row.pool > 0) then return end
-    local at = 1
-    if _cur and _cur.channel == row.name then
-        for k = 1, #row.pool do
-            if _get_tail(row.pool[k]) == _cur.name then at = k; break end
-        end
-    end
-    at = (at - 1 + delta) % #row.pool + 1
-    local path = row.pool[at]
-    _cur = { channel = row.name, name = _get_tail(path), path = path,
-             min = row.min, max = row.max, height = row.height }
+    if _view ~= VIEW_POOL or not (_row and #_row.pool > 0) then return end
+    local at = (self:find_pool_index() - 1 + delta) % #_row.pool + 1
+    self:load_cur(_row, _row.pool[at])
     self.list:SetSelectedIndex(at)
     self:update_view()
 end
@@ -364,20 +508,18 @@ end
 --- Re-read the channel config and the stage tree (after a merge.py stage/unstage or a config edit).
 function aa_player_wnd:reset_index()
     _build_index()
-    if _row_i > #_get_rows() then _row_i = 1 end
-    _at_root = true
+    _view, _row, _from_fs, _fs_dir = VIEW_ROOT, nil, false, ""
     self:build_list()
     self:update_view()
 end
 
---- CUIScriptWnd override (engine-called): Esc closes when the edit box has no focus.
+--- Esc closes the window when no edit box has focus; no other shortcut, so game binds are never shadowed.
 function aa_player_wnd:OnKeyboard(dik, action)
     local res = CUIScriptWnd.OnKeyboard(self, dik, action)
-    if action == ui_events.WINDOW_KEY_PRESSED and not res and dik == DIK_keys.DIK_ESCAPE then
-        self:stop_player()
-        return true
-    end
-    return res
+    if action ~= ui_events.WINDOW_KEY_PRESSED then return res end
+    if res or dik ~= DIK_keys.DIK_ESCAPE then return res end
+    self:stop_player()
+    return true
 end
 
 function aa_player_wnd:stop_player()
