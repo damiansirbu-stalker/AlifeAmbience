@@ -48,6 +48,11 @@ SOURCES = [
      "url": "https://www.moddb.com/mods/stalker-anomaly/addons/soundscape-overhaul-2",
      "path": "D:/Games/GAMMA/GAMMA/mods/3- Soundscape Overhaul - Solarint/gamedata"},
 
+    # standalone Dead Air build (SoC-lineage); GSC-original underground/lab room tone, pulled locally
+    {"name": "DeadAir", "licence": "game", "role": "standalone build (underground/lab beds)",
+     "url": None,
+     "path": "C:/Users/damian/Downloads/stalker_anomaly_mods/game_builds_for_sound/_unpacked/DeadAir"},
+
     # GSC base beds
     {"name": "vanilla", "licence": "game", "role": "GSC base",
      "url": None,
@@ -130,6 +135,9 @@ DISPOSITIONS = [
     ("RETUNE457", "ambience_exp/", "deferred", "bench"),
     ("myRETUNE", "ambient/", "deferred", "bench: enters only by beating a slot holder"),
     ("myRETUNE", "ambience_exp/", "deferred", "bench"),
+    # standalone build: underground/lab beds referenced; the rest of the ambient tree awaits curation
+    ("DeadAir", "ambient/", "deferred", "standalone build mined for underground/lab beds; remainder awaits curation"),
+    ("DeadAir", "nature/", "deferred", "standalone build; unreviewed candidates"),
 ]
 
 
