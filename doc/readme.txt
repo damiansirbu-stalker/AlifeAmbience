@@ -175,7 +175,7 @@ AlifeSpooks - optional. AlifeAmbience plays its own spook sounds standalone. Ins
 It takes its captured sounds out of the base channels, and the two never double up.
 Performance - no gameplay script runs, and nothing polls while you play.
 Saves - install or remove it whenever you like, since it is configuration and sounds with no save state.
-Tested - Anomaly 1.5.3 and GAMMA.
+Tested - Anomaly 1.5.3, GAMMA, and Forgotten Zone.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
