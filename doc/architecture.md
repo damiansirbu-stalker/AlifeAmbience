@@ -211,6 +211,8 @@ Standalone, nothing is vetoed and the full dread layer plays. With AlifeSpooks i
 - materialize: pull exactly the referenced files from the corpus packs into `gamedata/sounds`, and remove deployed files nothing references.
   The run is incremental. The audio-page-hash caches re-master only new files, and the working deployment is edited channel by channel, never wiped.
 - master: `fold` and `level`, per the scoped rules above.
+- meta: emit `aa_sound_metadata.script` - each deployed sound's measured profile (`lufs`/`crest`/`peak`/`bv`/`mn`/`mx`) from the level cache and the written blob.
+  The engine never reads it; the mod loads it once into the xsound metadata registry (`xsound.load_meta`) so the player can show a delivered-loudness readout.
 - stage / unstage: materialize a candidate family under `sounds/stage/` so the player can audition it in-game before it is picked.
 - import: the one-time config baseline from a source pack's own sound-routing config (default: the Amplified spine), the bootstrap for a fresh variant.
   It is a mechanical copy of the pack author's wiring, excluded from `all`, and it refuses over an existing config so it cannot overwrite curation.
@@ -246,6 +248,7 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
   It is a keyboard-owning modal on PageUp (AlifeSpooks keeps PageDown), gated by the MCM sound_player toggle.
   It browses BY CHANNEL from the resolved `sound_channels.ltx` and auditions as-wired at the channel's real placement, at-ear, and at fixed distances.
   It steps within pools and staged candidate families for A/B rulings.
+  Each audition shows a delivered-loudness readout (measured LUFS, base_volume, est. dB at the audition distance) from `xsound.get_meta` / `compute_delivered_loudness`, fed by `aa_sound_metadata`.
   Ear verdicts go to `alifeambience_notes.txt`, an investigation log that nothing parses.
   It is an own copy by family precedent, and it moves to xlibs only when a third consumer exists.
 

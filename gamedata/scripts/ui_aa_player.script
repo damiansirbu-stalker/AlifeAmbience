@@ -541,8 +541,8 @@ end
 
 --- PageUp opens the player. Load the generated per-sound profiles into xsound once, if present.
 function on_game_start()
-    if aa_sound_meta_gen and aa_sound_meta_gen.rows and xsound and xsound.load_meta then
-        xsound.load_meta(aa_sound_meta_gen.rows)
+    if aa_sound_metadata and aa_sound_metadata.rows and xsound and xsound.load_meta then
+        xsound.load_meta(aa_sound_metadata.rows)
     end
     RegisterScriptCallback("on_key_press", function(key)
         if key == PGUP_KEY then try_open() end
