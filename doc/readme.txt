@@ -194,6 +194,7 @@ Modpacks are allowed and encouraged, so long as you keep the readme and licence 
 Credit "AlifeAmbience by Damian Sirbu" visibly on your mod page. You may not reproduce the implementation in other software, even with credit.
 The full licence is in the LICENSE file and on GitHub.
 
-Issues and suggestions
-
-Open a report at https://github.com/damiansirbu-stalker/AlifeAmbience/issues/new/choose, or ask on the EFP, Anomaly and Zona Discord servers. Read this readme first.
+Diagnostics and reporting:
+Development > Log level: set to DEBUG, reproduce, then back to WARN. Writes alifeambience.log.
+Development > Enable the sound player: opens the channel review player on PageUp to audition every ambient channel.
+Report at https://github.com/damiansirbu-stalker/AlifeAmbience/issues/new/choose or the EFP, Anomaly, and Zona Discord. Include repro steps, engine build, modlist, load order, and xray.log.
