@@ -8,6 +8,7 @@ local CHANNELS_FILE = "environment\\sound_channels.ltx"
 local BACKGROUNDS_FILE = "environment\\ambient_channels\\backgrounds.ltx"
 local INDEX_FILES = { CHANNELS_FILE, BACKGROUNDS_FILE }
 local TTL_MS = 20000
+local NO_SOUND = "ambient\\no_sound"
 
 local _chan_of = nil
 local _files_of = nil
@@ -68,7 +69,8 @@ local function _on_play(file, pos)
     if _injecting then return end
     if not _chan_of then _build_index() end
     local key = _get_key(file)
-    local channel = key and _chan_of[key]
+    if not key or key == NO_SOUND then return end
+    local channel = _chan_of[key]
     if not channel then return end
     local now = time_global()
     local last = _last[key]

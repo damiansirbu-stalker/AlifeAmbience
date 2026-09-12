@@ -89,7 +89,14 @@ local function _build_index()
     _collect_channels("environment\\ambient_channels\\backgrounds.ltx", true)
     table_sort(_channels, function(left, right) return left.name < right.name end)
     _build_path_index()
-    _staged = (xfs and xfs.read_folders and xfs.read_folders("$game_sounds$", STAGE_ROOT .. "\\")) or {}
+    _staged = {}
+    local roots = (xfs and xfs.read_folders and xfs.read_folders("$game_sounds$", "")) or {}
+    for i = 1, #roots do
+        if roots[i] == STAGE_ROOT then
+            _staged = xfs.read_folders("$game_sounds$", STAGE_ROOT .. "\\")
+            break
+        end
+    end
     table_sort(_staged)
 end
 
