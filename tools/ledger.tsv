@@ -6,7 +6,7 @@ invariant	count	severity
 5 level-routing errors	0	FAIL
 6 weather-matrix gaps	0	FAIL
 7 retention: unaccounted source files	0	FAIL
-8 density: states over budget	0	INFO
+8 density: states over budget	0	FAIL
 9 pool lines over the ini buffer cap	0	FAIL
 10 weather-mod collections unresolved	0	FAIL
 11 pools the AlifeSpooks veto empties WITHOUT its no_sound guard	0	FAIL
