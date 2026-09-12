@@ -1,6 +1,6 @@
 --- aa_diag: the runtime wiring inspector - logs the active ambient wiring after load and on demand (console: aa_diag.log_wiring()). Debug-only.
 
-local ini_file, parse_list, tostring = ini_file, parse_list, tostring
+local ini_file, parse_list, tostring, string_format = ini_file, parse_list, tostring, string.format
 local RegisterScriptCallback = RegisterScriptCallback
 
 -- The weather-state vocabulary the presets cover (Atmospherics = these 12). Order is the report order.
@@ -92,30 +92,44 @@ local function _get_channel(file)
     return _file_index[_get_key(file)] or "?"
 end
 
--- The 6 demonized sound callbacks reach these through the xlibs seam registry (inert without the profiler exe).
--- Each gates on aa_debug.is_on() so the off path is one boolean, and returns nil (observe only, never a veto).
-local function _log_bed(section, file)
-    if aa_debug.is_on() then aa_debug.info("[TRACE] bed     ch=%s file=%s", tostring(section), tostring(file)) end
+--- The acoustic tail for a trace line: distance, delivered dB, and the profile loudness, or "".
+--- Reuses the same xsound calls the player readout makes; a nil position drops to at-ear.
+local function _build_detail(file, pos)
+    if not (xsound and xsound.get_meta) then return "" end
+    local prof = xsound.get_meta(file)
+    if not prof then return "" end
+    local dist = (pos and db.actor) and db.actor:position():distance_to(pos) or nil
+    local dlv = xsound.compute_delivered_loudness(prof, dist)
+    return string_format(" dist=%s dlv=%s lufs=%.0f crest=%.0f",
+        dist and string_format("%.0f", dist) or "-",
+        dlv and string_format("%.0f", dlv) or "-",
+        prof.lufs or 0, prof.crest or 0)
 end
 
-local function _log_script(file)
-    if aa_debug.is_on() then aa_debug.info("[TRACE] script  ch=%s file=%s", _get_channel(file), tostring(file)) end
+-- The 6 demonized sound callbacks reach these through the xlibs seam registry (inert without the profiler exe).
+-- Each gates on aa_debug.is_on() so the off path is one boolean, and returns nil (observe only, never a veto).
+local function _log_bed(section, file, pos)
+    if aa_debug.is_on() then aa_debug.debug("[TRACE] bed     ch=%s file=%s%s", tostring(section), tostring(file), _build_detail(file, pos)) end
+end
+
+local function _log_script(file, pos)
+    if aa_debug.is_on() then aa_debug.debug("[TRACE] script  ch=%s file=%s%s", _get_channel(file), tostring(file), _build_detail(file, pos)) end
 end
 
 local function _log_effect(file)
-    if aa_debug.is_on() then aa_debug.info("[TRACE] effect  file=%s", tostring(file)) end
+    if aa_debug.is_on() then aa_debug.debug("[TRACE] effect  file=%s%s", tostring(file), _build_detail(file, nil)) end
 end
 
 local function _log_thunder(file, distance)
-    if aa_debug.is_on() then aa_debug.info("[TRACE] thunder file=%s dist=%s", tostring(file), tostring(distance)) end
+    if aa_debug.is_on() then aa_debug.debug("[TRACE] thunder file=%s dist=%s", tostring(file), tostring(distance)) end
 end
 
 local function _log_rain(file)
-    if aa_debug.is_on() then aa_debug.info("[TRACE] rain    file=%s", tostring(file)) end
+    if aa_debug.is_on() then aa_debug.debug("[TRACE] rain    file=%s", tostring(file)) end
 end
 
 local function _log_music(file)
-    if aa_debug.is_on() then aa_debug.info("[TRACE] music   file=%s", tostring(file)) end
+    if aa_debug.is_on() then aa_debug.debug("[TRACE] music   file=%s", tostring(file)) end
 end
 
 --- Subscribe the trace to the engine sound callbacks. A no-op when xlibs or the profiler exe is absent.

@@ -82,6 +82,9 @@ local function _on_play(file, pos)
         _injecting = true
         xsound.play_at(sibling, { position = pos })
         _injecting = false
+        if aa_debug.is_on() then aa_debug.debug("[DEDUP] %s -> %s (repeat)", key, sibling) end
+    elseif aa_debug.is_on() then
+        aa_debug.debug("[DEDUP] %s silenced (no fresh sibling)", key)
     end
     return { volume_mult = 0 }
 end
