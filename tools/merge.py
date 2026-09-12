@@ -1012,6 +1012,14 @@ def cmd_level():
             no_meas += 1
         if mx < mn + 0.1:                                             # engine (max-min) divide / loader safety
             mx = mn + 0.1
+        # Idempotent write: the loudness floor closes only LOUD_FRAC of the deficit, so re-reading an
+        # already-lifted blob and lifting again asymptotes toward the floor - every full run nudges bv and
+        # rewrites the file. Skip a re-write once within an inaudible band of the target (bv within 1% =
+        # ~0.09 dB, an order under the ~1 dB JND and under any real lift; mn/mx within 0.1), so the file
+        # settles in one pass and a repeat run leaves the deployed tree clean.
+        mn0, mx0, bv0 = b
+        if abs(bv - bv0) <= bv0 * 1e-2 and abs(mn - mn0) <= 0.1 and abs(mx - mx0) <= 0.1:
+            continue
         if _write_blob(full, mn, mx, bv):
             wrote += 1
     json.dump(cache, open(LEVEL_CACHE, "w"))
