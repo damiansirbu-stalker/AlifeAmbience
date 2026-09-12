@@ -100,6 +100,8 @@ The mastering rules, scoped by playback path:
 
 All blob edits are lossless (audio pages byte-identical). The fold is the only re-encode, and it exists because the engine only positions mono.
 
+Blob contract (the engine-read fields). The comment is a `0x0003` X-Ray struct of five fields: `min`, `max`, `base_volume`, `game_type`, `max_ai_dist` (`SoundRender_Source_loader.cpp`, the `0x0003` branch). The deploy (`_write_blob`) writes all five and the engine reads exactly these, so nothing written is ignored and nothing read is left unset. `min`, `max`, and `base_volume` carry the leveling above (linear rolloff plus the OpenAL inverse keyed on `min`, and the `base_volume` gain multiplier, `SoundRender_Emitter_FSM.cpp:361,383`). `game_type` is written 0 and `max_ai_dist` is written equal to `max`; both are inert for our content. The play-time sound type overrides the blob `game_type` (`SoundRender_Core.cpp:332`), and `max_ai_dist` only sets NPC hearing range, which our `no_sound`-type plays never trigger (`SoundRender_Emitter.cpp:85`). `max_ai_dist` is set to `max` only to satisfy the loader's `>= 0.1` assert. It is the one engine-read lever left deliberately unused: a `world_ambient` play with an owner would make NPCs hear the sound, which ambience does not want.
+
 ## Thunder
 
 Thunder has two homes, matching the engine's two systems:
