@@ -1,0 +1,102 @@
+--- aa_dedup: veto a too-soon repeat of an ambient one-shot, replacing it with a fresh channel sibling.
+
+local time_global, math_random, ini_file, RegisterScriptCallback =
+    time_global, math.random, ini_file, RegisterScriptCallback
+
+local SEAM = "on_before_play_script_sound"
+local CHANNELS_FILE = "environment\\sound_channels.ltx"
+local BACKGROUNDS_FILE = "environment\\ambient_channels\\backgrounds.ltx"
+local INDEX_FILES = { CHANNELS_FILE, BACKGROUNDS_FILE }
+local TTL_MS = 20000
+
+local _chan_of = nil
+local _files_of = nil
+local _last = {}
+local _injecting = false
+local _walk_ini
+
+--- Canonical sound-path key: lowercase, backslashes, no extension. Matches xsound and aa_diag.
+local function _get_key(path)
+    if not path then return nil end
+    return (path:lower():gsub("/", "\\"):gsub("%.ogg$", ""))
+end
+
+--- Map each of a channel's pool files to the channel and back, on the section walk.
+local function _collect(section)
+    if not _walk_ini:line_exist(section, "sounds") then return end
+    for token in (_walk_ini:r_string_ex(section, "sounds") or ""):gmatch("[^,]+") do
+        local key = _get_key(token:match("^%s*(.-)%s*$"))
+        if not (key and key ~= "") then goto continue end
+        _chan_of[key] = section
+        local pool = _files_of[section] or {}
+        _files_of[section] = pool
+        pool[#pool + 1] = key
+        ::continue::
+    end
+end
+
+--- Build the file-to-channel and channel-to-files maps once from the channel configs.
+local function _build_index()
+    _chan_of, _files_of = {}, {}
+    for i = 1, #INDEX_FILES do
+        local ini = ini_file(INDEX_FILES[i])
+        if not (ini and ini.section_for_each) then goto continue end
+        _walk_ini = ini
+        ini:section_for_each(_collect)
+        ::continue::
+    end
+end
+
+--- Select a channel file outside the repeat window (reservoir pick), or nil when every one is recent.
+local function _select_sibling(channel, exclude_key, now)
+    local pool = _files_of[channel]
+    if not pool then return nil end
+    local fresh, count = nil, 0
+    for i = 1, #pool do
+        local key = pool[i]
+        local last = _last[key]
+        if key == exclude_key or (last and now - last < TTL_MS) then goto continue end
+        count = count + 1
+        if math_random(count) == 1 then fresh = key end
+        ::continue::
+    end
+    return fresh
+end
+
+--- Seam handler: allow the play, or veto a within-window repeat and replace it with a fresh sibling.
+local function _on_play(file, pos)
+    if _injecting then return end
+    if not _chan_of then _build_index() end
+    local key = _get_key(file)
+    local channel = key and _chan_of[key]
+    if not channel then return end
+    local now = time_global()
+    local last = _last[key]
+    if not (last and now - last < TTL_MS) then
+        _last[key] = now
+        return
+    end
+    local sibling = pos and _select_sibling(channel, key, now)
+    if sibling then
+        _last[sibling] = now
+        _injecting = true
+        xsound.play_at(sibling, { position = pos })
+        _injecting = false
+    end
+    return { volume_mult = 0 }
+end
+
+--- Clear the per-file play clock (each load; time_global restarts, so stale stamps must go).
+local function _reset()
+    _last = {}
+end
+
+--- Subscribe the dedup to the script-sound seam once, and reset state each load. Inert without the hook.
+function on_game_start()
+    _chan_of, _files_of, _injecting = nil, nil, false
+    _reset()
+    if xsound and xsound.register_ambient_listener then
+        xsound.register_ambient_listener(SEAM, _on_play)
+    end
+    RegisterScriptCallback("actor_on_first_update", _reset)
+end

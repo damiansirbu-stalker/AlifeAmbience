@@ -145,6 +145,8 @@ Deduplication runs twice, both on our side, never against the target install. A 
 fpcalc (Chromaprint) fingerprints the deployed audio and reports same-recording aliases the byte hash cannot see. Short clips fall back to the byte hash.
 In the authored-config model both run as warners. A duplicate pick is reported for the curator to resolve by hand.
 
+Those two are build-time. Runtime deduplication is separate and lives in `aa_dedup.script`: a listener on the xlibs script-sound seam. System B picks a channel's sound uniform-random with replacement, so it can replay the same file back to back; on a repeat within 20s the listener vetoes that play and reissues a fresh sibling from the same channel at the same position, staying silent only when the channel has no unplayed sibling. It filters to our ambient files through the channel index (non-ambient script sounds pass untouched) and is inert on an exe without the seam. Unlike `aa_diag`, which observes and returns nil, this consumer returns a veto.
+
 ## The five-link binding chain
 
 An ambient sound reaches the player through five links, and the verifier proves each resolves:
