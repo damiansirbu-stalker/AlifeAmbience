@@ -98,8 +98,8 @@ LINE_CAP = 3900
 # regression ceilings (roughly 1.8x the measured round-robin-capped max per class), a guard against
 # a future density blowout - NOT the tight ear-calibrated budget (doc/architecture.md: Density). The
 # ear tightens these once the player calibration sets real values. {} = report-only.
-# NOTE the epm sum still counts no_sound channels (a known over-count); the ceilings are loose enough
-# that it cannot false-fail. Tighten only after the epm sum is fixed to exclude silent channels.
+# The epm sum excludes no_sound channels (they fire the scheduler but produce silence); the ceilings stay
+# loose regression guards that cannot false-fail. Tighten to the ear-calibrated budgets via the player.
 DENSITY_BUDGET = {
     "storm_day": 80, "storm_night": 80, "pre_storm": 75,
     "night": 65, "evening": 65, "morning": 65, "day": 65,
@@ -1245,6 +1245,7 @@ def cmd_verify():
     unaccounted, per_source = _retention()
     # 8 density (report; budget gate armed once DENSITY_BUDGET is calibrated)
     periods = _channel_periods()
+    sounding = {ch for ch, (_felt, toks) in _channel_bands().items() if toks}   # a no_sound channel fires but is silent
     density_rows = []
     burst_worst = (0, "")
     for fn, states in _preset_state_channels().items():
@@ -1252,6 +1253,8 @@ def cmd_verify():
             epm = 0.0
             burst = 0
             for c in chans:
+                if c not in sounding:            # exclude silent channels from the density sum (the n003 over-count)
+                    continue
                 per = periods.get(c)
                 if not per:
                     continue
