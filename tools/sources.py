@@ -140,6 +140,17 @@ DISPOSITIONS = [
     ("DeadAir", "nature/", "deferred", "standalone build; unreviewed candidates"),
 ]
 
+# PICK_SKIP: (source, rel-prefix under sounds/) pairs dropped from the materialize candidate pool, so a
+# later-registry pack wins a REFERENCED path whose registry-order winner is unusable. Unlike DISPOSITIONS
+# (retention accounting for UNREFERENCED files), this changes the materialize pick. Prefix-matched against
+# the lowercased sound key.
+PICK_SKIP = [
+    # Amplified's underground drone/lab copies are silent (true-peak -inf); DeadAir's carry the real room
+    # tone. Excluding Amplified's here lets DeadAir win ugrnd_drone_1..3 + ugrnd_lab_1..6.
+    ("Amplified", "ambient/ugrnd/ugrnd_drone_"),
+    ("Amplified", "ambient/ugrnd/ugrnd_lab_"),
+]
+
 
 def mods():
     """(name, path) pairs in registry order - the shape the pipeline expects."""

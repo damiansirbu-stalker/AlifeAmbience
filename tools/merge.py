@@ -282,7 +282,9 @@ def cmd_import():
 
 def _source_index():
     """rel(lower) -> [(source name, full path, md5)] over all resolvable packs, registry order.
-    md5s come from the hash cache (hashes.json) and are computed lazily only on conflicts."""
+    md5s come from the hash cache (hashes.json) and are computed lazily only on conflicts. PICK_SKIP
+    (source, rel-prefix) pairs drop a pack's copy of a path, so a later-registry pack wins the pick."""
+    skip = [(s, p.replace("\\", "/").lower()) for s, p in sources.PICK_SKIP]
     idx = {}
     for name, gd in sources.mods():
         if name in RESOLVE_SKIP:
@@ -290,7 +292,10 @@ def _source_index():
         if not os.path.isdir(gd):
             continue
         for full, rel in _iter_oggs(gd):
-            idx.setdefault(rel.lower(), []).append((name, full))
+            rl = rel.lower()
+            if any(s == name and rl.startswith(p) for s, p in skip):
+                continue
+            idx.setdefault(rl, []).append((name, full))
     return idx
 
 
@@ -314,10 +319,17 @@ def cmd_materialize():
             want_files.add(rel[:-4])
     want_ogg = {p + ".ogg" for p in want_files} | set(extra.keys())
 
-    copied = conflicts = 0
+    # PICK_SKIP redirects a referenced path to a later pack, so an already-deployed file may now be the
+    # wrong source. Verify those paths' AUDIO against the current winner and re-pull on mismatch (the
+    # deployed blob is rewritten by level, so compare audio pages, not full bytes). Non-redirected paths
+    # keep the fast exists -> skip: their source never changes within a deployed tree.
+    skip_prefixes = [p.replace("\\", "/").lower() for _s, p in sources.PICK_SKIP]
+
+    copied = conflicts = repulled = 0
     for rel in sorted(want_ogg):
         dst = os.path.join(SROOT, rel.replace("/", os.sep))
-        if os.path.exists(dst):
+        redirected = any(rel.lower().startswith(p) for p in skip_prefixes)
+        if os.path.exists(dst) and not redirected:
             continue
         if rel in extra:
             name, src_rel = extra[rel]
@@ -338,8 +350,13 @@ def cmd_materialize():
                 conflicts += 1
                 print(f"  CONFLICT {rel}: differing bytes in {[n for n, _ in cand]} "
                       f"(registry order wins: {cand[0][0]})")
+        win = cand[0][1]
+        if os.path.exists(dst):                        # reached for a redirected path: keep only if audio matches
+            if _hash_audio(dst) == _hash_audio(win):
+                continue
+            repulled += 1
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.copy2(cand[0][1], dst)
+        shutil.copy2(win, dst)
         copied += 1
 
     # deployed set == referenced set: delete what nothing references (it stays in the packs;
@@ -371,8 +388,8 @@ def cmd_materialize():
         srcs = idx.get(rel_lc + ".ogg") or []
         manifest[rel_lc] = {"source": srcs[0][0] if srcs else "deployed"}
     json.dump(manifest, open(os.path.join(HERE, "manifest.json"), "w"), indent=1)
-    print(f"  materialize: copied {copied}, removed {removed} unreferenced, "
-          f"{conflicts} duplicate-pick conflicts, {len(manifest)} deployed")
+    print(f"  materialize: copied {copied} ({repulled} re-pulled over a redirected stale file), "
+          f"removed {removed} unreferenced, {conflicts} duplicate-pick conflicts, {len(manifest)} deployed")
 
 
 # ---- fmt: mechanical config guard ------------------------------------------------------------------
