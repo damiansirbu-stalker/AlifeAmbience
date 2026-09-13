@@ -881,33 +881,112 @@ def cmd_fold():
           f"{skipped} already mono+44100; {failed} FAILED")
 
 
-def cmd_audit():
-    """Acceptance report: over the WIRED files, the min/felt-far ratio (the audibility ratio) and the
-    crushed share (<0.15 = whisper). Target = the crest-inverted min floor's ratio band (0.40-0.60), so
-    the median should sit ~0.4-0.5 with few crushed. Blob reads only, no ffmpeg."""
-    ff = _file_felt_far(_channel_bands())
-    ratios = []
-    crushed = 0
-    for full, rel_lc in _iter_deployed():
-        felt = _felt_for(rel_lc, ff)
-        if felt <= 0.0:
+def _placement_bands():
+    """token(lower path) -> (near, far, channel, is_bed): the spawn band per wired file, with the CORRECT
+    per-system transform. System A beds place at random(min,max) (no halving, GamePersistent.cpp:316); System
+    B dynamic layers at random((max+min)/2, max)/2 (sound_ambient.script:127-141). A file in many channels
+    keeps the FARTHEST (quietest) band. Independent of _channel_bands (which level uses), so the bed-aware
+    transform here never changes deployed audio."""
+    beds = _preset_beds()
+    out = {}
+    for f in CHANNEL_FILES:
+        if not os.path.exists(f):
             continue
-        with open(full, "rb") as fh:
-            b = _read_blob(fh.read(16384))
-        mn = b[0] if b else 1.0
-        r = mn / felt
-        ratios.append(r)
-        if r < 0.15:
+        for blk in re.split(r"(?m)^(?=\[[A-Za-z0-9_]+\])", _read(f)):
+            hm = re.match(r"\[([A-Za-z0-9_]+)\]", blk)
+            if not hm:
+                continue
+            name = hm.group(1).lower()
+            mxm = re.search(r"(?im)^\s*max_distance\s*=\s*([\d.]+)", blk)
+            if not mxm:
+                continue
+            cmax = float(mxm.group(1))
+            mnm = re.search(r"(?im)^\s*min_distance\s*=\s*([\d.]+)", blk)
+            cmin = float(mnm.group(1)) if mnm else 0.0
+            is_bed = name in beds
+            near, far = (cmin, cmax) if is_bed else (((cmax + cmin) / 2) / 2, cmax / 2)
+            for m in re.findall(r"(?im)^\s*sounds\d*\s*=\s*(.+)$", blk):
+                for one in re.split(r"[,;]", m):
+                    t = _tok_ok(one)
+                    if t and far > out.get(t, (0.0, 0.0, None, False))[1]:
+                        out[t] = (near, far, name, is_bed)
+    return out
+
+
+def _read_meta_rows():
+    """Parse the committed aa_sound_metadata.script into path(lower) -> {lufs, bv, mn, mx}. This is the same
+    profile xsound.load_meta feeds the runtime trace, so the static audit and the in-game readout judge
+    identical numbers - it reads what ships, not a scratch cache."""
+    rows = {}
+    if not os.path.exists(META_SCRIPT):
+        return rows
+    for key, body in re.findall(r'\["([^"]+)"\]\s*=\s*{([^}]*)}', _read(META_SCRIPT)):
+        d = {}
+        for k, v in re.findall(r"(\w+)\s*=\s*(nil|-?[\d.]+)", body):
+            d[k] = None if v == "nil" else float(v)
+        rows[key.lower()] = d
+    return rows
+
+
+def _audit_verdict(mx, near, far):
+    """One file's REACH verdict at its spawn roll (pure geometry, no loudness model). A 3D sound delivers 0
+    past its own max_distance regardless of base_volume (Emitter_FSM.cpp:361). ALWAYS_SILENT = max below the
+    nearest roll (never audible); SOMETIMES_SILENT = max inside the roll band (silent at the far rolls).
+    Loudness leveling is level's job and dead/quiet content is dead's; runtime delivered loudness is the
+    trace's. This audit is reach only - one concern - and the ear is final."""
+    if mx < near:
+        return "ALWAYS_SILENT", "max=%.0f < near=%.0f" % (mx, near)
+    if mx < far:
+        return "SOMETIMES_SILENT", "max=%.0f in roll %.0f-%.0f" % (mx, near, far)
+    return "AUDIBLE", ""
+
+
+def cmd_audit():
+    """Reach audit over the WIRED files, read-only, no ffmpeg. Per file, the REACH verdict from its committed
+    profile (aa_sound_metadata) and its spawn roll: ALWAYS_SILENT (max below the nearest roll, never audible),
+    SOMETIMES_SILENT (max inside the roll band, silent at the far rolls), AUDIBLE. Beds use the System A
+    transform, dynamic layers System B (bed-only channels covered, not skipped). Plus the min/felt-far crush
+    summary (the OpenAL near-rolloff diagnostic). Loudness leveling is level's concern, dead content dead's,
+    runtime delivered loudness the trace's; this audit is placement only. Run `meta` first for a fresh
+    profile."""
+    placement = _placement_bands()
+    meta = _read_meta_rows()
+    counts, offenders = {}, {}
+    ratios, crushed = [], 0
+    for path, prof in meta.items():
+        plc = placement.get(path) or placement.get(os.path.dirname(path))
+        if not plc:
+            continue                                                  # unwired orphan
+        near, far, chan, _is_bed = plc
+        mx = prof.get("mx")
+        if mx is None or far <= 0.0:
+            continue
+        mn = prof.get("mn")
+        mn = 1.0 if mn is None else mn
+        ratios.append(mn / far)
+        if mn / far < 0.15:
             crushed += 1
-    if not ratios:
-        print("  audit: no wired files"); return
-    ratios.sort()
-    n = len(ratios)
-    med = ratios[n // 2]
-    p25 = ratios[n // 4]
-    p75 = ratios[(3 * n) // 4]
-    print(f"  audit: wired={n}  min/felt-far median={med:.2f} p25={p25:.2f} p75={p75:.2f}  "
-          f"crushed(<0.15)={100 * crushed // n}%  (target: crest-floor ratio {RATIO_LO}-{RATIO_HI}, low crushed)")
+        tag, detail = _audit_verdict(mx, near, far)
+        counts[tag] = counts.get(tag, 0) + 1
+        if tag != "AUDIBLE":
+            offenders.setdefault(chan, []).append((tag, path, detail))
+    order = ["ALWAYS_SILENT", "SOMETIMES_SILENT", "AUDIBLE"]
+    total = sum(counts.values())
+    if not total:
+        print("  audit: no wired files (run meta first?)"); return
+    summ = "  ".join("%s=%d" % (k, counts[k]) for k in order if counts.get(k))
+    print("  audit: wired=%d  %s" % (total, summ))
+    print("  (reach only: SILENT = placed past its own max_distance; loudness is level's, the ear is final)")
+    for chan in sorted(offenders):
+        rows = sorted(offenders[chan])
+        print("  [%s] %d flagged" % (chan, len(rows)))
+        for tag, path, detail in rows:
+            print("    %-16s %s  %s" % (tag, path, detail))
+    if ratios:
+        ratios.sort()
+        n = len(ratios)
+        print("  min/felt-far: median=%.2f p25=%.2f p75=%.2f  crushed(<0.15)=%d%%" % (
+            ratios[n // 2], ratios[n // 4], ratios[(3 * n) // 4], 100 * crushed // n))
 
 
 # ---- level: the two blob floors (min-distance + base_volume loudness) ---------

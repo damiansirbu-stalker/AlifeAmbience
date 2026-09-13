@@ -92,7 +92,18 @@ local function _get_channel(file)
     return _file_index[_get_key(file)]
 end
 
---- The acoustic tail for a trace line: distance, delivered dB, and the profile loudness, or "".
+-- Predicted-audibility floor for the trace token (delivered-dB), mirroring the pipeline LOUD_FLOOR (merge.py).
+local AUDIBLE_FLOOR = -36.0
+
+--- Predicted audibility from the delivered loudness: SILENT (no reach), FAINT (below the floor), AUD.
+local function _get_verdict(dlv)
+    if not dlv then return "?" end
+    if dlv <= -119 then return "SILENT" end
+    if dlv < AUDIBLE_FLOOR then return "FAINT" end
+    return "AUD"
+end
+
+--- The acoustic tail for a trace line: distance, delivered dB, audibility token, profile loudness, or "".
 --- Reuses the same xsound calls the player readout makes; a nil position drops to at-ear.
 local function _build_detail(file, pos)
     if not (xsound and xsound.get_meta) then return "" end
@@ -101,9 +112,10 @@ local function _build_detail(file, pos)
     local dist = (pos and db.actor) and db.actor:position():distance_to(pos) or nil
     local dlv = xsound.compute_delivered_loudness(prof, dist)
     local env = GetEvent("underground") and "ug" or GetEvent("current_safe_cover") and "cover" or "open"
-    return string_format(" dist=%s dlv=%s lufs=%.0f crest=%.0f bv=%.2f peak=%s env=%s",
+    return string_format(" dist=%s dlv=%s vd=%s lufs=%.0f crest=%.0f bv=%.2f peak=%s env=%s",
         dist and string_format("%.0f", dist) or "-",
         dlv and string_format("%.0f", dlv) or "-",
+        _get_verdict(dlv),
         prof.lufs or 0, prof.crest or 0, prof.bv or 1.0,
         prof.peak and string_format("%.0f", prof.peak) or "-", env)
 end
