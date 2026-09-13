@@ -223,7 +223,7 @@ Standalone, nothing is vetoed and the full dread layer plays. With AlifeSpooks i
 - fmt: the mechanical guard for the config strings. It dedups pool tokens, normalizes preset lines, strips refs to deleted channels, caps spawn distances, and fails any pool line over the cap.
   Curation decides the sets, and `fmt` guards the strings.
 - report: `fingerprint` (duplicate warnings) and `dead` (silent files), both for the curator.
-- verify / audit: the gate ledger above, plus the wired min/felt-far and crushed-share acceptance report.
+- verify / audit: the gate ledger above; audit is a read-only reach report that flags each wired file ALWAYS_SILENT (max below the nearest spawn roll) or SOMETIMES_SILENT (max inside the roll band), bed-aware (System A places at random(min,max), System B at the /2 transform), read from the committed `aa_sound_metadata` so the static audit and the in-game trace judge identical numbers, plus the min/felt-far crush summary.
 
 The generator stages of the earlier build (config synthesis, folder-dump grafts, spine path priority, prune-by-inference) are deleted.
 
