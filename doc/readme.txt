@@ -173,9 +173,20 @@ Another weather mod works if its ambient states are covered. Weather visuals, em
 Soundscape mods - this is the ambient layer, so it wins the ambient sound configuration and plays the merged soundscape.
 AlifeSpooks - optional. AlifeAmbience plays its own spook sounds standalone. Install AlifeSpooks for the directed, dynamic horror on top.
 It takes its captured sounds out of the base channels, and the two never double up.
-Performance - no gameplay script runs, and nothing polls while you play.
 Saves - install or remove it whenever you like, since it is configuration and sounds with no save state.
 Tested - Anomaly 1.5.3, GAMMA, and Forgotten Zone.
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Performance and Infrastructure
+
+Built from the X-Ray engine source by reverse engineering, with targeted engine changes of my own for performance, precision, and accuracy.
+Heavy work spreads across frames, paced by rate limiters and staggered, deferred queues, with the math to keep cost bounded at any entity count.
+A layered validator runs on every change, locally and in CI, and blocks the build on any crash, unsafe engine call, performance regression, style break, failed smoke load, or leaked secret.
+Profiled with JitProfiler, an engine-native, scientific profiler.
+Timings are worst-case, from a build with no multithreading or optimizations, so yours runs faster.
+Project Health: https://damiansirbu-stalker.github.io/AlifeAmbience/
+[JitProfiler: AlifeAmbience under CPU and allocation capture]
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
