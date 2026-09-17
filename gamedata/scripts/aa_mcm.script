@@ -74,7 +74,7 @@ function on_mcm_load()
                 gr = _merge_header("ui_mcm_aa_general_desc", {
                     { id = "div_footer", type = "line" },
                     { id = "platform", type = "desc", text = "ui_mcm_xmcm_footer",
-                        ui_hook_functor = { _aa_deps.platform_functor() }, clr = {255, 212, 201, 168} },
+                        ui_hook_functor = { _aa_init.get_platform_functor() }, clr = {255, 212, 201, 168} },
                 }),
             },
             {
