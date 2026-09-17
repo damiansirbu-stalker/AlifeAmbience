@@ -244,8 +244,8 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 
 ## Scripts: dependency gate, MCM, diagnostics, player (no gameplay)
 
-- `_aa_manifest.script` holds the identity data: name, version, xlibs pin.
-- `_aa_init.script` holds the xlibs + modded-exes floor asserts, the platform line, and the boot banner; it reads the identity from `_aa_manifest`.
+- `_aa_manifest.script` holds the identity data (name, version, required xlibs).
+- `_aa_init.script` holds the xlibs + modded-exes floor asserts, the platform line, and the boot banner. It reads the identity from `_aa_manifest`.
 - `aa_mcm.script` is the informational MCM. There is no master volume slider: the build levels loudness into the blob, and the game's ambient slider sets the overall level.
 - `aa_debug.script` holds the xlog logger and the level gate.
 - `aa_diag.script` is the runtime wiring inspector (active level, weather, ambient state, per-state channel counts, live dangling-ref count) AND the runtime sound trace. The trace subscribes through the xlibs seam registry to the 6 demonized sound callbacks (bed, script-sound, effect, thunderbolt, rain, level-music) and logs each fire with its resolved channel, file, and delivered acoustics (distance to the actor, delivered dB, lufs, crest) from the same `get_meta` / `compute_delivered_loudness` calls the player uses, gated on `aa_debug.is_on()`. `aa_dedup` logs its own decision on the same channel (repeat replaced with which sibling, or silenced), so a session log shows what played, how loud and far, and what the dedup did. It is a no-op on a stock exe (the seam returns false and never attaches) and observe-only (returns nil, never a veto). This is the runtime counterpart to the static wiring dump, and the ground truth for the density and repetition rulings.
