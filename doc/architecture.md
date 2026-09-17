@@ -1,17 +1,17 @@
 # AlifeAmbience - architecture and method
 
-AlifeAmbience is the atmosphere soundscape for S.T.A.L.K.E.R. Anomaly: every map, every weather state, every hour plays a living, audible, varied ambience.
+AlifeAmbience is the atmosphere soundscape for S.T.A.L.K.E.R. Anomaly. Every map, every weather state, and every hour plays a living, audible ambience.
 It is a curated work. The config is the source of truth, authored by hand: the channels, their pools, the presets, the level bindings.
 The pipeline (`tools/merge.py`) is a mastering mill. It materializes, masters, reports, and proves what the config says. It never chooses content.
 
-The soundscape carries its own dread layer: distant mutant cries, far gunfire, spooks and dark ambience play standalone.
-AlifeSpooks is optional on top. Its director places dynamic horror one-shots, and its static veto takes the captured sounds out of the base channels at load, so the two never double.
+The soundscape carries its own dread layer. Distant mutant cries, far gunfire, spooks, and dark ambience play standalone.
+AlifeSpooks is optional on top. Its director places dynamic horror cues, and its static veto takes the captured sounds out of the base channels at load, so the two never double.
 
 ## Content model
 
 Dark Signal Amplified Soundscape is the spine, structure and content.
 It is the only pack with a complete level/weather config (33 levels, all Atmospherics states, plus the extended maps), and it is the content default for every voice slot.
-The spine is curated whole: every ambience-scope file in the pack is kept, re-homed to a better channel, or excluded with a written reason.
+The spine is curated whole. Every ambience-scope file in the pack is kept, re-homed to a better channel, or excluded with a written reason.
 That includes content its other sound systems own, such as the thunder corpus of its thunderbolt configs.
 "The pack" means all of its sound systems, not only the ambient channels. The narrower definition is how an earlier build lost the entire thunder category to the prune stage without a trace.
 
@@ -91,7 +91,7 @@ The mastering rules, scoped by playback path:
   The fold is the one lossy step. It captures the author blob first and resamples off-rate files to 44100, because the engine hard-rejects any other rate (`SoundRender_Source_loader.cpp:79`).
 - The crest-inverted min-distance floor (`level`) applies to ambient channel files only.
   It floors each file's `min_distance` to a crest-keyed ratio (0.40-0.60) of its channel's felt-far placement, capped below `max_distance`, and never lowers an authored min.
-  Strike files are excluded: the engine overrides their range per strike (see Thunder below), so blob distances do nothing there.
+  Strike files are excluded. The engine overrides their range per strike (see Thunder below), so blob distances do nothing there.
 - The loudness band (`level`) is per-category, both arms lossless and partial.
   A floor lifts a file whose delivered loudness at its placement sits below the audible target, and a ceiling lowers a file above it. A file is only ever in one arm.
   Ambient targets come from the in-ear calibration ladder through the two-rolloff gain model. Strike files get their own target, calibrated to a nominal mid-distance strike.
@@ -100,7 +100,15 @@ The mastering rules, scoped by playback path:
 
 All blob edits are lossless (audio pages byte-identical). The fold is the only re-encode, and it exists because the engine only positions mono.
 
-Blob contract (the engine-read fields). The comment is a `0x0003` X-Ray struct of five fields: `min`, `max`, `base_volume`, `game_type`, `max_ai_dist` (`SoundRender_Source_loader.cpp`, the `0x0003` branch). The deploy (`_write_blob`) writes all five and the engine reads exactly these, so nothing written is ignored and nothing read is left unset. `min`, `max`, and `base_volume` carry the leveling above (linear rolloff plus the OpenAL inverse keyed on `min`, and the `base_volume` gain multiplier, `SoundRender_Emitter_FSM.cpp:361,383`). `game_type` is written 0 and `max_ai_dist` is written equal to `max`; both are inert for our content. The play-time sound type overrides the blob `game_type` (`SoundRender_Core.cpp:332`), and `max_ai_dist` only sets NPC hearing range, which our `no_sound`-type plays never trigger (`SoundRender_Emitter.cpp:85`). `max_ai_dist` is set to `max` only to satisfy the loader's `>= 0.1` assert. It is the one engine-read lever left deliberately unused: a `world_ambient` play with an owner would make NPCs hear the sound, which ambience does not want.
+Blob contract (the engine-read fields).
+The comment is a `0x0003` X-Ray struct of five fields: `min`, `max`, `base_volume`, `game_type`, `max_ai_dist` (`SoundRender_Source_loader.cpp`, the `0x0003` branch).
+The deploy (`_write_blob`) writes all five, and the engine reads exactly these. Nothing written is ignored, and nothing read is left unset.
+`min`, `max`, and `base_volume` carry the leveling above (linear rolloff plus the OpenAL inverse keyed on `min`, and the `base_volume` gain multiplier, `SoundRender_Emitter_FSM.cpp:361,383`).
+`game_type` is written 0, and `max_ai_dist` is written equal to `max`. Both are inert for our content.
+The play-time sound type overrides the blob `game_type` (`SoundRender_Core.cpp:332`).
+`max_ai_dist` only sets NPC hearing range, which our `no_sound`-type plays never trigger (`SoundRender_Emitter.cpp:85`).
+`max_ai_dist` is set to `max` only to satisfy the loader's `>= 0.1` assert.
+It is the one engine-read lever left deliberately unused. A `world_ambient` play with an owner would make NPCs hear the sound, which ambience does not want.
 
 ## Thunder
 
@@ -112,7 +120,7 @@ Thunder has two homes, matching the engine's two systems:
    The weather mod (Atmospherics) drives timing per weather cycle (`thunderbolt_collection`, `thunderbolt_period`, `thunderbolt_duration` in `weathers/w_*.ltx`).
    The collections resolve to sections in `thunderbolts.ltx`, and each section's `sound =` names a path under `sounds\nature\`.
    AlifeAmbience deploys its curated strike recordings AT those vanilla paths (`DEPLOY_EXTRA` in `tools/sources.py`).
-   The best claps play with zero config, and the weather mod's tuning stays intact.
+   The best claps play with no config, and the weather mod's tuning stays intact.
    The engine plays each strike positioned at the bolt with a speed-of-sound delay and a per-strike attenuation range
    (`thunderbolt.cpp:235`: `snd.play_no_feedback(0, 0, dist / 300.f, &pos, 0, 0, &Fvector2().set(dist / 2, dist * 2.f))`).
    That is why strike files need selection and loudness only, and no placement engineering.
@@ -145,7 +153,12 @@ Deduplication runs twice, both on our side, never against the target install. A 
 fpcalc (Chromaprint) fingerprints the deployed audio and reports same-recording aliases the byte hash cannot see. Short clips fall back to the byte hash.
 In the authored-config model both run as warners. A duplicate pick is reported for the curator to resolve by hand.
 
-Those two are build-time. Runtime deduplication is separate and lives in `aa_dedup.script`: a listener on the xlibs script-sound seam. System B picks a channel's sound uniform-random with replacement, so it can replay the same file back to back; on a repeat within 20s the listener vetoes that play and reissues a fresh sibling from the same channel at the same position, staying silent only when the channel has no unplayed sibling. It filters to our ambient files through the channel index (non-ambient script sounds pass untouched) and is inert on an exe without the seam. Unlike `aa_diag`, which observes and returns nil, this consumer returns a veto.
+Those two are build-time.
+Runtime deduplication is separate and lives in `aa_dedup.script`, a listener on the xlibs script-sound seam.
+System B picks a channel's sound uniform-random with replacement, so it can replay the same file back to back.
+On a repeat within 20s the listener vetoes that play and reissues a fresh sibling from the same channel at the same position, staying silent only when the channel has no unplayed sibling.
+It filters to our ambient files through the channel index (non-ambient script sounds pass untouched) and is inert on an exe without the seam.
+Unlike `aa_diag`, which observes and returns nil, this consumer returns a veto.
 
 ## The five-link binding chain
 
@@ -177,7 +190,10 @@ The links below those three are weather-mod-independent. Variants for other weat
 6. Weather matrix full: every preset defines a section for every state the active weather mod emits.
 7. Retention: every spine ambience-scope file and every file of an adopted folder is referenced or covered by a dispositions row.
    All other corpus content carries folder-level dispositions. Anything unaccounted is a FAIL.
-8. Density: per state, the events-per-minute budget holds and the entry-burst stagger holds. Armed 2026-09-09 with per-state-class DENSITY_BUDGET (merge.py) as loud regression ceilings, a guard against a future blowout, not the tight ear-calibrated budget. The epm sum uses the round-robin cap (60000/mean(period0..3), one channel per tick) but still counts no_sound channels, a known over-count the loose ceilings tolerate; tighten only after the sum excludes silent channels and the ear calibrates real values.
+8. Density: per state, the events-per-minute budget holds and the entry-burst stagger holds.
+   Armed 2026-09-09 with per-state-class DENSITY_BUDGET (merge.py) as loud regression ceilings that guard against a future blowout. They sit looser than the ear-calibrated budget.
+   The epm sum uses the round-robin cap (60000/mean(period0..3), one channel per round) but still counts no_sound channels, a known over-count the loose ceilings tolerate.
+   Tighten only after the sum excludes silent channels and the ear calibrates real values.
 9. Line cap: no `sounds =` line approaches the 4096-byte ini buffer (`LINE_CAP = 3900`).
 10. Collection coverage: every thunderbolt collection name the active weather mod references resolves in the base game's collection set.
 11. Veto simulation: no channel that the AlifeSpooks veto touches may end EMPTY at load.
@@ -186,7 +202,7 @@ The links below those three are weather-mod-independent. Variants for other weat
     A System A bed with no `sounds` key is a load failure (`Environment_misc.cpp:105-108`), which is exactly what that guard prevents.
     The gate FAILs only if a touched channel lacks the guard, and it reports fully-silenced channels as the Spooks-owned boundary picture.
 12. Level coverage: every playable base-game level (`LEVELS_BASE`, the `game_maps_single.ltx` set minus `fake_start`) binds an `ambients/<level>.ltx`.
-    An unbound level plays vanilla wiring through the MO2 VFS (the 9 labs, found 2026-09-03) or a bare `ambients.ltx` fallback with zero dynamic layers (`y04_pole`).
+    An unbound level plays vanilla wiring through the MO2 VFS (the 9 labs, found 2026-09-03) or a bare `ambients.ltx` fallback with no dynamic layers (`y04_pole`).
     Bindings outside the base set (extended maps) are reported, not failed.
 13. Bed load asserts: every channel any preset or `ambients.ltx` names as a bed satisfies `SSndChannel::load` (`Environment_misc.cpp:88-108`):
     `max_distance > min_distance` strict, `period0 <= period1`, `period2 <= period3`, non-empty `sounds`. A violation is a CTD on level load.
@@ -195,7 +211,7 @@ The links below those three are weather-mod-independent. Variants for other weat
     Outdoor channels inside underground states (played at 0.3) are reported, not failed.
 16. Strike palette (informational): of the bolt sounds reachable through the collections the weathers reference, how many carry our deploy vs vanilla audio.
 17. Effect vocabulary: every effect id any preset or `ambients.ltx` wires exists in the base effect set (`effect_0..9` + `blowout_effect_01..48`).
-    An unknown id is a CTD: `create_effect` reads `life_time` with a throwing `r_float` (`Environment_misc.cpp:119-146`).
+    An unknown id is a CTD. `create_effect` reads `life_time` with a throwing `r_float` (`Environment_misc.cpp:119-146`).
 18. Effect sound paths: every `sound =` in the effect override resolves to a file on disk.
     No channel reads the override, so gate 4 never sees these paths. A dangling one plays silent, since `WeathersUpdate` skips a null handle, with no other trace.
 
@@ -216,20 +232,23 @@ Standalone, nothing is vetoed and the full dread layer plays. With AlifeSpooks i
   The run is incremental. The audio-page-hash caches re-master only new files, and the working deployment is edited channel by channel, never wiped.
 - master: `fold` and `level`, per the scoped rules above.
 - meta: emit `aa_sound_metadata.script` - each deployed sound's measured profile (`lufs`/`crest`/`peak`/`bv`/`mn`/`mx`) from the level cache and the written blob.
-  The engine never reads it; the mod loads it once into the xsound metadata registry (`xsound.load_meta`) so the player can show a delivered-loudness readout.
+  The engine never reads it. The mod loads it once into the xsound metadata registry (`xsound.load_meta`) so the player can show a delivered-loudness readout.
 - stage / unstage: materialize a candidate family under `sounds/stage/` so the player can audition it in-game before it is picked.
 - import: the one-time config baseline from a source pack's own sound-routing config (default: the Amplified spine), the bootstrap for a fresh variant.
   It is a mechanical copy of the pack author's wiring, excluded from `all`, and it refuses over an existing config so it cannot overwrite curation.
 - fmt: the mechanical guard for the config strings. It dedups pool tokens, normalizes preset lines, strips refs to deleted channels, caps spawn distances, and fails any pool line over the cap.
   Curation decides the sets, and `fmt` guards the strings.
 - report: `fingerprint` (duplicate warnings) and `dead` (silent files), both for the curator.
-- verify / audit: the gate ledger above; audit is a read-only reach report that flags each wired file ALWAYS_SILENT (max below the nearest spawn roll) or SOMETIMES_SILENT (max inside the roll band), bed-aware (System A places at random(min,max), System B at the /2 transform), read from the committed `aa_sound_metadata` so the static audit and the in-game trace judge identical numbers, plus the min/felt-far crush summary.
+- verify / audit: the gate ledger above.
+  Audit is a read-only reach report that flags each wired file ALWAYS_SILENT (max below the nearest spawn roll) or SOMETIMES_SILENT (max inside the roll band).
+  It is bed-aware (System A places at random(min,max), System B at the /2 transform).
+  It reads from the committed `aa_sound_metadata`, so the static audit and the in-game trace judge identical numbers, plus the min/felt-far crush summary.
 
 The generator stages of the earlier build (config synthesis, folder-dump grafts, spine path priority, prune-by-inference) are deleted.
 
 ## Invariants
 
-- I1 Scope. Nature/weather ambience, the ambient dread layer, storm thunder. Directed one-shots are AlifeSpooks. Emission and psi-storm are their own systems. Strike timing is the weather mod's.
+- I1 Scope. Nature/weather ambience, the ambient dread layer, storm thunder. Directed cues are AlifeSpooks. Emission and psi-storm are their own systems. Strike timing is the weather mod's.
 - I2 The config is authored. Machines master, report, and prove. They never choose content.
 - I3 Spine completeness. Every ambience-scope file of the spine, across all its sound systems, is accounted for. Nothing dies silently.
 - I4 One channel, one voice. Single-source pools by default, coherence verified, 15-25 target, 40 cap, roles-menu admission.
@@ -240,7 +259,11 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 - I9 Config closed. The full gate set passes or the build fails.
 - I10 Weather-mod-bound at three vocabularies (ambient states, collection names, effect ids). Stock Anomaly and Atmospherics share all three. Other weather mods need a sweep of all three first.
 - I11 Traceable and licensed. Every deployed sound resolves to its origin, `licensing.md` records the basis for every source, and the readme credits every author.
-- I12 No audible sound is dropped before the user auditions it. Measurement only FLAGS a drop candidate (too long, off-character, past a spectral or loudness bound); it never excludes an audible file on its own. The flagged list is loaded into `ui_aa_player` as a playlist, the user auditions it, and only then does a file get a DISPOSITIONS `excluded` row. The sole mechanical removals are files that cannot be auditioned: dead-silent (below the LUFS floor), off sample rate, corrupt, or an anti-phase pair that folds to silence. This invariant is shared verbatim with AlifeSpooks.
+- I12 No audible sound is dropped before the user auditions it.
+  Measurement only FLAGS a drop candidate (too long, off-character, past a spectral or loudness bound). It never excludes an audible file on its own.
+  The flagged list is loaded into `ui_aa_player` as a playlist, the user auditions it, and only then does a file get a DISPOSITIONS `excluded` row.
+  The sole mechanical removals are files that cannot be auditioned. Those are dead-silent (below the LUFS floor), off sample rate, corrupt, or an anti-phase pair that folds to silence.
+  This invariant is shared with AlifeSpooks.
 
 ## Scripts: dependency gate, MCM, diagnostics, player (no gameplay)
 
@@ -248,7 +271,13 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 - `_aa_init.script` holds the xlibs + modded-exes floor asserts, the platform line, and the boot banner. It reads the identity from `_aa_manifest`.
 - `aa_mcm.script` is the informational MCM. There is no master volume slider: the build levels loudness into the blob, and the game's ambient slider sets the overall level.
 - `aa_debug.script` holds the xlog logger and the level gate.
-- `aa_diag.script` is the runtime wiring inspector (active level, weather, ambient state, per-state channel counts, live dangling-ref count) AND the runtime sound trace. The trace subscribes through the xlibs seam registry to the 6 demonized sound callbacks (bed, script-sound, effect, thunderbolt, rain, level-music) and logs each fire with its resolved channel, file, and delivered acoustics (distance to the actor, delivered dB, lufs, crest) from the same `get_meta` / `compute_delivered_loudness` calls the player uses, gated on `aa_debug.is_on()`. `aa_dedup` logs its own decision on the same channel (repeat replaced with which sibling, or silenced), so a session log shows what played, how loud and far, and what the dedup did. It is a no-op on a stock exe (the seam returns false and never attaches) and observe-only (returns nil, never a veto). This is the runtime counterpart to the static wiring dump, and the ground truth for the density and repetition rulings.
+- `aa_diag.script` is the runtime wiring inspector (active level, weather, ambient state, per-state channel counts, live dangling-ref count) AND the runtime sound trace.
+  The trace subscribes through the xlibs seam registry to the 6 demonized sound callbacks (bed, script-sound, effect, thunderbolt, rain, level-music).
+  It logs each fire with its resolved channel, file, and delivered acoustics (distance to the actor, delivered dB, lufs, crest).
+  Those come from the same `get_meta` / `compute_delivered_loudness` calls the player uses, gated on `aa_debug.is_on()`.
+  `aa_dedup` logs its own decision on the same channel (repeat replaced with which sibling, or silenced). A session log then shows what played, how loud and far, and what the dedup did.
+  It is a no-op on a stock exe, where the seam returns false and stays detached. It only observes and returns nil.
+  This is the runtime counterpart to the static wiring dump, and the ground truth for the density and repetition rulings.
 - `ui_aa_player.script` is the curation instrument, mirroring the AlifeSpooks player's shape.
   It is a keyboard-owning modal on PageUp (AlifeSpooks keeps PageDown), gated by the MCM sound_player toggle.
   It browses BY CHANNEL from the resolved `sound_channels.ltx` and auditions as-wired at the channel's real placement, at-ear, and at fixed distances.
