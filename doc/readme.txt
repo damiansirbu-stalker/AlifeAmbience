@@ -1,22 +1,14 @@
 AlifeAmbience: a curated, audible ambient soundscape for STALKER Anomaly, by Damian
 Version: next (xlibs 1.8.3, demonized 20250908)
-GitHub: https://github.com/damiansirbu-stalker/AlifeAmbience
 Changelog: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/changelog
-Bugs, suggestions: https://github.com/damiansirbu-stalker/AlifeAmbience/issues
 
-Alife Collection:
-AlifeAmbience: https://github.com/damiansirbu-stalker/AlifeAmbience
-AlifeBalance: https://www.moddb.com/mods/stalker-anomaly/addons/alifebalance
-AlifeCompanions: https://github.com/damiansirbu-stalker/AlifeCompanions
-AlifeDiegetic: https://www.moddb.com/mods/stalker-anomaly/addons/diegetic-audio-control-100
-AlifeGuard: https://www.moddb.com/mods/stalker-anomaly/addons/alifeguard-1001
-AlifePlus: https://www.moddb.com/mods/stalker-anomaly/addons/alifeplus-v1-0-01
-AlifeSpooks: https://github.com/damiansirbu-stalker/AlifeSpooks
-AlifeTactics: https://www.moddb.com/mods/stalker-anomaly/addons/alifetactics
-FurnitureFuel: https://github.com/damiansirbu-stalker/FurnitureFuel
-JitProfiler: https://github.com/damiansirbu-stalker/JitProfiler
-TestZone: https://github.com/damiansirbu-stalker/TestZone
-xlibs: https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001
+My work:
+GitHub: https://github.com/orgs/damiansirbu-stalker/repositories
+ModDB: https://www.moddb.com/members/damian-sirbu/addons
+Nexus: https://www.nexusmods.com/profile/damiansirbu/mods
+
+My contributions:
+X-Ray Monolith: https://github.com/themrdemonized/xray-monolith
 
 Most of the ambient audio installed in Anomaly is never heard, and fixing that takes every step of the chain:
 which packs to draw from, which sounds inside them to keep, listening to each one, the parameters written into every ogg, the calculation behind those parameters, and the removal of duplicates.
@@ -198,6 +190,24 @@ AniHVX made Audio Expansion. Kutee made Immersive Ambience Expansion.
 Through those packs this soundscape carries audio from the original S.T.A.L.K.E.R. games and from the standalone builds that reworked it, credited by the pack authors on their own pages.
 Each pack carries a free licence or its author's permission, granted for all my mods together, and licensing.md records the basis for each.
 I include only selected audio, and if an author does not want their work included, I remove it.
+
+How It's Built:
+
+Although it started from work by Demonized, Alundaio, and Tronex, the current code and patterns are original, learned through reverse-engineering X-Ray, load testing, and custom X-Ray changes.
+The design favors the engine's own mechanisms and minimal intervention, with event-native pub/sub over polling.
+Work spreads across frames through deferred queues and rate limiters, while per-level caches replace world scans.
+The raycasting and range math are hand-written and tested live, and the code follows the engine's own standards and flags.
+Performance is the first invariant. Every flow stays under 2ms, and the build rewrites or drops anything that misses.
+Profiled continuously with JitProfiler, an engine-native scientific tool. Manual tests run on unoptimized, single-threaded exes.
+The code carries tracing and monitoring from the ground up, with every flow timed off the log level.
+Every commit runs the full pipeline locally and in CI: luacheck, a Selene build compiled for STALKER with flags the public build lacks, and a load test that runs every script against engine stubs.
+Rule layers then check crash safety, hotpath cost, engine correctness, complexity, architecture contracts, security, and the docs.
+Every mod is configurable through MCM or LTX, down to each rate, threshold, and toggle, with nothing tunable left hard-coded.
+The mod avoids writing engine values, holding its own state in parallel. Any value it must change stays inside the engine's own bounds, so save corruption is impossible.
+It depends on no other mod, not even my own. The only shared layers are X-Ray and xlibs.
+
+[Screenshot: AlifeAmbience under JitProfiler, a live CPU and allocation capture]
+Project Health: https://damiansirbu-stalker.github.io/AlifeAmbience/
 
 Licence
 
