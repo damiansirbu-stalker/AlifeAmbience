@@ -170,18 +170,6 @@ Tested - Anomaly 1.5.3, GAMMA, and Forgotten Zone.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
-Performance and Infrastructure
-
-Built from the X-Ray engine source by reverse engineering, with targeted engine changes of my own for performance, precision, and accuracy.
-Heavy work spreads across frames, paced by rate limiters and staggered, deferred queues, with the math to keep cost bounded at any entity count.
-A layered validator runs on every change, locally and in CI, and blocks the build on any crash, unsafe engine call, performance regression, style break, failed smoke load, or leaked secret.
-Profiled with JitProfiler, an engine-native, scientific profiler.
-Timings are worst-case, from a build with no multithreading or optimizations, so yours runs faster.
-Project Health: https://damiansirbu-stalker.github.io/AlifeAmbience/
-[JitProfiler: AlifeAmbience under CPU and allocation capture]
-
-------------------------------------------------------------------------------------------------------------------------------------
-
 Credits
 
 Solarint made Soundscape Overhaul. Shrike made the Dark Signal family and Amplified Soundscape, and he also gave me his unreleased interior audio for AlifeSpooks.
@@ -209,11 +197,11 @@ It depends on no other mod, not even my own. The only shared layers are X-Ray an
 [Screenshot: AlifeAmbience under JitProfiler, a live CPU and allocation capture]
 Project Health: https://damiansirbu-stalker.github.io/AlifeAmbience/
 
-Licence
-
-Modpacks are allowed and encouraged, so long as you keep the readme and licence files. Addons, patches and integrations are allowed.
-Credit "AlifeAmbience by Damian Sirbu" visibly on your mod page. You may not reproduce the implementation in other software, even with credit.
-The full licence is in the LICENSE file and on GitHub.
+Usage and License:
+  Modpacks: allowed and encouraged. Keep the readme and license files.
+  Addons, patches, integrations: allowed. Credit "AlifeAmbience by Damian Sirbu" visibly on your mod page.
+  Reproducing the implementation in other software: not allowed, even with credit.
+  Full license in LICENSE file and on GitHub.
 
 Diagnostics and reporting:
 Development > Log level: set to DEBUG, reproduce, then back to WARN. Writes alifeambience.log.
