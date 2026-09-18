@@ -149,7 +149,7 @@ Requirements
 
 Anomaly 1.5.3
 xlibs - https://www.moddb.com/mods/stalker-anomaly/addons/xlibs-1001
-Modded exes - themrdemonized or AOEngine, for DLTX
+Modded exes: themrdemonized 20250908 or newer, or AOEngine v0.55 or newer. The full feature set needs the latest demonized build. A feature that needs a newer one stays inactive on older exes.
 No weather mod is required. Stock Anomaly weather and Atmospherics emit the same ambient states, and the soundscape covers all of them
 MCM - optional, for the version footer, the wiring inspector, and the sound player toggle
 
