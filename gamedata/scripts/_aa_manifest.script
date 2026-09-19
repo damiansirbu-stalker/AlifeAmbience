@@ -1,7 +1,0 @@
---- _aa_manifest: AlifeAmbience identity. Pure data, no logic. Read by _aa_init (the gate) and the validator (deps.manifest_structure).
-
-MANIFEST = {
-    name    = "AlifeAmbience",
-    version = "1.0.0-snapshot",
-    xlibs   = "1.8.3",
-}

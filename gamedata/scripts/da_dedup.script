@@ -1,4 +1,4 @@
---- aa_dedup: veto a too-soon repeat of an ambient one-shot, replacing it with a fresh channel sibling.
+--- da_dedup: veto a too-soon repeat of an ambient one-shot, replacing it with a fresh channel sibling.
 
 local time_global, math_random, ini_file, RegisterScriptCallback =
     time_global, math.random, ini_file, RegisterScriptCallback
@@ -16,7 +16,7 @@ local _last = {}
 local _injecting = false
 local _walk_ini
 
---- Canonical sound-path key: lowercase, backslashes, no extension. Matches xsound and aa_diag.
+--- Canonical sound-path key: lowercase, backslashes, no extension. Matches xsound and da_diag.
 local function _get_key(path)
     if not path then return nil end
     return (path:lower():gsub("/", "\\"):gsub("%.ogg$", ""))
@@ -84,9 +84,9 @@ local function _on_play(file, pos)
         _injecting = true
         xsound.play_at(sibling, { position = pos })
         _injecting = false
-        if aa_debug.is_on() then aa_debug.debug("[DEDUP] %s -> %s (repeat)", key, sibling) end
-    elseif aa_debug.is_on() then
-        aa_debug.debug("[DEDUP] %s silenced (no fresh sibling)", key)
+        if da_debug.is_on() then da_debug.debug("[DEDUP] %s -> %s (repeat)", key, sibling) end
+    elseif da_debug.is_on() then
+        da_debug.debug("[DEDUP] %s silenced (no fresh sibling)", key)
     end
     return { volume_mult = 0 }
 end

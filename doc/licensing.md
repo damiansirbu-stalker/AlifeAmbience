@@ -1,6 +1,6 @@
-# AlifeAmbience source licensing
+# DiegeticAmbience source licensing
 
-Every source AlifeAmbience draws sound from, and the basis for using it: the author granted permission, or the addon's license permits it. The readme Credits section derives from this record.
+Every source DiegeticAmbience draws sound from, and the basis for using it: the author granted permission, or the addon's license permits it. The readme Credits section derives from this record.
 
 ## Permission
 

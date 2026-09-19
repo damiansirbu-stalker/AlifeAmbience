@@ -1,11 +1,11 @@
-# AlifeAmbience - architecture and method
+# DiegeticAmbience - architecture and method
 
-AlifeAmbience is the atmosphere soundscape for S.T.A.L.K.E.R. Anomaly. Every map, every weather state, and every hour plays a living, audible ambience.
+DiegeticAmbience is the atmosphere soundscape for S.T.A.L.K.E.R. Anomaly. Every map, every weather state, and every hour plays a living, audible ambience.
 It is a curated work. The config is the source of truth, authored by hand: the channels, their pools, the presets, the level bindings.
 The pipeline (`tools/merge.py`) is a mastering mill. It materializes, masters, reports, and proves what the config says. It never chooses content.
 
 The soundscape carries its own dread layer. Distant mutant cries, far gunfire, spooks, and dark ambience play standalone.
-AlifeSpooks is optional on top. Its director places dynamic horror cues, and its static veto takes the captured sounds out of the base channels at load, so the two never double.
+DiegeticDread is optional on top. Its director places dynamic horror cues, and its static veto takes the captured sounds out of the base channels at load, so the two never double.
 
 ## Content model
 
@@ -71,7 +71,7 @@ Division of labor:
 - The curator (assistant) works from evidence: the measurement tables (LUFS, crest, duration, native channel count, rate), the source packs' own wiring, provenance, and the dedup maps.
   What channel the pack's author bound a file to is evidence. Ignoring it is how thunderclaps ended up in a wind channel.
   The curator drafts family-level A/B proposals, the channel vocabulary, and the wiring plans.
-- The ear (the user) closes every contested call through the player (`ui_aa_player.script`): family vs family for a slot, the contested middle of a ranking, the density budgets per state class.
+- The ear (the user) closes every contested call through the player (`ui_da_player.script`): family vs family for a slot, the contested middle of a ranking, the density budgets per state class.
 - The pipeline masters and proves. It never chooses.
 
 Every excluded file or folder carries a written reason in the dispositions register (`tools/sources.py`). Nothing is deleted by inference.
@@ -119,7 +119,7 @@ Thunder has two homes, matching the engine's two systems:
 2. Strike claps: the engine thunderbolt system.
    The weather mod (Atmospherics) drives timing per weather cycle (`thunderbolt_collection`, `thunderbolt_period`, `thunderbolt_duration` in `weathers/w_*.ltx`).
    The collections resolve to sections in `thunderbolts.ltx`, and each section's `sound =` names a path under `sounds\nature\`.
-   AlifeAmbience deploys its curated strike recordings AT those vanilla paths (`DEPLOY_EXTRA` in `tools/sources.py`).
+   DiegeticAmbience deploys its curated strike recordings AT those vanilla paths (`DEPLOY_EXTRA` in `tools/sources.py`).
    The best claps play with no config, and the weather mod's tuning stays intact.
    The engine plays each strike positioned at the bolt with a speed-of-sound delay and a per-strike attenuation range
    (`thunderbolt.cpp:235`: `snd.play_no_feedback(0, 0, dist / 300.f, &pos, 0, 0, &Fvector2().set(dist / 2, dist * 2.f))`).
@@ -135,9 +135,9 @@ The layer is dead across the AtmosFear-lineage packs (found 2026-09-03).
 The Dark Signal configs strip the `effects` keys from every preset, and Atmospherics' `effects.ltx` re-points all ten sounds at `nature\wind_01..10`, files that exist in no db archive and no mod.
 Where the keys survive (the 304 field preset), the sounds play as silence.
 
-AlifeAmbience restores both halves.
+DiegeticAmbience restores both halves.
 Every outdoor state of every preset wires `effect_0..9`.
-The DLTX overlay `mod_effects_alifeambience.ltx` points the ten `sound =` keys at vanilla's proven trx recordings, winning over whichever `effects.ltx` is active.
+The DLTX overlay `mod_effects_diegeticambience.ltx` points the ten `sound =` keys at vanilla's proven trx recordings, winning over whichever `effects.ltx` is active.
 Those recordings are the same class of repair as the surge beds.
 Their only source is vanilla, which the channel resolver skips, and no channel reads the override.
 So `DEPLOY_EXTRA` rows (`tools/sources.py`) carry the nine `ambient\trx\nature\wind_gust` files the override names.
@@ -154,11 +154,11 @@ fpcalc (Chromaprint) fingerprints the deployed audio and reports same-recording 
 In the authored-config model both run as warners. A duplicate pick is reported for the curator to resolve by hand.
 
 Those two are build-time.
-Runtime deduplication is separate and lives in `aa_dedup.script`, a listener on the xlibs script-sound seam.
+Runtime deduplication is separate and lives in `da_dedup.script`, a listener on the xlibs script-sound seam.
 System B picks a channel's sound uniform-random with replacement, so it can replay the same file back to back.
 On a repeat within 20s the listener vetoes that play and reissues a fresh sibling from the same channel at the same position, staying silent only when the channel has no unplayed sibling.
 It filters to our ambient files through the channel index (non-ambient script sounds pass untouched) and is inert on an exe without the seam.
-Unlike `aa_diag`, which observes and returns nil, this consumer returns a veto.
+Unlike `da_diag`, which observes and returns nil, this consumer returns a veto.
 
 ## The five-link binding chain
 
@@ -196,9 +196,9 @@ The links below those three are weather-mod-independent. Variants for other weat
    Tighten only after the sum excludes silent channels and the ear calibrates real values.
 9. Line cap: no `sounds =` line approaches the 4096-byte ini buffer (`LINE_CAP = 3900`).
 10. Collection coverage: every thunderbolt collection name the active weather mod references resolves in the base game's collection set.
-11. Veto simulation: no channel that the AlifeSpooks veto touches may end EMPTY at load.
+11. Veto simulation: no channel that the DiegeticDread veto touches may end EMPTY at load.
     The intersection itself is designed coexistence (the veto exists so base channels do not double the director's captured sounds).
-    The veto generator appends `>sounds = ambient\no_sound` to every touched channel (AlifeSpooks `build.py:1065-1130`), so a fully-vetoed channel plays silence.
+    The veto generator appends `>sounds = ambient\no_sound` to every touched channel (DiegeticDread `build.py:1065-1130`), so a fully-vetoed channel plays silence.
     A System A bed with no `sounds` key is a load failure (`Environment_misc.cpp:105-108`), which is exactly what that guard prevents.
     The gate FAILs only if a touched channel lacks the guard, and it reports fully-silenced channels as the Spooks-owned boundary picture.
 12. Level coverage: every playable base-game level (`LEVELS_BASE`, the `game_maps_single.ltx` set minus `fake_start`) binds an `ambients/<level>.ltx`.
@@ -215,14 +215,14 @@ The links below those three are weather-mod-independent. Variants for other weat
 18. Effect sound paths: every `sound =` in the effect override resolves to a file on disk.
     No channel reads the override, so gate 4 never sees these paths. A dangling one plays silent, since `WeathersUpdate` skips a null handle, with no other trace.
 
-## Coexistence with AlifeSpooks
+## Coexistence with DiegeticDread
 
-AlifeSpooks captures the dark/horror content from the shared source packs into its own `zs/` tree.
-It removes the captured paths with a generated static DLTX overlay: `mod_sound_channels_alifespooks.ltx`, individual `<sounds` removals per channel plus a `>sounds = ambient\no_sound` guard.
+DiegeticDread captures the dark/horror content from the shared source packs into its own `zs/` tree.
+It removes the captured paths with a generated static DLTX overlay: `mod_sound_channels_diegeticdread.ltx`, individual `<sounds` removals per channel plus a `>sounds = ambient\no_sound` guard.
 DLTX applies that overlay to OUR resolved `sound_channels.ltx`.
 A captured path in one of our pools is stripped at load, a fully-captured channel plays silence, and gate 11 proves the composition stays safe.
-The AlifeSpooks director places the horror, and the AlifeAmbience config plays the living ambience.
-Standalone, nothing is vetoed and the full dread layer plays. With AlifeSpooks installed, the directed layer replaces the captured subset.
+The DiegeticDread director places the horror, and the DiegeticAmbience config plays the living ambience.
+Standalone, nothing is vetoed and the full dread layer plays. With DiegeticDread installed, the directed layer replaces the captured subset.
 
 ## The mastering mill
 
@@ -231,7 +231,7 @@ Standalone, nothing is vetoed and the full dread layer plays. With AlifeSpooks i
 - materialize: pull exactly the referenced files from the corpus packs into `gamedata/sounds`, and remove deployed files nothing references.
   The run is incremental. The audio-page-hash caches re-master only new files, and the working deployment is edited channel by channel, never wiped.
 - master: `fold` and `level`, per the scoped rules above.
-- meta: emit `aa_sound_metadata.script` - each deployed sound's measured profile (`lufs`/`crest`/`peak`/`bv`/`mn`/`mx`) from the level cache and the written blob.
+- meta: emit `da_sound_metadata.script` - each deployed sound's measured profile (`lufs`/`crest`/`peak`/`bv`/`mn`/`mx`) from the level cache and the written blob.
   The engine never reads it. The mod loads it once into the xsound metadata registry (`xsound.load_meta`) so the player can show a delivered-loudness readout.
 - stage / unstage: materialize a candidate family under `sounds/stage/` so the player can audition it in-game before it is picked.
 - import: the one-time config baseline from a source pack's own sound-routing config (default: the Amplified spine), the bootstrap for a fresh variant.
@@ -242,13 +242,13 @@ Standalone, nothing is vetoed and the full dread layer plays. With AlifeSpooks i
 - verify / audit: the gate ledger above.
   Audit is a read-only reach report that flags each wired file ALWAYS_SILENT (max below the nearest spawn roll) or SOMETIMES_SILENT (max inside the roll band).
   It is bed-aware (System A places at random(min,max), System B at the /2 transform).
-  It reads from the committed `aa_sound_metadata`, so the static audit and the in-game trace judge identical numbers, plus the min/felt-far crush summary.
+  It reads from the committed `da_sound_metadata`, so the static audit and the in-game trace judge identical numbers, plus the min/felt-far crush summary.
 
 The generator stages of the earlier build (config synthesis, folder-dump grafts, spine path priority, prune-by-inference) are deleted.
 
 ## Invariants
 
-- I1 Scope. Nature/weather ambience, the ambient dread layer, storm thunder. Directed cues are AlifeSpooks. Emission and psi-storm are their own systems. Strike timing is the weather mod's.
+- I1 Scope. Nature/weather ambience, the ambient dread layer, storm thunder. Directed cues are DiegeticDread. Emission and psi-storm are their own systems. Strike timing is the weather mod's.
 - I2 The config is authored. Machines master, report, and prove. They never choose content.
 - I3 Spine completeness. Every ambience-scope file of the spine, across all its sound systems, is accounted for. Nothing dies silently.
 - I4 One channel, one voice. Single-source pools by default, coherence verified, 15-25 target, 40 cap, roles-menu admission.
@@ -261,29 +261,29 @@ The generator stages of the earlier build (config synthesis, folder-dump grafts,
 - I11 Traceable and licensed. Every deployed sound resolves to its origin, `licensing.md` records the basis for every source, and the readme credits every author.
 - I12 No audible sound is dropped before the user auditions it.
   Measurement only FLAGS a drop candidate (too long, off-character, past a spectral or loudness bound). It never excludes an audible file on its own.
-  The flagged list is loaded into `ui_aa_player` as a playlist, the user auditions it, and only then does a file get a DISPOSITIONS `excluded` row.
+  The flagged list is loaded into `ui_da_player` as a playlist, the user auditions it, and only then does a file get a DISPOSITIONS `excluded` row.
   The sole mechanical removals are files that cannot be auditioned. Those are dead-silent (below the LUFS floor), off sample rate, corrupt, or an anti-phase pair that folds to silence.
-  This invariant is shared with AlifeSpooks.
+  This invariant is shared with DiegeticDread.
 
 ## Scripts: dependency gate, MCM, diagnostics, player (no gameplay)
 
-- `_aa_manifest.script` holds the identity data (name, version, required xlibs).
-- `_aa_init.script` holds the xlibs + modded-exes floor asserts, the platform line, and the boot banner. It reads the identity from `_aa_manifest`.
-- `aa_mcm.script` is the informational MCM. There is no master volume slider: the build levels loudness into the blob, and the game's ambient slider sets the overall level.
-- `aa_debug.script` holds the xlog logger and the level gate.
-- `aa_diag.script` is the runtime wiring inspector (active level, weather, ambient state, per-state channel counts, live dangling-ref count) AND the runtime sound trace.
+- `_da_manifest.script` holds the identity data (name, version, required xlibs).
+- `_da_init.script` holds the xlibs + modded-exes floor asserts, the platform line, and the boot banner. It reads the identity from `_da_manifest`.
+- `da_mcm.script` is the informational MCM. There is no master volume slider: the build levels loudness into the blob, and the game's ambient slider sets the overall level.
+- `da_debug.script` holds the xlog logger and the level gate.
+- `da_diag.script` is the runtime wiring inspector (active level, weather, ambient state, per-state channel counts, live dangling-ref count) AND the runtime sound trace.
   The trace subscribes through the xlibs seam registry to the 6 demonized sound callbacks (bed, script-sound, effect, thunderbolt, rain, level-music).
   It logs each fire with its resolved channel, file, and delivered acoustics (distance to the actor, delivered dB, lufs, crest).
-  Those come from the same `get_meta` / `compute_delivered_loudness` calls the player uses, gated on `aa_debug.is_on()`.
-  `aa_dedup` logs its own decision on the same channel (repeat replaced with which sibling, or silenced). A session log then shows what played, how loud and far, and what the dedup did.
+  Those come from the same `get_meta` / `compute_delivered_loudness` calls the player uses, gated on `da_debug.is_on()`.
+  `da_dedup` logs its own decision on the same channel (repeat replaced with which sibling, or silenced). A session log then shows what played, how loud and far, and what the dedup did.
   It is a no-op on a stock exe, where the seam returns false and stays detached. It only observes and returns nil.
   This is the runtime counterpart to the static wiring dump, and the ground truth for the density and repetition rulings.
-- `ui_aa_player.script` is the curation instrument, mirroring the AlifeSpooks player's shape.
-  It is a keyboard-owning modal on PageUp (AlifeSpooks keeps PageDown), gated by the MCM sound_player toggle.
+- `ui_da_player.script` is the curation instrument, mirroring the DiegeticDread player's shape.
+  It is a keyboard-owning modal on PageUp (DiegeticDread keeps PageDown), gated by the MCM sound_player toggle.
   It browses BY CHANNEL from the resolved `sound_channels.ltx` and auditions as-wired at the channel's real placement, at-ear, and at fixed distances.
   It steps within pools and staged candidate families for A/B rulings.
-  Each audition shows a delivered-loudness readout (measured LUFS, base_volume, est. dB at the audition distance) from `xsound.get_meta` / `compute_delivered_loudness`, fed by `aa_sound_metadata`.
-  Ear verdicts go to `alifeambience_notes.txt`, an investigation log that nothing parses.
+  Each audition shows a delivered-loudness readout (measured LUFS, base_volume, est. dB at the audition distance) from `xsound.get_meta` / `compute_delivered_loudness`, fed by `da_sound_metadata`.
+  Ear verdicts go to `diegeticambience_notes.txt`, an investigation log that nothing parses.
   It is an own copy by family precedent, and it moves to xlibs only when a third consumer exists.
 
 ## Deploy

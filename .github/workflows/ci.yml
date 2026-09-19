@@ -43,7 +43,7 @@ jobs:
       - name: Checkout mod
         uses: actions/checkout@v7
         with:
-          path: AlifeAmbience
+          path: DiegeticAmbience
 
       - name: Checkout xlibs dependency (sibling; public)
         uses: actions/checkout@v7
@@ -101,8 +101,8 @@ jobs:
             echo "repo_path: \"$ws\""
             echo "mods_path: \"$ws\""
             echo "dev_mods:"
-            echo "  - name: \"AlifeAmbience\""
-            echo "    repo: \"$ws/AlifeAmbience\""
+            echo "  - name: \"DiegeticAmbience\""
+            echo "    repo: \"$ws/DiegeticAmbience\""
           } > pipeline/stalker-manager/dev.yaml
           cat pipeline/stalker-manager/dev.yaml
 
@@ -113,7 +113,7 @@ jobs:
         run: |
           mkdir -p out
           set +e
-          bash pipeline/stalker-manager/stalker-manager.sh validate AlifeAmbience --full --emit out
+          bash pipeline/stalker-manager/stalker-manager.sh validate DiegeticAmbience --full --emit out
           echo $? > out/rc
           [ -f out/summary.md ] && cat out/summary.md >> "$GITHUB_STEP_SUMMARY"
           if grep -qE '[0-9]+ findings /' out/summary.md 2>/dev/null; then
@@ -169,7 +169,7 @@ jobs:
       - name: Checkout mod
         uses: actions/checkout@v7
         with:
-          path: AlifeAmbience
+          path: DiegeticAmbience
           fetch-depth: 0
 
       - name: Checkout pipeline (private stalker-dev)
@@ -196,13 +196,13 @@ jobs:
             echo "repo_path: \"$ws\""
             echo "mods_path: \"$ws\""
             echo "dev_mods:"
-            echo "  - name: \"AlifeAmbience\""
-            echo "    repo: \"$ws/AlifeAmbience\""
+            echo "  - name: \"DiegeticAmbience\""
+            echo "    repo: \"$ws/DiegeticAmbience\""
           } > pipeline/stalker-manager/dev.yaml
 
       - name: Build snapshot zip
         shell: bash
-        run: bash pipeline/stalker-manager/stalker-manager.sh release-zip AlifeAmbience --snapshot --out dist
+        run: bash pipeline/stalker-manager/stalker-manager.sh release-zip DiegeticAmbience --snapshot --out dist
 
       - name: Publish snapshot prerelease (clobber in place)
         shell: bash
@@ -211,9 +211,9 @@ jobs:
         run: |
           if ! gh release view snapshot -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release create snapshot -R "$GITHUB_REPOSITORY" --prerelease --latest=false \
-              --title "AlifeAmbience snapshot" --notes "Dev build. Changelog: doc/changelog top block."
+              --title "DiegeticAmbience snapshot" --notes "Dev build. Changelog: doc/changelog top block."
           fi
-          gh release upload snapshot -R "$GITHUB_REPOSITORY" dist/AlifeAmbience-snapshot.zip --clobber
+          gh release upload snapshot -R "$GITHUB_REPOSITORY" dist/DiegeticAmbience-snapshot.zip --clobber
 
   # Tag-driven release: tag the snapshot commit, build a zip stamped to the bare version, publish it,
   # then one bump commit reopening the next snapshot. Guarded to a dispatch with action=release.
@@ -229,7 +229,7 @@ jobs:
       - name: Checkout mod
         uses: actions/checkout@v7
         with:
-          path: AlifeAmbience
+          path: DiegeticAmbience
           fetch-depth: 0
 
       - name: Checkout pipeline (private stalker-dev)
@@ -256,8 +256,8 @@ jobs:
             echo "repo_path: \"$ws\""
             echo "mods_path: \"$ws\""
             echo "dev_mods:"
-            echo "  - name: \"AlifeAmbience\""
-            echo "    repo: \"$ws/AlifeAmbience\""
+            echo "  - name: \"DiegeticAmbience\""
+            echo "    repo: \"$ws/DiegeticAmbience\""
           } > pipeline/stalker-manager/dev.yaml
 
       - name: Precheck (snapshot ahead of tag)
@@ -266,7 +266,7 @@ jobs:
 
       - name: Tag the snapshot commit
         shell: bash
-        working-directory: AlifeAmbience
+        working-directory: DiegeticAmbience
         run: |
           v="${{ github.event.inputs.version }}"
           if ! echo "$v" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -280,14 +280,14 @@ jobs:
 
       - name: Build stamped release zip
         shell: bash
-        run: bash pipeline/stalker-manager/stalker-manager.sh release-zip AlifeAmbience --version "${{ github.event.inputs.version }}" --out dist
+        run: bash pipeline/stalker-manager/stalker-manager.sh release-zip DiegeticAmbience --version "${{ github.event.inputs.version }}" --out dist
 
       # Sigstore provenance: verifiable "this zip was built from this commit by this workflow"
       # (gh attestation verify). GA, becoming default for public repos.
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: dist/AlifeAmbience-${{ github.event.inputs.version }}.zip
+          subject-path: dist/DiegeticAmbience-${{ github.event.inputs.version }}.zip
 
       - name: Publish release
         shell: bash
@@ -295,16 +295,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           v="${{ github.event.inputs.version }}"
-          gh release create "$v" -R "$GITHUB_REPOSITORY" dist/AlifeAmbience-$v.zip \
-            --title "AlifeAmbience $v" --notes-file dist/AlifeAmbience-$v-notes.md
+          gh release create "$v" -R "$GITHUB_REPOSITORY" dist/DiegeticAmbience-$v.zip \
+            --title "DiegeticAmbience $v" --notes-file dist/DiegeticAmbience-$v-notes.md
 
       - name: Reopen the next snapshot
         shell: bash
-        run: bash pipeline/stalker-manager/stalker-manager.sh release-bump AlifeAmbience
+        run: bash pipeline/stalker-manager/stalker-manager.sh release-bump DiegeticAmbience
 
       - name: Commit the bump
         shell: bash
-        working-directory: AlifeAmbience
+        working-directory: DiegeticAmbience
         run: |
           git add gamedata/scripts doc/readme.txt doc/changelog
           git commit -m "chore(version): reopen the next snapshot after ${{ github.event.inputs.version }}"

@@ -1,4 +1,4 @@
-AlifeAmbience License
+DiegeticAmbience License
 
 Based on PolyForm Perimeter License 1.0.0
 Copyright (c) 2025-2026 Damian Sirbu
@@ -13,7 +13,7 @@ Quick Summary
 
   Allowed:
   - Use in modpacks (encouraged)
-  - Addons, patches, integrations that depend on AlifeAmbience
+  - Addons, patches, integrations that depend on DiegeticAmbience
   - Personal use and configuration
   - Reading source and docs to use, extend, or debug the software
   - Using AI tools to learn how to use the public API
@@ -21,7 +21,7 @@ Quick Summary
     software's implementation
 
   Required:
-  - Visible credit: AlifeAmbience by Damian Sirbu
+  - Visible credit: DiegeticAmbience by Damian Sirbu
 
   Not allowed:
   - Reproducing the software's implementation to build
@@ -63,7 +63,7 @@ or derivative work must credit the licensor and project in at
 least one public-facing location (README, mod page, download
 description, or credits screen):
 
-    AlifeAmbience by Damian Sirbu
+    DiegeticAmbience by Damian Sirbu
     https://github.com/damiansirbu-stalker
 
 Credit must be reasonably prominent (not hidden in a nested

@@ -1,6 +1,6 @@
-AlifeAmbience: a curated, audible ambient soundscape for STALKER Anomaly, by Damian
+DiegeticAmbience: a curated, audible ambient soundscape for STALKER Anomaly, by Damian
 Version: 1.0.0-snapshot (xlibs 1.8.3, demonized 20250908)
-Changelog: https://github.com/damiansirbu-stalker/AlifeAmbience/blob/main/doc/changelog
+Changelog: https://github.com/damiansirbu-stalker/DiegeticAmbience/blob/main/doc/changelog
 
 My work:
 GitHub: https://github.com/orgs/damiansirbu-stalker/repositories
@@ -21,11 +21,11 @@ Only mono plays in 3D. A stereo file force-plays 2D, listener-relative, outside 
 Channel count is what the engine checks, so a dual-mono file behaves as stereo.
 The same recording also travels between packs under different names and encoders, so one channel can hold three copies of it.
 
-AlifeAmbience measures every file and writes the struct against where the sound is placed. The audio pages are unchanged.
+DiegeticAmbience measures every file and writes the struct against where the sound is placed. The audio pages are unchanged.
 
 The soundscape carries its own dread. The distant screams, the night spooks and the dark ambience play with no other mod installed.
-AlifeSpooks is optional on top. Its director places dynamic horror sounds where and when they hurt most.
-When both run, AlifeSpooks takes its captured sounds out of the base channels at load, so the two never double.
+DiegeticDread is optional on top. Its director places dynamic horror sounds where and when they hurt most.
+When both run, DiegeticDread takes its captured sounds out of the base channels at load, so the two never double.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ The packs each cover part of the problem.
 The biggest has the most sounds and the widest level coverage. Its beds play too quiet, and about half its files are stereo.
 Another plays loud enough. It covers fewer levels.
 None of them rewrite the per-file audio settings that decide whether a sound is heard.
-AlifeAmbience takes sounds from several of these packs and does that audio work, so each one plays loud enough to hear across a wide set of levels.
+DiegeticAmbience takes sounds from several of these packs and does that audio work, so each one plays loud enough to hear across a wide set of levels.
 Loudness is measured per file and written into the struct, where the other packs ship each recording as it came.
 The configuration covers the most levels here, 33 levels and 31 presets, and every cell of the weather matrix resolves to real audio.
 The content is the best of 7 packs in one: Dark Signal structure and birds, Soundscape Overhaul wind, Audio Expansion insects and frogs, Immersive Ambience helicopter.
@@ -148,13 +148,13 @@ MCM - optional, for the version footer, the wiring inspector, and the sound play
 Install (MO2)
 
 1. Install xlibs
-2. Install AlifeAmbience
+2. Install DiegeticAmbience
 3. Give it higher MO2 priority than any other ambient or soundscape mod, so its configuration wins
 4. A weather mod is optional. Stock Anomaly weather works as is. Atmospherics is what this is built and verified against
 5. Set the level in the game's own sound options. There is no volume slider in the mod, because loudness is already levelled into each file
 
 GAMMA - Atmospherics already ships, so the weather side is covered. Disable 304- Dark Signal Weather and Ambiance Audio, 3- Soundscape Overhaul,
-G.A.M.M.A. Soundscape Overhaul and G.A.M.M.A. Dark Signal Audio Lite, so that nothing leaks through. AlifeSpooks is optional, for the directed horror layer.
+G.A.M.M.A. Soundscape Overhaul and G.A.M.M.A. Dark Signal Audio Lite, so that nothing leaks through. DiegeticDread is optional, for the directed horror layer.
 
 Uninstall - disable or remove it in MO2. Weather visuals belong to your weather mod and are untouched.
 
@@ -163,7 +163,7 @@ Compatibility
 Weather mods - none required. Stock Anomaly and Atmospherics use the same ambient state names, and the soundscape covers them all.
 Another weather mod works if its ambient states are covered. Weather visuals, emission and psi-storm are left alone.
 Soundscape mods - this is the ambient layer, so it wins the ambient sound configuration and plays the merged soundscape.
-AlifeSpooks - optional. AlifeAmbience plays its own spook sounds standalone. Install AlifeSpooks for the directed, dynamic horror on top.
+DiegeticDread - optional. DiegeticAmbience plays its own spook sounds standalone. Install DiegeticDread for the directed, dynamic horror on top.
 It takes its captured sounds out of the base channels, and the two never double up.
 Saves - install or remove it whenever you like, since it is configuration and sounds with no save state.
 Tested - Anomaly 1.5.3, GAMMA, and Forgotten Zone.
@@ -172,7 +172,7 @@ Tested - Anomaly 1.5.3, GAMMA, and Forgotten Zone.
 
 Credits
 
-Solarint made Soundscape Overhaul. Shrike made the Dark Signal family and Amplified Soundscape, and he also gave me his unreleased interior audio for AlifeSpooks.
+Solarint made Soundscape Overhaul. Shrike made the Dark Signal family and Amplified Soundscape, and he also gave me his unreleased interior audio for DiegeticDread.
 AniHVX made Audio Expansion. Kutee made Immersive Ambience Expansion.
 
 Through those packs this soundscape carries audio from the original S.T.A.L.K.E.R. games and from the standalone builds that reworked it, credited by the pack authors on their own pages.
@@ -195,16 +195,16 @@ The mod avoids writing engine values, holding its own state in parallel. Any val
 The family runs on one rulebook through xlibs. Every rule, policy, and check is one shared implementation, the same protection, distances, faction logic, and combat reads in every mod.
 It depends on no other mod, not even my own. The only shared layers are X-Ray and xlibs.
 
-[Screenshot: AlifeAmbience under JitProfiler, a live CPU and allocation capture]
-Project Health: https://damiansirbu-stalker.github.io/AlifeAmbience/
+[Screenshot: DiegeticAmbience under JitProfiler, a live CPU and allocation capture]
+Project Health: https://damiansirbu-stalker.github.io/DiegeticAmbience/
 
 Usage and License:
   Modpacks: allowed and encouraged. Keep the readme and license files.
-  Addons, patches, integrations: allowed. Credit "AlifeAmbience by Damian Sirbu" visibly on your mod page.
+  Addons, patches, integrations: allowed. Credit "DiegeticAmbience by Damian Sirbu" visibly on your mod page.
   Reproducing the implementation in other software: not allowed, even with credit.
   Full license in LICENSE file and on GitHub.
 
 Diagnostics and reporting:
-Development > Log level: set to DEBUG, reproduce, then back to WARN. Writes alifeambience.log.
+Development > Log level: set to DEBUG, reproduce, then back to WARN. Writes diegeticambience.log.
 Development > Enable the sound player: opens the channel review player on PageUp to audition every ambient channel.
-Report at https://github.com/damiansirbu-stalker/AlifeAmbience/issues/new/choose or the EFP, Anomaly, and Zona Discord. Include repro steps, engine build, modlist, load order, xray.log, and the debug log.
+Report at https://github.com/damiansirbu-stalker/DiegeticAmbience/issues/new/choose or the EFP, Anomaly, and Zona Discord. Include repro steps, engine build, modlist, load order, xray.log, and the debug log.

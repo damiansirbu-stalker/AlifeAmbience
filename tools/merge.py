@@ -1,4 +1,4 @@
-"""AlifeAmbience mastering mill: the hand-authored config is the source of truth; this tool
+"""DiegeticAmbience mastering mill: the hand-authored config is the source of truth; this tool
 materializes, masters, reports, and proves what the config says. It never chooses content.
 
 The config (sound_channels.ltx, ambient_channels/*, ambients/*) is authored by hand
@@ -50,7 +50,7 @@ CHANNEL_FILES = [os.path.join(ENV, "ambient_channels", "backgrounds.ltx"),
                  os.path.join(ENV, "sound_channels.ltx")]
 SC = os.path.join(ENV, "sound_channels.ltx")
 SROOT = os.path.join(GD, "sounds")
-META_SCRIPT = os.path.join(GD, "scripts", "aa_sound_metadata.script")
+META_SCRIPT = os.path.join(GD, "scripts", "da_sound_metadata.script")
 STAGE_DIR = "stage"                     # sounds/stage/<family>: audition staging, exempt from gates
 
 # The AtmosFear ambient-state vocabulary (the weather matrix columns). Stock Anomaly 1.5.3 and
@@ -114,10 +114,10 @@ ENTRY_BURST_MS = 15000     # a channel with period0 below this fires within the 
 # fmt, not by hand. Values are ear-tune starting points, like the loudness floors.
 SPAWN_CAP = {"wind": 130.0}   # wind 200 -> 130 (felt ~100 -> ~65): nudge the far ones without collapsing them
 
-# AlifeSpooks static veto overlay (gate 11): DLTX `<sounds` element removals applied to OUR resolved
+# DiegeticDread static veto overlay (gate 11): DLTX `<sounds` element removals applied to OUR resolved
 # sound_channels.ltx at load. Any pool path listed there would be silently stripped in-game.
-SPOOKS_VETO = os.path.join(os.path.dirname(REPO), "AlifeSpooks", "gamedata", "configs",
-                           "environment", "mod_sound_channels_alifespooks.ltx")
+SPOOKS_VETO = os.path.join(os.path.dirname(REPO), "DiegeticDread", "gamedata", "configs",
+                           "environment", "mod_sound_channels_diegeticdread.ltx")
 
 
 def _read(p):
@@ -503,7 +503,7 @@ ENCODE_Q       = 6       # libvorbis -q for the mono re-encode (high quality, de
 ANTIPHASE_DB   = 3.0     # side RMS this many dB above mid -> anti-phase pair, summing cancels -> drop R.
 FOLD_BLOBS     = os.path.join(HERE, "fold_blobs.json")   # author blobs captured before the fold strips them
 
-# --- ported audibility floors (proven in AlifeSpooks build.py, 2026-08-22) -------------------------
+# --- ported audibility floors (proven in DiegeticDread build.py, 2026-08-22) -------------------------
 # Two lift-only, lossless blob floors, applied together after measuring content LUFS + crest:
 #   1. min_distance floor, crest-INVERTED: a sustained (low-crest) tone carries in air -> higher ratio;
 #      a sharp (high-crest) transient is a near-field detail -> lower ratio. floor = ratio*felt, cap 0.8*max.
@@ -914,7 +914,7 @@ def _placement_bands():
 
 
 def _read_meta_rows():
-    """Parse the committed aa_sound_metadata.script into path(lower) -> {lufs, bv, mn, mx}. This is the same
+    """Parse the committed da_sound_metadata.script into path(lower) -> {lufs, bv, mn, mx}. This is the same
     profile xsound.load_meta feeds the runtime trace, so the static audit and the in-game readout judge
     identical numbers - it reads what ships, not a scratch cache."""
     rows = {}
@@ -943,7 +943,7 @@ def _audit_verdict(mx, near, far):
 
 def cmd_audit():
     """Reach audit over the WIRED files, read-only, no ffmpeg. Per file, the REACH verdict from its committed
-    profile (aa_sound_metadata) and its spawn roll: ALWAYS_SILENT (max below the nearest roll, never audible),
+    profile (da_sound_metadata) and its spawn roll: ALWAYS_SILENT (max below the nearest roll, never audible),
     SOMETIMES_SILENT (max inside the roll band, silent at the far rolls), AUDIBLE. Beds use the System A
     transform, dynamic layers System B (bed-only channels covered, not skipped). Plus the min/felt-far crush
     summary (the OpenAL near-rolloff diagnostic). Loudness leveling is level's concern, dead content dead's,
@@ -1179,7 +1179,7 @@ def cmd_dead():
 
 def cmd_stage():
     """stage <source>:<folder> - materialize a source folder under sounds/stage/<folder> so the player
-    (ui_aa_player.script) can audition a candidate family in-game before it is picked. Exempt from all
+    (ui_da_player.script) can audition a candidate family in-game before it is picked. Exempt from all
     gates; folded on the next fold run; removed by unstage."""
     if len(sys.argv) < 3 or ":" not in sys.argv[2]:
         raise SystemExit("usage: merge.py stage <source>:<folder-under-sounds>")
@@ -1212,11 +1212,11 @@ def cmd_unstage():
 # ---- verify: the gate ledger -----------------------------------------------------------------------
 
 def _veto_by_section():
-    """AlifeSpooks' veto as {section(lower) -> (removed paths, has_no_sound_append)}, from its static
+    """DiegeticDread' veto as {section(lower) -> (removed paths, has_no_sound_append)}, from its static
     DLTX overlay (`![channel]` blocks: `<sounds = <path>` removals + a trailing `>sounds =
     ambient\\no_sound`). None if the sibling repo is not on this machine. The intersection is DESIGNED
     coexistence (no doubling of the director's captured sounds), and the generator's no_sound append
-    keeps a fully-vetoed channel alive and silent (AlifeSpooks build.py:1065-1130 cites the
+    keeps a fully-vetoed channel alive and silent (DiegeticDread build.py:1065-1130 cites the
     Environment_misc.cpp:105-108 empty-sounds load failure it prevents). The hazard gate 11 guards is
     a touched channel WITHOUT that append."""
     if not os.path.exists(SPOOKS_VETO):
@@ -1500,7 +1500,7 @@ def cmd_verify():
     # the effect plays silent - GamePersistent WeathersUpdate skips a null handle with no other trace.
     # No channel reads the override, so gate 4 never sees these paths (silent-ship found 2026-09-07).
     eff_snd_missing = []
-    eff_override = os.path.join(ENV, "mod_effects_alifeambience.ltx")
+    eff_override = os.path.join(ENV, "mod_effects_diegeticambience.ltx")
     if os.path.exists(eff_override):
         for m in re.findall(r"(?im)^\s*sound\s*=\s*(\S+)", _read(eff_override)):
             p = m.strip().lower().replace("\\", "/")
@@ -1521,7 +1521,7 @@ def cmd_verify():
         ("8 density: states over budget", len(over_budget), "FAIL" if DENSITY_BUDGET else "INFO"),
         ("9 pool lines over the ini buffer cap", len(over_cap), "FAIL"),
         ("10 weather-mod collections unresolved", len(missing_coll), "FAIL"),
-        ("11 pools the AlifeSpooks veto empties WITHOUT its no_sound guard",
+        ("11 pools the DiegeticDread veto empties WITHOUT its no_sound guard",
          len(veto_emptied) if veto_emptied is not None else 0,
          "FAIL" if veto_emptied is not None else "INFO"),
         ("12 base levels without an ambient binding", len(unbound_levels), "FAIL"),
@@ -1559,7 +1559,7 @@ def cmd_verify():
         print("    veto shrink (designed coexistence, worst): " +
               "; ".join(f"{c} {b}->{a}" for c, b, a in worst))
     if veto is None:
-        print("    (AlifeSpooks repo not present - veto gate skipped)")
+        print("    (DiegeticDread repo not present - veto gate skipped)")
     if unbound_levels:
         print("    unbound levels:", unbound_levels)
     if extra_bindings:
@@ -1605,7 +1605,7 @@ def _write_meta_script(rows):
     def num(x, nd):
         return "nil" if x is None else repr(round(x, nd))
     lines = [
-        "--- aa_sound_metadata: GENERATED by tools/merge.py, do not edit. Deployed path -> measured profile.",
+        "--- da_sound_metadata: GENERATED by tools/merge.py, do not edit. Deployed path -> measured profile.",
         "--- Loaded once at start into the xsound meta registry (xsound.load_meta), then read by path.",
         '-- @novalidate(reason:"generated data table, regenerated by tools/merge.py")',
         "rows = {",
@@ -1620,7 +1620,7 @@ def _write_meta_script(rows):
 
 
 def cmd_meta():
-    """Emit aa_sound_metadata.script: each deployed sound's measured profile for the in-game readout.
+    """Emit da_sound_metadata.script: each deployed sound's measured profile for the in-game readout.
     Reuses level_cache (LUFS/crest/peak) and the written blob (base_volume/min/max). Runs after level, so
     the blobs are final. The engine never reads it; the mod loads it once into xsound's meta registry."""
     cache = json.load(open(LEVEL_CACHE)) if os.path.exists(LEVEL_CACHE) else {}
@@ -1640,7 +1640,7 @@ def cmd_meta():
     if measured:
         json.dump(cache, open(LEVEL_CACHE, "w"))
     _write_meta_script(rows)
-    print(f"meta: {len(rows)} profiles -> aa_sound_metadata.script ({measured} newly measured)")
+    print(f"meta: {len(rows)} profiles -> da_sound_metadata.script ({measured} newly measured)")
 
 
 def cmd_all():

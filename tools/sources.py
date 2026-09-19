@@ -1,4 +1,4 @@
-"""Source registry for the AlifeAmbience bed merge.
+"""Source registry for the DiegeticAmbience bed merge.
 
 One declarative entry per pack. `MODS` derives from `SOURCES` preserving order (dedup is
 order-sensitive). Sources are ALWAYS pulled locally by hand; the pipeline never downloads, so `url`
@@ -90,10 +90,10 @@ DEPLOY_EXTRA += [("vanilla", "ambient/trx/blowout/" + n + ".ogg", "ambient/trx/b
 
 # The vanilla ambient EFFECT sounds (effects.ltx effect_0..9 -> trx wind_gust wind_gust_01..06 +
 # rnd_wind_1..3). Same case as the surge beds: their only source is vanilla, which sits in
-# RESOLVE_SKIP, and the effect override (mod_effects_alifeambience.ltx) is read by no channel, so
+# RESOLVE_SKIP, and the effect override (mod_effects_diegeticambience.ltx) is read by no channel, so
 # nothing pulled them. The override pointed sound= at the vanilla names while nothing deployed them,
 # so the restored effect layer played silent (found 2026-09-07). Explicit rows carry the 9 files.
-_EFFECT = "vanilla ambient effect sound (effects.ltx effect_0..9, mod_effects_alifeambience.ltx)"
+_EFFECT = "vanilla ambient effect sound (effects.ltx effect_0..9, mod_effects_diegeticambience.ltx)"
 DEPLOY_EXTRA += [("vanilla", "ambient/trx/nature/wind_gust/" + n + ".ogg", "ambient/trx/nature/wind_gust/" + n + ".ogg", _EFFECT) for n in (
     "wind_gust_01", "wind_gust_02", "wind_gust_03", "wind_gust_04", "wind_gust_05", "wind_gust_06",
     "rnd_wind_1", "rnd_wind_2", "rnd_wind_3",

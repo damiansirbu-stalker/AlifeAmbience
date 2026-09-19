@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+    <string id="ui_mcm_menu_da">
+        <text>DiegeticAmbience</text>
+    </string>
+
+    <string id="ui_mcm_menu_general">
+        <text>General</text>
+    </string>
+    <string id="ui_mcm_menu_development">
+        <text>Development</text>
+    </string>
+
+    <string id="ui_mcm_da_title">
+        <text>DiegeticAmbience</text>
+    </string>
+
+    <string id="ui_mcm_da_general_desc">
+        <text>DiegeticAmbience is a curated ambient soundscape for the Zone: nature, weather, and its own dread layer of distant screams, spooks and dark ambience. It merges the strongest ambient content from several soundscape packs into one set and reconciles the per-level and per-weather routing so every map in every weather state plays an audible living bed. DiegeticDread is optional on top for the directed horror one-shots. It ships only sound and configuration; there are no gameplay settings to tune here. The game's own ambient volume slider controls its loudness.</text>
+    </string>
+
+    <string id="ui_mcm_da_development_desc">
+        <text>Diagnostic tools for inspecting the ambient wiring. Raise the log level, or enable the ambient diagnostics toggle, to write the active level, weather, and current ambient state, the per-state dynamic channel counts of the current preset, the active bed channel, and any dangling channel reference to diegeticambience.log on load.</text>
+    </string>
+
+    <string id="ui_mcm_da_hdr_logging">
+        <text>Logging</text>
+    </string>
+    <string id="ui_mcm_da_development_log_level">
+        <text>Log level</text>
+    </string>
+    <string id="ui_mcm_da_development_log_level_desc">
+        <text>Controls verbosity of diegeticambience.log. ERROR logs faults only. WARN adds unexpected conditions. INFO adds startup and the platform line. DEBUG adds the full per-state channel-count dump. Default WARN is silent in normal play; DEBUG is for tuning or bug reports.</text>
+    </string>
+    <string id="da_development_log_level_lst_error">
+        <text>Error</text>
+    </string>
+    <string id="da_development_log_level_lst_warn">
+        <text>Warn</text>
+    </string>
+    <string id="da_development_log_level_lst_info">
+        <text>Info</text>
+    </string>
+    <string id="da_development_log_level_lst_debug">
+        <text>Debug</text>
+    </string>
+
+    <string id="ui_mcm_da_hdr_diagnostics">
+        <text>Diagnostics</text>
+    </string>
+    <string id="ui_mcm_da_development_diag_ambient">
+        <text>Log ambient wiring on load</text>
+    </string>
+    <string id="ui_mcm_da_development_diag_ambient_desc">
+        <text>Writes the ambient wiring block to diegeticambience.log after each save load: level, weather, current state, per-state dynamic channel counts, the active bed channel, and any dangling reference. Independent of log level. Call da_diag.log_wiring() from the console to re-run it at any time.</text>
+    </string>
+
+    <string id="ui_mcm_da_development_sound_player">
+        <text>Enable the sound player (PageUp)</text>
+    </string>
+    <string id="ui_mcm_da_development_sound_player_desc">
+        <text>Opens the channel review player on PageUp: browse every ambient channel and its pool, audition each sound at the channel's own placement, at-ear, or a fixed distance, and log listening notes to diegeticambience_notes.txt. A curation tool; leave off in normal play.</text>
+    </string>
+
+    <string id="ui_mcm_da_development_btn_reset_all">
+        <text>Reset to defaults</text>
+    </string>
+    <string id="ui_mcm_da_development_btn_reset_all_desc">
+        <text>Restore all DiegeticAmbience MCM settings to factory defaults. Use after upgrading from a version with different MCM structure (the old settings remain as orphaned keys in the MCM storage file but no longer apply).</text>
+    </string>
+    <string id="ui_mcm_da_development_reset_warning">
+        <text>Warning: save or discard pending MCM changes first; otherwise they override the reset on the next Accept.</text>
+    </string>
+
+    <string id="st_da_reset_all_done">
+        <text>DiegeticAmbience: all settings restored to defaults.</text>
+    </string>
+</string_table>

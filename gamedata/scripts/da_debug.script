@@ -1,9 +1,9 @@
---- aa_debug: the code-tracing primitives for AlifeAmbience - one logger, one gate, one set of formatters.
+--- da_debug: the code-tracing primitives for DiegeticAmbience - one logger, one gate, one set of formatters.
 
-aa_debug = aa_debug or {}
+da_debug = da_debug or {}
 
 local xlog, RegisterScriptCallback = xlog, RegisterScriptCallback
-local log = xlog.get_logger("AA", { outfile = "alifeambience.log" })
+local log = xlog.get_logger("DA", { outfile = "diegeticambience.log" })
 local DEBUG_LEVEL = 5
 local _lvl = 0
 -- TRACE flushes every line, ERROR is the logger's own default flush threshold (xlog buffers below it).
@@ -11,44 +11,44 @@ local _levels = xlog.get_levels()
 
 --- Re-read the log level from MCM (actor first update + every option change).
 --- The diag_ambient toggle floors the level at INFO while on, per its MCM tooltip.
-function aa_debug.update()
-    log.set_level(aa_mcm.get_config("log_level") or "WARN")
+function da_debug.update()
+    log.set_level(da_mcm.get_config("log_level") or "WARN")
     _lvl = log.get_level() or 0
-    if aa_mcm.get_config("diag_ambient") and _lvl < _levels.INFO then
+    if da_mcm.get_config("diag_ambient") and _lvl < _levels.INFO then
         log.set_level("INFO")
         _lvl = log.get_level() or 0
     end
-    log._logger.flush_on_level = aa_mcm.get_config("log_flush") and _levels.TRACE or _levels.ERROR
+    log._logger.flush_on_level = da_mcm.get_config("log_flush") and _levels.TRACE or _levels.ERROR
 end
 
 --- True when DEBUG tracing is live - the caller's guard in front of an expensive trace site.
-function aa_debug.is_on()
+function da_debug.is_on()
     return _lvl >= DEBUG_LEVEL
 end
 
 --- A DEBUG line; noops below DEBUG.
-function aa_debug.debug(fmt, ...)
+function da_debug.debug(fmt, ...)
     if _lvl >= DEBUG_LEVEL then log.debug(fmt, ...) end
 end
 
 --- An INFO line: a milestone the log carries whenever tracing is on at all.
-function aa_debug.info(fmt, ...)
+function da_debug.info(fmt, ...)
     log.info(fmt, ...)
 end
 
 --- A WARN line: a real problem worth surfacing above the trace noise.
-function aa_debug.warn(fmt, ...)
+function da_debug.warn(fmt, ...)
     log.warn(fmt, ...)
 end
 
 --- Flush the buffered log - level transitions and teardown.
-function aa_debug.flush()
+function da_debug.flush()
     log.flush()
 end
 
---- aa_debug owns the log level for the whole mod: one update per option change, no per-module loggers.
+--- da_debug owns the log level for the whole mod: one update per option change, no per-module loggers.
 function on_game_start()
-    RegisterScriptCallback("actor_on_first_update",      aa_debug.update)
-    RegisterScriptCallback("on_option_change",           aa_debug.update)
-    RegisterScriptCallback("mcm_option_restore_default", aa_debug.update)
+    RegisterScriptCallback("actor_on_first_update",      da_debug.update)
+    RegisterScriptCallback("on_option_change",           da_debug.update)
+    RegisterScriptCallback("mcm_option_restore_default", da_debug.update)
 end

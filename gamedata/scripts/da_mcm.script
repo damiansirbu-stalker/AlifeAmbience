@@ -1,4 +1,4 @@
---- aa_mcm: MCM configuration for AlifeAmbience - informational General tab plus the Development tab.
+--- da_mcm: MCM configuration for DiegeticAmbience - informational General tab plus the Development tab.
 defaults = {
     diag_ambient = false,
     sound_player = false,
@@ -16,10 +16,10 @@ local _key_to_tab = {
 
 local function build_path(key)
     local tab = _key_to_tab[key] or "general"
-    return "aa/" .. tab .. "/" .. key
+    return "da/" .. tab .. "/" .. key
 end
 
-cfg, get_config, load_config = xmcm.create_config("aa", defaults, build_path)
+cfg, get_config, load_config = xmcm.create_config("da", defaults, build_path)
 
 -- functor_ui passes the UI_MCM instance, which get_gui() cannot supply on a fresh open.
 -- @src anomaly/ui_mcm.script:1435
@@ -45,8 +45,8 @@ end
 
 local function _build_header(desc_id)
     return {
-        { id = "title", type = "slide", link = "aa_mcm_banner",
-            text = "ui_mcm_aa_title", size = {512, 50}, spacing = 20 },
+        { id = "title", type = "slide", link = "da_mcm_banner",
+            text = "ui_mcm_da_title", size = {512, 50}, spacing = 20 },
         { id = "desc", type = "desc", text = desc_id },
         { id = "div_top", type = "line" },
     }
@@ -60,28 +60,28 @@ end
 
 --- MCM reset functor (Development tab).
 function btn_reset_all(gui)
-    _apply_defaults(gui, game.translate_string("st_aa_reset_all_done"))
+    _apply_defaults(gui, game.translate_string("st_da_reset_all_done"))
 end
 
 --- The MCM menu tree.
 function on_mcm_load()
     return {
-        id = "aa",
+        id = "da",
         gr = {
             {
                 id = "general",
                 sh = true,
-                gr = _merge_header("ui_mcm_aa_general_desc", {
+                gr = _merge_header("ui_mcm_da_general_desc", {
                     { id = "div_footer", type = "line" },
                     { id = "platform", type = "desc", text = "ui_mcm_xmcm_footer",
-                        ui_hook_functor = { _aa_init.get_platform_functor() }, clr = {255, 212, 201, 168} },
+                        ui_hook_functor = { _da_init.get_platform_functor() }, clr = {255, 212, 201, 168} },
                 }),
             },
             {
                 id = "development",
                 sh = true,
-                gr = _merge_header("ui_mcm_aa_development_desc", {
-                    { id = "hdr_logging", type = "desc", text = "ui_mcm_aa_hdr_logging", clr = {255, 200, 200, 200} },
+                gr = _merge_header("ui_mcm_da_development_desc", {
+                    { id = "hdr_logging", type = "desc", text = "ui_mcm_da_hdr_logging", clr = {255, 200, 200, 200} },
                     { id = "log_level", type = "list", val = 0, def = "WARN",
                         content = {
                             {"ERROR", "error"},
@@ -91,11 +91,11 @@ function on_mcm_load()
                         },
                     },
                     { id = "div_diagnostics", type = "line" },
-                    { id = "hdr_diagnostics", type = "desc", text = "ui_mcm_aa_hdr_diagnostics", clr = {255, 200, 200, 200} },
+                    { id = "hdr_diagnostics", type = "desc", text = "ui_mcm_da_hdr_diagnostics", clr = {255, 200, 200, 200} },
                     { id = "diag_ambient", type = "check", val = 1, def = false },
                     { id = "sound_player", type = "check", val = 1, def = false },
                     { id = "div_reset", type = "line" },
-                    { id = "warn_reset", type = "desc", text = "ui_mcm_aa_development_reset_warning", clr = {255, 240, 200, 80} },
+                    { id = "warn_reset", type = "desc", text = "ui_mcm_da_development_reset_warning", clr = {255, 240, 200, 80} },
                     { id = "btn_reset_all", type = "button", functor_ui = { btn_reset_all } },
                 }),
             },
