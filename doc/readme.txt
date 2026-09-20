@@ -1,4 +1,3 @@
-DiegeticAmbience: a curated, audible ambient soundscape for STALKER Anomaly, by Damian
 Version: 1.0.0-snapshot (xlibs 1.8.3, demonized 20250908)
 Changelog: https://github.com/damiansirbu-stalker/DiegeticAmbience/blob/main/doc/changelog
 
