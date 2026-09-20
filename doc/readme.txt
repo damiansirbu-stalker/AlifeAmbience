@@ -208,3 +208,5 @@ Diagnostics and reporting:
 Development > Log level: set to DEBUG, reproduce, then back to WARN. Writes diegeticambience.log.
 Development > Enable the sound player: opens the channel review player on PageUp to audition every ambient channel.
 Report at https://github.com/damiansirbu-stalker/DiegeticAmbience/issues/new/choose or the EFP, Anomaly, and Zona Discord. Include repro steps, engine build, modlist, load order, xray.log, and the debug log.
+
+Tags: engine-native, performance, save-safe, diegetic, audio, ambient, soundscape, audio-engineering, measured, lossless, 3d-sound, audible, curated, weather-audio, classic-audio, dynamic, emergent, sound-harmony, complete, engineered
