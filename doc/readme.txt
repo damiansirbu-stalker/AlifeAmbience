@@ -9,6 +9,8 @@ Nexus: https://www.nexusmods.com/profile/damiansirbu/mods
 My contributions:
 X-Ray Monolith: https://github.com/themrdemonized/xray-monolith
 
+[ HERO IMAGE: diegeticambience-hero.gif - a living ambience for every map, weather, and hour ]
+
 Most of the ambient audio installed in Anomaly is never heard, and fixing that takes every step of the chain:
 which packs to draw from, which sounds inside them to keep, listening to each one, the parameters written into every ogg, the calculation behind those parameters, and the removal of duplicates.
 A lot of the sounds worth hearing are old, from the original games and the standalone builds that came after, and I wanted those in the Zone too.

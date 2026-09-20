@@ -1,0 +1,51 @@
+direction: down
+
+style.fill: "#1f2421"
+
+**.style.fill: "#262c27"
+**.style.stroke: "#ece7d8"
+**.style.font-color: "#ece7d8"
+**.style.stroke-width: 2
+
+title: "DiegeticAmbience - a living ambience for every map, weather, and hour" {
+  near: top-center
+  style: { stroke-width: 0; fill: "#1f2421"; font-color: "#ece7d8"; font-size: 28 }
+}
+
+inputs: "Where and when you stand" {
+  grid-columns: 2
+  grid-gap: 16
+  lvl: "level\none of 33 maps"
+  st: "weather state, per hour\nday / night / rain / storm / fog / underground"
+}
+
+preset: "Preset - this level's ambience for this state" {
+  grid-columns: 2
+  grid-gap: 18
+  bed: "bed - the base layer"
+  dyn: "layers - wind, birds, insects,\nfoliage, distant thunder"
+}
+
+channels: "Channels - one voice each\nits own placement and cadence, drawing a pool"
+
+play: "Play a positioned mono sound\nno repeat within 20s - dedup reissues a sibling" {
+  style.stroke: "#c9d8b6"
+}
+
+config: "Authored config - the source of truth\nchannels, pools, presets, level bindings" {
+  style.stroke: "#c9d8b6"
+}
+
+mill: "Mastering mill (merge.py) - makes it audible in-game" {
+  grid-columns: 1
+  grid-gap: 16
+  f: "fold to mono - only mono is placed in 3D"
+  m: "crest-keyed min-distance floor"
+  l: "per-category loudness band"
+}
+
+inputs -> preset: "binds" { style: { stroke: "#c9d8b6"; font-color: "#c9d8b6" } }
+preset -> channels: "wires per state" { style: { stroke: "#c9d8b6"; font-color: "#c9d8b6" } }
+channels -> play: "draws a file" { style: { stroke: "#c9d8b6"; font-color: "#c9d8b6" } }
+config -> mill: "materialize" { style: { stroke: "#c9d8b6"; font-color: "#c9d8b6" } }
+mill -> play: "mastered, audible audio" { style: { stroke: "#c9d8b6"; font-color: "#c9d8b6" } }
