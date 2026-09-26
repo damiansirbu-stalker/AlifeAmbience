@@ -1,5 +1,5 @@
 Version: 1.0.0-snapshot (xlibs 1.8.3, demonized 20250908)
-Changelog: https://github.com/damiansirbu-stalker/DiegeticAmbience/blob/main/doc/changelog
+Changelog: https://github.com/damiansirbu-stalker/DiegeticAmbience/blob/main/doc/changelog | Health: https://damiansirbu-stalker.github.io/DiegeticAmbience/health/ | JitProfiler: https://damiansirbu-stalker.github.io/DiegeticAmbience/jitprofiler/ | Bugs: https://github.com/damiansirbu-stalker/DiegeticAmbience/issues | Russian / На русском: https://github.com/damiansirbu-stalker/DiegeticAmbience/blob/main/doc/readme_ru.txt
 
 My work:
 GitHub: https://github.com/orgs/damiansirbu-stalker/repositories
@@ -146,28 +146,16 @@ Modded exes: themrdemonized 20250908 or newer, or AOEngine v0.55 or newer. The f
 No weather mod is required. Stock Anomaly weather and Atmospherics emit the same ambient states, and the soundscape covers all of them
 MCM - optional, for the version footer, the wiring inspector, and the sound player toggle
 
-Install (MO2)
+Install: give DiegeticAmbience higher MO2 priority than any ambient or soundscape mod you keep, so its configuration wins. It has no volume slider; set the level in the game's sound options.
 
-1. Install xlibs
-2. Install DiegeticAmbience
-3. Give it higher MO2 priority than any other ambient or soundscape mod, so its configuration wins
-4. A weather mod is optional. Stock Anomaly weather works as is. Atmospherics is what this is built and verified against
-5. Set the level in the game's own sound options. There is no volume slider in the mod, because loudness is already levelled into each file
-
-GAMMA - Atmospherics already ships, so the weather side is covered. Disable 304- Dark Signal Weather and Ambiance Audio, 3- Soundscape Overhaul,
-G.A.M.M.A. Soundscape Overhaul and G.A.M.M.A. Dark Signal Audio Lite, so that nothing leaks through. DiegeticDread is optional, for the directed horror layer.
-
-Uninstall - disable or remove it in MO2. Weather visuals belong to your weather mod and are untouched.
-
-Compatibility
-
-Weather mods - none required. Stock Anomaly and Atmospherics use the same ambient state names, and the soundscape covers them all.
-Another weather mod works if its ambient states are covered. Weather visuals, emission and psi-storm are left alone.
-Soundscape mods - this is the ambient layer, so it wins the ambient sound configuration and plays the merged soundscape.
-DiegeticDread - optional. DiegeticAmbience plays its own spook sounds standalone. Install DiegeticDread for the directed, dynamic horror on top.
-It takes its captured sounds out of the base channels, and the two never double up.
-Saves - install or remove it whenever you like, since it is configuration and sounds with no save state.
-Tested - Anomaly 1.5.3, GAMMA, and Forgotten Zone.
+Compatibility:
+Depends only on xlibs. Install and uninstall mid-save work. Tested: Anomaly 1.5.3, GAMMA, EFP, Zona, Forgotten Zone.
+Disable (conflict, superseded, problematic):
+- Any ambient or soundscape base - DiegeticAmbience is a complete soundscape that owns the ambient config, so a second base doubles or fights it.
+- On GAMMA that means 304- Dark Signal Weather and Ambiance, 3- Soundscape Overhaul, G.A.M.M.A. Soundscape Overhaul, and G.A.M.M.A. Dark Signal Audio Lite.
+Coexists:
+- DiegeticDread - its companion horror layer: it takes its own sounds out of these base channels, so the two never double.
+It coexists with everything else.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
@@ -196,8 +184,7 @@ The mod avoids writing engine values, holding its own state in parallel. Any val
 The family runs on one rulebook through xlibs. Every rule, policy, and check is one shared implementation, the same protection, distances, faction logic, and combat reads in every mod.
 It depends on no other mod, not even my own. The only shared layers are X-Ray and xlibs.
 
-[Screenshot: DiegeticAmbience under JitProfiler, a live CPU and allocation capture]
-Project Health: https://damiansirbu-stalker.github.io/DiegeticAmbience/
+That pipeline runs on every commit and publishes what it finds. The header links a live health page and a JitProfiler capture of the mod's real CPU and allocation cost.
 
 Usage and License:
   Modpacks: allowed and encouraged. Keep the readme and license files.
